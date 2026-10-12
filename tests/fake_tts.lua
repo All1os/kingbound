@@ -290,6 +290,9 @@ for color, n in pairs(EXPECT.used or {}) do
   for _, o in pairs(B.abil[color]) do if o.alive and math.abs(o.rot.z) > 90 then used = used + 1 end end
   if used ~= n then bad(color .. " has " .. used .. " used Abilities on the table, engine has " .. n) end
 end
+local seen = nil
+for _, r in ipairs(REPLIES) do if r.kind == "check" then seen = r.text end end
+if seen ~= "cards=132 tiles=49 pawns=4 markers=4 boards=4 die=1" then bad("check reply: " .. tostring(seen)) end
 -- the human buttons on the finished table
 for _, f in ipairs({"clearFight", "resetGame", "buildBoard", "setupGame", "drawAction", "wilds1", "wilds2", "wilds3", "merchant", "trial", "clearFight", "resetGame"}) do
   local ok, e = pcall(_G[f], {color = "Red", steam_name = "test"})

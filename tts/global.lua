@@ -535,6 +535,17 @@ function OPS.hello(d)
   reply("hello", KB_VERSION)
 end
 
+-- For tests/live_check.py: what is on the table right now.
+function OPS.check(d)
+  local cards = 0
+  for _, o in ipairs(getObjects()) do
+    if o.type == "Card" then cards = cards + 1 elseif o.type == "Deck" then cards = cards + #o.getObjects() end
+  end
+  reply("check", string.format("cards=%d tiles=%d pawns=%d markers=%d boards=%d die=%d", cards,
+        #getObjectsWithTag("tile"), #getObjectsWithTag("pawn"), #getObjectsWithTag("marker"),
+        #getObjectsWithTag("pboard"), #getObjectsWithTag("die")))
+end
+
 function OPS.reset(d)
   resetGame(nil)
   hideOverlays()
@@ -664,7 +675,8 @@ function OPS.play(d)
 end
 
 function OPS.reshuffle(d)
-  refill(L.piles[d.deck], L.piles[d.deck .. "_d"])
+  -- A short wait lets the last discarded cards land on the pile first.
+  Wait.time(function() refill(L.piles[d.deck], L.piles[d.deck .. "_d"]) end, math.min(0.6, 0.5 * (d.t or 1)))
 end
 
 function OPS.reveal(d)

@@ -21,6 +21,7 @@ All notable changes to the Kingbound prototype. Each version is also a GitHub re
 - `bots/engine.py`: the rules and the bots' decisions, ported from the balance simulator that set the GDD's numbers, with its references moved to the team GDD. Extended so the video shows every mechanic: help deals for pay, sabotage Abilities and the Cursed Totem, Dig Deep, hidden objectives, Pickpocket and the King's Trial. In 500 bot games: median 14 table rounds; per game 5.4 help deals, 7.4 sabotages, 8.4 digs, 1.6 completed objectives and 2.0 Trial attempts.
 - `bots/stats.py` plays many games without TTS and prints what happened in them.
 - `tests/check_tts_script.py` runs the table script against a fake TTS with the commands of a whole bot game, then presses every button. It found one real bug before release (a Merchant visit would not have shown the item that was bought). 65 games pass.
+- `tests/live_check.py` checks the save in a running TTS: the script answers, all 132 cards, 49 tiles, 4 pawns, 4 level markers and 4 player boards are on the table, the demo game runs without a script error, then the table is reset.
 
 ### Decisions the GDD left open
 

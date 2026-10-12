@@ -58,7 +58,7 @@ python3 bots/play.py stop            # stops a running game (Ctrl+C in its windo
 | Full game (seed 1): 13 rounds, three Trial attempts, Ann (Mage) wins | 18:24 | 12:16 | 9:12 |
 | Short demo (seed 94): 3 rounds, Ben (Mage) wins the Trial | 4:36 | 3:04 | 2:18 |
 
-These lengths come from the bots' own timing; TTS adds a couple of seconds at the start.
+These lengths come from the bots' own timing; TTS adds a couple of seconds at the start. Above speed 2 the bots can get ahead of TTS's animations.
 
 More options: `--dry-run` prints the game with timestamps without TTS, `--find 10` lists seeds whose games show every mechanic, `--camera` also moves your camera between the board and the fight. The bots' decisions come from the balance simulator that set the GDD's numbers. `python3 bots/stats.py 500` plays 500 games without TTS and prints what happened in them.
 
@@ -66,3 +66,4 @@ More options: `--dry-run` prints the game with timestamps without TTS, `--find 1
 
 - `tts/build.py` stops if the card or tile counts don't match the GDD (132 cards, 49 tiles).
 - `python3 tests/check_tts_script.py` plays the default bot game against a fake TTS and then presses every button: no script error, all 132 cards still on the table, every bot's hand and items match the engine. It needs Lua (`brew install lua`).
+- `python3 tests/live_check.py` does the real thing in a running TTS with the save loaded: counts the pieces, plays the short demo at double speed, counts again and resets the table (about 2.5 minutes). Don't run it while recording.

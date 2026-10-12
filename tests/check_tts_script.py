@@ -73,6 +73,7 @@ def run(seed, mode):
             steps.append(dict(msg=m, wait=duration(e) if k == len(new) - 1 else 0.0))
         if not new:
             steps.append(dict(msg=None, wait=duration(e)))
+    steps.append(dict(msg={"op": "check"}, wait=3.0))
     expect = dict(hand={p.color: p.hand for p in g.players},
                   items={p.color: p.equipment + p.consumables for p in g.players},
                   used={p.color: 3 - len(p.ready) for p in g.players})
