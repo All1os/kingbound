@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.DS_Store
+~$*
+tts/output/layout-preview.png
