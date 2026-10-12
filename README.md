@@ -46,8 +46,8 @@ In TTS: BOT GAME, then Full game or Short game. Speed changes the pace (0.75x to
 
 | Game | 0.75x | 1x | 1.5x | 2x |
 |---|---|---|---|---|
-| Full game (seed 1): 13 rounds, three Trial attempts, Ann (Mage) wins | 24:34 | 18:26 | 12:17 | 9:13 |
-| Short game (seed 94): starts at levels 6-8, ends with the Trial, Ben (Mage) wins | 6:10 | 4:38 | 3:05 | 2:19 |
+| Full game (seed 1): 13 rounds, three Trial attempts, Ann (Mage) wins | 24:35 | 18:26 | 12:17 | 9:13 |
+| Short game (seed 94): starts at levels 6-8, ends with the Trial, Ben (Mage) wins | 6:11 | 4:38 | 3:05 | 2:19 |
 
 The same games, or any other seed, can also be sent from a terminal in this folder (TTS open, save loaded):
 
