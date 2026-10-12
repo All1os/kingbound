@@ -4,6 +4,8 @@ All notable changes to the Kingbound prototype. Each version is also a GitHub re
 
 ## Unreleased
 
+## v0.1 (2026-10-13)
+
 ### Tabletop Simulator prototype
 
 - `tts/build.py` builds the save from `Kingbound-GDD.md`, the same way as The Limit: text-only card faces drawn with Pillow on two sheets (4000×3360 and 4000×1680 px), a different back for each deck, 49 tiles, the level track, player boards, tokens and the save with its Lua.
@@ -33,6 +35,15 @@ All notable changes to the Kingbound prototype. Each version is also a GitHub re
 - Bot rulings where the rules are silent: a Healing Potion in the bot's own fight is drunk in step 2, not as an answer to sabotage ("You can't answer until the next round", §6.2); the Champion's 10-damage cap counts the damage put on it in a round and Hex removes tokens after that; a helper plays only its own cards and its boost; bots never trade; the Rogue uses Pickpocket at the start of its turn or right after moving; Training Manual and Elixir are used as soon as they are taken; with 3 equipment items a new one only replaces the weakest if it is better; after Ambush! an event is resolved as a normal draw.
 - Bots sabotage the Trial, a leader about to reach level 7 or more, or any fight when they hold the Spoiler objective, and keep their sabotage for the Trial once someone else is at level 9. Help costs 1, 2 or 3 gold by tier (1 less for a Sellsword) or the enemy's loot, and nobody helps a leader who is close to winning.
 
-### Not checked yet
+### Fixed after the first test in Tabletop Simulator
 
-- The save has not been opened in Tabletop Simulator yet: TTS was closed while this was built. The fake TTS catches script errors, not looks. v0.1 follows the first check in TTS.
+- The save would not load: the player boards and the player aid had their description written into the "Locked" field, which must be true or false. `build.py` now checks the type of every field before writing the save.
+- The level track, the player aid and the player boards were drawn square. TTS draws a tile square when Stretch is off and in the image's shape when it is on (2 × scale deep, 2 × scale × width / height wide); non-square tiles now use Stretch with an even scale.
+- Bot commands did not find their cards: TTS hands the nested lists of a message to Lua as C# objects. Each command now travels as one JSON string that the table script decodes.
+- Player boards are bigger (6.3 × 3.6) and simpler: − and + beside HP and gold, FULL and MAX − / + under HP, − and + for each stat. They now sit fully on the felt.
+- Checked in TTS: the save loads, every piece is on the table (132 cards, 49 tiles, 4 pawns, 4 level markers, 4 player boards, the die), and the short bot game ran at double speed with no script error and all 132 cards still on the table.
+
+## Next
+
+- Record the gameplay video with `bots/play.py`.
+- To share the save, upload the images with TTS's Cloud Manager and fill in `tts/cloud_urls.json`.

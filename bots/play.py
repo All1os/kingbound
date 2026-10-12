@@ -153,7 +153,9 @@ class TTS:
             print(f"   TTS Lua error: {msg.get('error')}")
 
     def send(self, data):
-        payload = json.dumps({"messageID": 2, "customMessage": data}).encode()
+        # One JSON string per command: TTS passes nested lists of a custom message to Lua as
+        # C# objects, so global.lua decodes the string itself.
+        payload = json.dumps({"messageID": 2, "customMessage": {"json": json.dumps(data, ensure_ascii=False)}}).encode()
         s = socket.create_connection(("127.0.0.1", 39999), timeout=3)
         s.sendall(payload)
         s.close()

@@ -64,16 +64,16 @@ def run(seed, mode):
     g.play()
     rec = Recorder()
     director = Director(rec, 1.0, camera=True)
-    steps = [dict(msg={"op": "reset"}, wait=2.0)]
+    steps = [dict(msg={"json": json.dumps({"op": "reset"})}, wait=2.0)]
     for e in g.events:
         before = len(rec.sent)
         director.show(e)
         new = rec.sent[before:]
         for k, m in enumerate(new):
-            steps.append(dict(msg=m, wait=duration(e) if k == len(new) - 1 else 0.0))
+            steps.append(dict(msg={"json": json.dumps(m, ensure_ascii=False)}, wait=duration(e) if k == len(new) - 1 else 0.0))
         if not new:
             steps.append(dict(msg=None, wait=duration(e)))
-    steps.append(dict(msg={"op": "check"}, wait=3.0))
+    steps.append(dict(msg={"json": json.dumps({"op": "check"})}, wait=3.0))
     expect = dict(hand={p.color: p.hand for p in g.players},
                   items={p.color: p.equipment + p.consumables for p in g.players},
                   used={p.color: 3 - len(p.ready) for p in g.players})

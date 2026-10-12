@@ -56,8 +56,9 @@ for o in save["ObjectStates"]:
     name = o["Name"]
     if name == "Custom_Tile":
         im = load(o["CustomImage"]["ImageURL"])
-        w = 2 * s
-        h = w * im.size[1] / im.size[0]
+        stretch = o["CustomImage"]["CustomTile"]["Stretch"]
+        h = 2 * t["scaleZ"]            # Stretch on: the image's shape, 2 x scale deep; off: square
+        w = h * im.size[0] / im.size[1] if stretch else 2 * s
         paste(im, x, z, w, h, ry)
     elif name in ("Card", "Deck"):
         top = o if name == "Card" else o["ContainedObjects"][-1 if abs(t["rotZ"]) > 90 else 0]

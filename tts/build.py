@@ -348,7 +348,7 @@ def right_of(seat):
 # Player area (u, v). Row 1: the bots lay their hand open here; the player board on the right.
 # Row 2: character, Abilities, equipment, one-use items, hidden objective.
 HAND_U, HAND_V = [-11.6 + 2.3 * k for k in range(9)], 4.4
-BOARD_UV = (10.8, 4.6)
+BOARD_UV = (11.05, 4.6)   # 6.3 x 3.6 player board: on the felt, clear of the 9th hand slot and of row 2
 ROW2_V = 8.0
 CHAR_U, ABIL_U, EQUIP_U, USE_U, OBJ_U = -11.6, [-9.3, -7.0, -4.7], [-2.0, 0.3, 2.6], [5.0, 7.3, 9.6], 12.0
 
@@ -436,21 +436,38 @@ def aid_img():
     im.save(OUT / "player-aid.png")
 
 
-# Player board: 1120 x 640 image, local coordinates x -1..1 (left to right) and z -0.571..0.571
-# (top to bottom). Button positions are written into the board's Lua from the same numbers.
+# Player board: a 6.3 x 3.6 tile (1120 x 640 image, Stretch on, even scale 1.8), kept inside the felt
+# (the table's rim hid the lower edge of a 4.0-deep board, 2026-10-13). The layout is drawn for a
+# 5.6 x 3.2 board in table units from its centre (x to the right, z down the image) and grows with K.
+# Measured on the live table: a font size of 700 draws text about 1 local unit high, and 1000 button
+# units are about 1.6 local units wide.
+PB_S = 1.8
+K = PB_S / 1.6
 PB_W, PB_H = 1120, 640
-PB_ZH = PB_H / PB_W
+
+
+def lp(x, z): return [round(x * K / PB_S, 4), round(z * K / PB_S, 4)]
+
+
+def bu(w): return int(round(w * K / PB_S * 625))    # table units -> button units
+def fs(h): return int(round(h * K / PB_S * 700))    # text height in table units -> font size
+
+
+BTN = [bu(0.5), bu(0.5), fs(0.36)]
 UI_POS = {
-    "title": (0.0, -0.47), "hp": (-0.5, -0.2), "gold": (0.5, -0.2),
-    "hp_btn": [(-0.86, 0.04), (-0.62, 0.04), (-0.38, 0.04), (-0.14, 0.04)],
-    "gold_btn": [(0.14, 0.04), (0.38, 0.04), (0.62, 0.04), (0.86, 0.04)],
-    "hp_full": (-0.5, 0.22), "max_btn": [(-0.83, 0.22), (-0.17, 0.22)],
-    "stat": [(-0.62, 0.43), (0.0, 0.43), (0.62, 0.43)],
-    "stat_btn": [[(-0.86, 0.43), (-0.38, 0.43)], [(-0.24, 0.43), (0.24, 0.43)], [(0.38, 0.43), (0.86, 0.43)]],
+    "zfix": 1,
+    "title": lp(0, -1.3), "title_font": fs(0.3),
+    "hp": lp(-1.4, -0.4), "gold": lp(1.4, -0.4), "num_font": fs(0.52),
+    "hp_btn": [lp(-2.47, -0.4), lp(-0.33, -0.4)], "gold_btn": [lp(0.33, -0.4), lp(2.47, -0.4)],
+    "btn": BTN,
+    "max_btn": [lp(-2.3, 0.5), lp(-0.5, 0.5)], "hp_full": lp(-1.4, 0.5), "small": [bu(0.8), bu(0.4), fs(0.22)],
+    "stat": [lp(-1.85, 1.2), lp(0.0, 1.2), lp(1.85, 1.2)], "stat_font": fs(0.28),
+    "stat_btn": [[lp(-2.55, 1.2), lp(-1.15, 1.2)], [lp(-0.7, 1.2), lp(0.7, 1.2)], [lp(1.15, 1.2), lp(2.55, 1.2)]],
+    "stat_size": [bu(0.42), bu(0.42), fs(0.3)],
 }
 
 
-def lpx(x, z): return ((x + 1) / 2 * PB_W, (z / PB_ZH + 1) / 2 * PB_H)
+def wpx(x, z): return ((x / 5.6 + 0.5) * PB_W, (z / 3.2 + 0.5) * PB_H)   # 5.6 x 3.2 design units
 
 
 def board_img(color):
@@ -458,12 +475,12 @@ def board_img(color):
     d = ImageDraw.Draw(im)
     col = tuple(int(c * 255) for c in RGB[color])
     d.rectangle((0, 0, PB_W - 1, PB_H - 1), outline=col, width=18)
-    for (x0, z0, x1, z1, title) in [(-0.97, -0.36, -0.03, 0.31, "HP"), (0.03, -0.36, 0.97, 0.31, "GOLD"),
-                                    (-0.97, 0.34, 0.97, 0.53, "")]:
-        a, b = lpx(x0, z0), lpx(x1, z1)
-        d.rounded_rectangle((a[0], a[1], b[0], b[1]), 18, outline=(120, 104, 80), width=4)
+    for (x0, z0, x1, z1, title) in [(-2.72, -1.05, -0.08, 0.85, "HP"), (0.08, -1.05, 2.72, 0.85, "GOLD"),
+                                    (-2.72, 0.92, 2.72, 1.5, "")]:
+        a, b2 = wpx(x0, z0), wpx(x1, z1)
+        d.rounded_rectangle((a[0], a[1], b2[0], b2[1]), 16, outline=(120, 104, 80), width=4)
         if title:
-            d.text((a[0] + 22, a[1] + 12), title, font=f(BLACK, 34), fill=(190, 170, 130))
+            d.text((a[0] + 18, a[1] + 8), title, font=f(BLACK, 30), fill=(190, 170, 130))
     im.save(OUT / f"board-{color.lower()}.png")
 
 
@@ -512,9 +529,9 @@ def guid():
     return f"{0xc00000 + guid_n:06x}"
 
 
-def tr(x, z, rot_y=180.0, face_down=False, s=1.0, y=1.5, sy=1.0):
+def tr(x, z, rot_y=180.0, face_down=False, s=1.0, y=1.5, sy=1.0, sz=None):
     return {"posX": x, "posY": y, "posZ": z, "rotX": 0.0, "rotY": rot_y,
-            "rotZ": 180.0 if face_down else 0.0, "scaleX": s, "scaleY": sy, "scaleZ": s}
+            "rotZ": 180.0 if face_down else 0.0, "scaleX": s, "scaleY": sy, "scaleZ": s if sz is None else sz}
 
 
 def base(name, transform, nick="", desc="", **kw):
@@ -571,12 +588,17 @@ def deck(ids, pos, nick, face_up=False):
                 ContainedObjects=cards, SidewaysCard=False, HideWhenFaceDown=True)
 
 
-def tile(fn, transform, nick, locked=True, circle=False, thick=0.1, **kw):
-    # Stretch=False: the tile keeps the image's aspect ratio.
-    return base("Custom_Tile", transform, nick, Locked=locked,
+def tile(fn, transform, nick, desc="", locked=True, circle=False, thick=0.1, **kw):
+    # Measured live (2026-10-13): with Stretch off TTS draws every tile square, 2 x scale units each
+    # way; with Stretch on the tile takes the image's shape, 2 x scale deep and 2 x scale x
+    # (width / height of the image) wide. Square images use Stretch off, the others Stretch on with an
+    # even scale = depth / 2.
+    im = Image.open(OUT / fn)
+    stretch = im.size[0] != im.size[1]
+    return base("Custom_Tile", transform, nick, desc, Locked=locked,
                 CustomImage={"ImageURL": url(fn), "ImageSecondaryURL": "", "ImageScalar": 1.0, "WidthScale": 0.0,
                              "CustomTile": {"Type": 2 if circle else 0, "Thickness": thick,
-                                            "Stackable": False, "Stretch": False}}, **kw)
+                                            "Stackable": False, "Stretch": stretch}}, **kw)
 
 
 objs, snaps = [], []
@@ -602,7 +624,7 @@ for (r, c), kind in sorted(BOARD.items()):
                      thick=0.12, Tags=["tile", f"ring{ring}"], GMNotes=f"{ring}:{kind}"))
     snap((x, z), 180.0, ["tile"])
 assert len([o for o in objs if "tile" in o.get("Tags", [])]) == 49
-objs.append(tile("level-track.png", tr(TRACK["x"], TRACK["z"], 180.0, s=9.1, y=1.0), "Level track", thick=0.05))
+objs.append(tile("level-track.png", tr(TRACK["x"], TRACK["z"], 180.0, s=1.0, y=1.0), "Level track", thick=0.05))
 for lv in range(1, 11):
     snap((round(TRACK["x"] + (lv - 5.5) * TRACK["dx"], 2), TRACK["z"]), None, ["marker"])
 
@@ -624,7 +646,7 @@ for seat in SEATS:
                                      "rotZ": 0.0, "scaleX": 11.8, "scaleY": 9.2, "scaleZ": 4.9},
                      FogColor=color, Locked=True))
     bx, bz = local(seat, *BOARD_UV)
-    objs.append(tile(f"board-{color.lower()}.png", tr(bx, bz, cr, s=2.8, y=1.05), f"{color} board",
+    objs.append(tile(f"board-{color.lower()}.png", tr(bx, bz, cr, s=PB_S, y=1.05), f"{color} board",
                      "HP, max HP, gold and stats. Click the buttons.", thick=0.1,
                      LuaScript=PB_LUA, LuaScriptState=json.dumps({"title": color}), Tags=["pboard"], GMNotes=color))
     camp = CAMP_OF[color]
@@ -667,7 +689,7 @@ assert sum(counted.values()) == 132, counted   # §2: 132 cards in total
 for p in list(PILES.values()) + OFFER + EXTRA + PLAYED + HELPER:
     snap(p, 180.0)
 
-objs.append(tile("player-aid.png", tr(*AID_POS, 180.0, s=5.0, y=1.02), "Player aid", "Turn and fight summary", thick=0.05))
+objs.append(tile("player-aid.png", tr(*AID_POS, 180.0, s=2.5, y=1.02), "Player aid", "Turn and fight summary", thick=0.05))
 TOKEN_DATA = {}
 for k, (x, z) in BAGS.items():
     tok = tile(f"damage-{k[1]}.png", tr(0, 0, 180.0, s=0.33, y=1.5), f"Damage {k[1]}", locked=False, circle=True,
@@ -710,6 +732,29 @@ XML = ('<VerticalLayout height="{h}" width="130" rectAlignment="UpperLeft" offse
        + '  <VerticalLayout padding="12 12 10 10" spacing="4">\n'
        + "\n".join(f'    <Text id="kbStatus{i}" fontSize="19" color="#F5ECD7" alignment="MiddleLeft"></Text>' for i in range(1, 5))
        + '\n  </VerticalLayout>\n</Panel>')
+
+FIELD_TYPES = {"GUID": str, "Name": str, "Nickname": str, "Description": str, "GMNotes": str, "Locked": bool,
+               "Grid": bool, "Snap": bool, "Tooltip": bool, "Hands": bool, "LuaScript": str, "LuaScriptState": str,
+               "XmlUI": str, "Tags": list, "CardID": int, "DeckIDs": list, "SidewaysCard": bool,
+               "HideWhenFaceDown": bool, "ContainedObjects": list, "FogColor": str}
+
+
+def check_types(o, where):
+    for k, t in FIELD_TYPES.items():
+        if k in o:
+            assert isinstance(o[k], t) and not (t is int and isinstance(o[k], bool)), \
+                f"{where} {o.get('Nickname') or o['Name']}: {k} should be {t.__name__}, is {o[k]!r}"
+    for k in ("posX", "posY", "posZ", "rotX", "rotY", "rotZ", "scaleX", "scaleY", "scaleZ"):
+        assert isinstance(o["Transform"][k], (int, float)) and not isinstance(o["Transform"][k], bool), (where, k)
+    for c in o.get("ContainedObjects", []):
+        check_types(c, where + " >")
+
+
+for o in objs:
+    check_types(o, "object")
+for k, v in TOKEN_DATA.items():
+    check_types(v, "token")
+assert len({o["GUID"] for o in objs}) == len(objs), "duplicate GUIDs"
 
 now = time.localtime()
 save = {

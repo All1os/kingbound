@@ -2,7 +2,9 @@
 The level lives on the level track. People click the buttons; the Global script and the bots call
 set({hp = .., max = .., gold = .., STR = .., AGI = .., WIS = .., title = ..}). Values never go below
 0, HP never above max HP, a stat never above 5 (§5.3).
-build.py writes the button positions; they match the boxes printed on the board image.
+build.py writes UI_POS: button positions, sizes and fonts that match the boxes on the board image.
+The board is scaled unevenly (wider than deep), so every button gets a z scale (UI_POS.zfix) that
+keeps its text in proportion.
 ]]
 v = {hp = 0, max = 0, gold = 0, STR = 0, AGI = 0, WIS = 0, title = ""}
 UI_POS = __POS__
@@ -39,14 +41,15 @@ function noop() end
 
 local function label(text, pos, size, color)
   self.createButton({click_function = "noop", function_owner = self, label = text, position = {pos[1], 0.12, pos[2]},
-                     width = 0, height = 0, font_size = size, font_color = color or {0.96, 0.92, 0.84}})
+                     width = 0, height = 0, font_size = size, font_color = color or {0.96, 0.92, 0.84},
+                     scale = {1, 1, UI_POS.zfix}})
 end
 
-local function button(name, text, pos, w, h, size, fn, color)
+local function button(name, text, pos, size, fn, color)
   _G[name] = function(obj, player_color, alt) fn() clamp() draw() end
   self.createButton({click_function = name, function_owner = self, label = text, position = {pos[1], 0.12, pos[2]},
-                     width = w, height = h, font_size = size, color = color or {0.25, 0.2, 0.16},
-                     font_color = {1, 1, 1}})
+                     width = size[1], height = size[2], font_size = size[3], color = color or {0.25, 0.2, 0.16},
+                     font_color = {1, 1, 1}, scale = {1, 1, UI_POS.zfix}})
 end
 
 local function fmt(x) return string.format("%d", math.floor(x + 0.5)) end
@@ -54,24 +57,20 @@ local function fmt(x) return string.format("%d", math.floor(x + 0.5)) end
 function draw()
   self.clearButtons()
   local P = UI_POS
-  label(v.title ~= "" and v.title or "PLAYER", P.title, 150)
-  label(fmt(v.hp) .. "/" .. fmt(v.max), P.hp, 330, {1, 0.62, 0.55})
-  label(fmt(v.gold), P.gold, 330, {1, 0.85, 0.35})
   local red, green = {0.55, 0.16, 0.12}, {0.16, 0.42, 0.22}
-  for i, d in ipairs({-2, -1, 1, 2}) do
-    button("hp" .. i, (d > 0 and "+" or "") .. d, P.hp_btn[i], 260, 190, 120, function() v.hp = v.hp + d end,
-           d > 0 and green or red)
-  end
-  button("hpfull", "FULL", P.hp_full, 330, 150, 90, function() v.hp = v.max end)
-  button("maxdown", "MAX -", P.max_btn[1], 330, 150, 80, function() v.max = v.max - 1 end)
-  button("maxup", "MAX +", P.max_btn[2], 330, 150, 80, function() v.max = v.max + 1 v.hp = v.hp + 1 end)
-  for i, d in ipairs({-3, -1, 1, 3}) do
-    button("gold" .. i, (d > 0 and "+" or "") .. d, P.gold_btn[i], 260, 190, 120, function() v.gold = v.gold + d end,
-           d > 0 and green or red)
-  end
+  label(v.title ~= "" and v.title or "PLAYER", P.title, P.title_font)
+  label(fmt(v.hp) .. "/" .. fmt(v.max), P.hp, P.num_font, {1, 0.62, 0.55})
+  label(fmt(v.gold), P.gold, P.num_font, {1, 0.85, 0.35})
+  button("hpdown", "-", P.hp_btn[1], P.btn, function() v.hp = v.hp - 1 end, red)
+  button("hpup", "+", P.hp_btn[2], P.btn, function() v.hp = v.hp + 1 end, green)
+  button("hpfull", "FULL", P.hp_full, P.small, function() v.hp = v.max end)
+  button("maxdown", "MAX -", P.max_btn[1], P.small, function() v.max = v.max - 1 end)
+  button("maxup", "MAX +", P.max_btn[2], P.small, function() v.max = v.max + 1 v.hp = v.hp + 1 end)
+  button("golddown", "-", P.gold_btn[1], P.btn, function() v.gold = v.gold - 1 end, red)
+  button("goldup", "+", P.gold_btn[2], P.btn, function() v.gold = v.gold + 1 end, green)
   for i, s in ipairs({"STR", "AGI", "WIS"}) do
-    label(s .. " " .. fmt(v[s]), P.stat[i], 130)
-    button("down" .. s, "-", P.stat_btn[i][1], 160, 160, 130, function() v[s] = v[s] - 1 end, red)
-    button("up" .. s, "+", P.stat_btn[i][2], 160, 160, 130, function() v[s] = v[s] + 1 end, green)
+    label(s .. " " .. fmt(v[s]), P.stat[i], P.stat_font)
+    button("down" .. s, "-", P.stat_btn[i][1], P.stat_size, function() v[s] = v[s] - 1 end, red)
+    button("up" .. s, "+", P.stat_btn[i][2], P.stat_size, function() v[s] = v[s] + 1 end, green)
   end
 end

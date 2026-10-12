@@ -850,6 +850,10 @@ end
 
 function onExternalMessage(d)
   if type(d) ~= "table" then return end
+  -- The director sends {json = "..."}: TTS hands nested lists of a custom message to Lua as C#
+  -- objects (userdata), not as tables of strings and numbers (seen live, 2026-10-13), so the
+  -- command travels as one JSON string and is decoded here.
+  if d.json then d = JSON.decode(d.json) end
   local f = OPS[d.op]
   if not f then reply("error", "unknown command " .. tostring(d.op)) return end
   local ok, err = pcall(f, d)
