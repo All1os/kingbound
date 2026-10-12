@@ -13,6 +13,10 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
 import cards as C
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "bots"))
+from engine import Game                     # noqa: E402  the bots' rules engine
+from play import DEFAULT_SEED, Director, duration  # noqa: E402  turns a bot game into TTS commands
 
 VERSION = "0.1"
 ROOT = Path(__file__).parent
@@ -709,21 +713,65 @@ LAYOUT = {
     "ability_ids": {a[2]: a[0] for a in C.ABILITIES},
     "names": NAME,
 }
+# BOT GAME: the bots play the default full game and the short game here, and every command
+# bots/play.py would send to TTS is stored in the save with the seconds to wait after it (speed 1).
+
+
+class _Recorder:
+    def __init__(self):
+        self.sent = []
+
+    def send(self, data):
+        self.sent.append(data)
+
+
+def scripted(seed, mode):
+    g = Game(seed, mode)
+    g.play()
+    rec = _Recorder()
+    director = Director(rec, 1.0, camera=False)
+    steps = [{"msg": {"op": "reset"}, "wait": 2.0}]
+    for e in g.events:
+        before = len(rec.sent)
+        director.show(e)
+        new = rec.sent[before:]
+        for k, m in enumerate(new):
+            steps.append({"msg": m, "wait": round(duration(e), 3) if k == len(new) - 1 else 0})
+        if not new:
+            steps.append({"wait": round(duration(e), 3)})
+    text = json.dumps(steps, ensure_ascii=False, separators=(",", ":"))
+    assert "]=====]" not in text
+    return text, sum(s["wait"] for s in steps), g
+
+
+SCRIPT_FULL, TIME_FULL, GAME_FULL = scripted(DEFAULT_SEED["full"], "full")
+SCRIPT_SHORT, TIME_SHORT, GAME_SHORT = scripted(DEFAULT_SEED["demo"], "demo")
 LUA = ((ROOT / "global.lua").read_text()
        .replace("__VERSION__", VERSION)
        .replace("__LAYOUT__", json.dumps(LAYOUT))
-       .replace("__TOKENS__", json.dumps(TOKEN_DATA)))
+       .replace("__TOKENS__", json.dumps(TOKEN_DATA))
+       .replace("__SCRIPT_FULL__", SCRIPT_FULL).replace("__TIME_FULL__", f"{TIME_FULL:.1f}")
+       .replace("__SCRIPT_SHORT__", SCRIPT_SHORT).replace("__TIME_SHORT__", f"{TIME_SHORT:.1f}"))
 
-BTN = '    <Button onClick="{f}" fontSize="14" color="{c}" textColor="#F5ECD7">{t}</Button>'
-BUTTONS = [("buildBoard", "#3C2819", "BUILD BOARD"), ("setupGame", "#7A6012", "SETUP"),
-           ("drawAction", "#60181A", "DRAW ACTION"), ("wilds1", "#5E7A44", "WILDS I"),
-           ("wilds2", "#3E5A34", "WILDS II"), ("wilds3", "#22382A", "WILDS III"),
-           ("merchant", "#7A5A1E", "MERCHANT"), ("trial", "#5C2C7A", "KING'S TRIAL"),
-           ("clearFight", "#3C2819", "CLEAR FIGHT"), ("resetGame", "#3C2819", "RESET")]
-XML = ('<VerticalLayout height="{h}" width="130" rectAlignment="UpperLeft" offsetXY="60 -50" spacing="5">\n'.format(h=len(BUTTONS) * 31)
-       + "\n".join(BTN.format(f=f_, c=c_, t=t_) for f_, c_, t_ in BUTTONS)
+
+def mmss(sec): return f"{int(sec // 60)}:{int(sec % 60):02d}"
+
+
+# Three buttons under TTS's own toolbar (top left), so they never cover its menus. BOT GAME opens a
+# small menu beside it: the full game, the short game and the speed.
+BTN = '    <Button {idattr}onClick="{f}" fontSize="15" color="{c}" textColor="#F5ECD7">{t}</Button>'
+MENU = [("", "startGame", "#7A6012", "START GAME"), ('id="kbBotBtn" ', "toggleBotMenu", "#5C2C7A", "BOT GAME"),
+        ("", "resetGame", "#3C2819", "RESET")]
+BOTMENU = [('id="kbBotFull" ', "botFull", "#3E5A34", f"Full game · {mmss(TIME_FULL)}"),
+           ('id="kbBotShort" ', "botShort", "#3E5A34", f"Short game · {mmss(TIME_SHORT)}"),
+           ('id="kbBotSpeed" ', "botSpeed", "#3C2819", "Speed 1x")]
+XML = ('<VerticalLayout id="kbMenu" height="{h}" width="150" rectAlignment="UpperLeft" offsetXY="8 -410" spacing="6">\n'.format(h=len(MENU) * 38)
+       + "\n".join(BTN.format(idattr=i, f=f_, c=c_, t=t_) for i, f_, c_, t_ in MENU)
        + "\n</VerticalLayout>\n"
-       # Bot overlays, hidden until bots/play.py runs: a caption at the bottom and a status list on the right.
+       + '<VerticalLayout id="kbBotMenu" active="false" height="{h}" width="200" rectAlignment="UpperLeft" offsetXY="164 -448" spacing="6">\n'.format(h=len(BOTMENU) * 38)
+       + "\n".join(BTN.format(idattr=i, f=f_, c=c_, t=t_) for i, f_, c_, t_ in BOTMENU)
+       + "\n</VerticalLayout>\n"
+       # Bot overlays, hidden until a bot game runs: a caption at the bottom and a status list on the right.
        + '<Panel id="kbCaption" active="false" rectAlignment="LowerCenter" offsetXY="0 30" width="1250" height="118" color="#000000C8">\n'
        + '  <Text id="kbCaptionHead" rectAlignment="UpperCenter" offsetXY="0 -8" height="30" fontSize="22" color="#D4AF4B" alignment="MiddleCenter"></Text>\n'
        + '  <Text id="kbCaptionText" rectAlignment="LowerCenter" offsetXY="0 10" height="72" width="1210" fontSize="30" color="#F5ECD7" alignment="MiddleCenter" horizontalOverflow="Wrap" verticalOverflow="Overflow"></Text>\n'
@@ -733,37 +781,14 @@ XML = ('<VerticalLayout height="{h}" width="130" rectAlignment="UpperLeft" offse
        + "\n".join(f'    <Text id="kbStatus{i}" fontSize="19" color="#F5ECD7" alignment="MiddleLeft"></Text>' for i in range(1, 5))
        + '\n  </VerticalLayout>\n</Panel>')
 
-FIELD_TYPES = {"GUID": str, "Name": str, "Nickname": str, "Description": str, "GMNotes": str, "Locked": bool,
-               "Grid": bool, "Snap": bool, "Tooltip": bool, "Hands": bool, "LuaScript": str, "LuaScriptState": str,
-               "XmlUI": str, "Tags": list, "CardID": int, "DeckIDs": list, "SidewaysCard": bool,
-               "HideWhenFaceDown": bool, "ContainedObjects": list, "FogColor": str}
-
-
-def check_types(o, where):
-    for k, t in FIELD_TYPES.items():
-        if k in o:
-            assert isinstance(o[k], t) and not (t is int and isinstance(o[k], bool)), \
-                f"{where} {o.get('Nickname') or o['Name']}: {k} should be {t.__name__}, is {o[k]!r}"
-    for k in ("posX", "posY", "posZ", "rotX", "rotY", "rotZ", "scaleX", "scaleY", "scaleZ"):
-        assert isinstance(o["Transform"][k], (int, float)) and not isinstance(o["Transform"][k], bool), (where, k)
-    for c in o.get("ContainedObjects", []):
-        check_types(c, where + " >")
-
-
-for o in objs:
-    check_types(o, "object")
-for k, v in TOKEN_DATA.items():
-    check_types(v, "token")
-assert len({o["GUID"] for o in objs}) == len(objs), "duplicate GUIDs"
-
 now = time.localtime()
 save = {
     "SaveName": SAVE_NAME, "EpochTime": int(time.time()),
     "Date": time.strftime("%m/%d/%Y %I:%M:%S %p", now), "VersionNumber": "v14.2.2",
     "GameMode": "Kingbound prototype", "Tags": [], "Gravity": 0.5, "PlayArea": 0.5,
     "Table": "Table_RPG", "Sky": "Sky_Regal",
-    "Note": f"Kingbound v{VERSION} prototype (rules: Kingbound-GDD.md). SETUP deals a game; the board is already built. "
-            "Player boards: click the buttons. Bots: python3 bots/play.py",
+    "Note": f"Kingbound v{VERSION} prototype (rules: Kingbound-GDD.md). START GAME deals a new game, BOT GAME lets "
+            "four bots play by themselves, RESET puts everything back. Player boards: click the buttons.",
     "Hands": {"Enable": True, "DisableUnused": False, "Hiding": 0},
     "LuaScript": LUA, "LuaScriptState": "", "XmlUI": XML, "SnapPoints": snaps, "ObjectStates": objs,
 }
@@ -771,4 +796,6 @@ save = {
 shutil.copy(OUT / f"{SAVE_NAME}.json", SAVES / f"{SAVE_NAME}.json")
 print(f"{len(objs)} objects, {len(snaps)} snap points, cards {counted}")
 print(f"images: {len(HASHED)} in {ASSETS} ({len(set(LOCAL))} local, not on Steam Cloud)")
+print(f"bot games: full {mmss(TIME_FULL)} ({GAME_FULL.winner.label} wins), short {mmss(TIME_SHORT)} "
+      f"({GAME_SHORT.winner.label} wins), script {len(LUA) // 1024} KB")
 print(f"save → {SAVES / (SAVE_NAME + '.json')}")

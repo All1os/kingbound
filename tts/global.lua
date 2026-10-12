@@ -280,8 +280,12 @@ function hideOverlays()
   UI.setAttribute("kbStatus", "active", "false")
 end
 
--- ------------------------------------------------------------------ buttons for people
-function buildBoard(player)
+-- ------------------------------------------------------------------ the three buttons
+-- START GAME deals a new game for people, BOT GAME plays a scripted game by itself (for the video),
+-- RESET puts everything back. They sit under TTS's own toolbar at the top left (Yavuz: the first
+-- ten buttons covered that toolbar's menus, 2026-10-13). Everything else is done by hand.
+
+function buildBoard()
   -- §3: the Castle, the Camps and the Wilds I corners never move; the middle and the outer ring
   -- are each shuffled within themselves.
   local pool = tilesByKey()
@@ -297,10 +301,9 @@ function buildBoard(player)
       if cells[i] then placeTile(o, cells[i][1], cells[i][2], (ring - 2) * 0.8 + i * 0.03) end
     end
   end
-  broadcastToAll("Board built: the middle and outer rings are shuffled (GDD §3).", GOLDEN)
 end
 
-function setupGame(player)
+function setupGame()
   -- §4 steps 2-7: characters face up, their Abilities ready, a hidden objective and a full hand
   -- each, level 1, full HP, 3 gold, pawns on their Camps, a random first player.
   resetBook()
@@ -349,98 +352,13 @@ function setupGame(player)
   end, 0.5)
 end
 
-local function drawFrom(drawP, discP, label)
-  local d = pileAt(drawP)
-  if not d then
-    d = refill(drawP, discP)
-    if not d then broadcastToAll(label .. ": the deck and its discard pile are empty.", {1, 0.5, 0.4}) end
-  end
-  return d
-end
-
--- deal() only works on a deck; the last card of a deck is a plain card, moved into the hand zone.
-local function dealOne(o, color)
-  if not o then return end
-  if o.type == "Deck" then o.deal(1, color) return end
-  local ok, hand = pcall(function() return Player[color].getHandTransform() end)
-  if ok and hand then o.setPositionSmooth(hand.position, false, true) end
-end
-
-function drawAction(player)
-  if not SEAT[player.color] then
-    broadcastToColor("Sit at one of the four colored seats first.", player.color, {1, 0.5, 0.5})
-    return
-  end
-  local d = pileAt(L.piles.action)
-  if not d then
-    refill(L.piles.action, L.piles.action_d)
-    Wait.time(function() dealOne(pileAt(L.piles.action), player.color) end, 0.8)
-    return
-  end
-  dealOne(d, player.color)
-end
-
-local function reveal(deckKey, discKey, label)
-  local d = drawFrom(L.piles[deckKey], L.piles[discKey], label)
-  if not d then return end
-  Wait.time(function() takeById(L.piles[deckKey], nil, V(L.piles.enemy, 2.0), rot(180, true)) end, 0.5)
-end
-
-function wilds1(player) reveal("w1", "w1_d", "Wilds I") end
-function wilds2(player) reveal("w2", "w2_d", "Wilds II") end
-function wilds3(player) reveal("w3", "w3_d", "Wilds III") end
-
-function merchant(player)
-  -- §5.3: draw 3 Loot cards; buy one, the others go to the bottom of the Loot deck.
-  for i = 1, 3 do
-    Wait.time(function()
-      if not pileAt(L.piles.loot) then refill(L.piles.loot, L.piles.loot_d) end
-      takeById(L.piles.loot, nil, V(L.offer[i], 1.8), rot(180, true))
-    end, (i - 1) * 0.3)
-  end
-end
-
 local function championCard()
   for _, o in ipairs(getObjects()) do
     if o.type == "Card" and keyOf(o) == 5 then return o end
   end
 end
 
-function trial(player)
-  local c = championCard()
-  if not c then return end
-  c.setPositionSmooth(V(L.piles.enemy, 1.8), false, true)
-  c.setRotationSmooth(rot(180, true), false, true)
-  broadcastToAll("The King's Trial: Champion HP 20, ATK 5, at most 10 damage per round. Nobody can help (GDD §8).", GOLDEN)
-end
-
--- Everything in the fight area goes to its own discard pile; damage tokens are removed.
-function clearFight(player)
-  local spots = {L.piles.enemy}
-  for _, list in ipairs({L.played, L.helper, L.extra}) do for _, p in ipairs(list) do table.insert(spots, p) end end
-  local k = 0
-  for _, p in ipairs(spots) do
-    for _, o in ipairs(pilesAt(p, 1.3)) do
-      k = k + 1
-      local key = keyOf(o)
-      Wait.time(function()
-        if key == 5 then
-          o.setPositionSmooth(V(L.piles.champ, 1.6), false, true)
-          o.setRotationSmooth(rot(180, true), false, true)
-        else
-          toPile(o, L.piles[DISCARD_OF[key] or "action_d"], true)
-        end
-      end, k * 0.12)
-    end
-  end
-  for i, p in ipairs(L.offer) do
-    for _, o in ipairs(pilesAt(p, 1.3)) do Wait.time(function() toBottom(o, L.piles.loot) end, 0.4 + i * 0.3) end
-  end
-  clearTokens()
-  B.played, B.helper, B.extra, B.enemy, B.offer = {}, {}, {}, nil, {}
-end
-
-function resetGame(player)
+function resetTable()
   clearTokens()
   gather({[1] = true}, L.piles.action, false)
   gather({[2] = true}, L.piles.w1, false)
@@ -464,7 +382,24 @@ function resetGame(player)
     if pawn then pawn.setPositionSmooth(onCell(s.color, s.camp[1], s.camp[2]), false, true) end
   end
   resetBook()
-  if player then broadcastToAll("Table reset. Press SETUP to deal a new game.", GOLDEN) end
+end
+
+
+function resetGame(player)
+  stopBots(true)
+  resetTable()
+  hideOverlays()
+  broadcastToAll("Table reset. START GAME deals a new game; BOT GAME lets the bots play.", GOLDEN)
+end
+
+function startGame(player)
+  -- §3 and §4 in one click: everything back, a freshly shuffled board, then the deal.
+  stopBots(true)
+  hideOverlays()
+  resetTable()
+  Wait.time(function() buildBoard() end, 0.8)
+  Wait.time(function() setupGame() end, 3.2)
+  broadcastToAll("New game: shuffling the board and dealing (GDD §3-4).", GOLDEN)
 end
 
 -- ------------------------------------------------------------------ the bot director's commands
@@ -479,6 +414,7 @@ resetBook()
 
 local function reply(kind, text)
   pcall(function() sendExternalMessage({kind = kind, text = text}) end)
+  if kind == "error" then printToAll("Kingbound bots: " .. tostring(text), {1, 0.45, 0.4}) end
 end
 
 local function slot(list, k, u)
@@ -547,7 +483,7 @@ function OPS.check(d)
 end
 
 function OPS.reset(d)
-  resetGame(nil)
+  resetTable()
   hideOverlays()
 end
 
@@ -858,4 +794,84 @@ function onExternalMessage(d)
   if not f then reply("error", "unknown command " .. tostring(d.op)) return end
   local ok, err = pcall(f, d)
   if not ok then reply("error", tostring(d.op) .. ": " .. tostring(err)) end
+end
+
+-- ------------------------------------------------------------------ BOT GAME: a scripted game
+-- build.py lets the four bots play two games (bots/engine.py: the full game and the short one that
+-- starts at levels 6-8) and stores every command here with the seconds to wait after it at speed 1.
+-- The button replays them through the same commands bots/play.py sends; Lua decides nothing.
+SCRIPT_GAMES = {full = [=====[__SCRIPT_FULL__]=====], short = [=====[__SCRIPT_SHORT__]=====]}
+SCRIPT_TIME = {full = __TIME_FULL__, short = __TIME_SHORT__}
+SPEEDS = {0.75, 1, 1.25, 1.5, 2}
+BOT = {running = false, speed = 2, token = 0, steps = nil, i = 0, menu = false}
+
+local function clock(sec)
+  return string.format("%d:%02d", math.floor(sec / 60), math.floor(sec % 60))
+end
+
+local function botLabels()
+  local s = SPEEDS[BOT.speed]
+  UI.setValue("kbBotFull", "Full game · " .. clock(SCRIPT_TIME.full / s))
+  UI.setValue("kbBotShort", "Short game · " .. clock(SCRIPT_TIME.short / s))
+  UI.setValue("kbBotSpeed", "Speed " .. tostring(s) .. "x")
+  UI.setValue("kbBotBtn", BOT.running and "STOP BOTS" or "BOT GAME")
+end
+
+local function showBotMenu(on)
+  BOT.menu = on
+  UI.setAttribute("kbBotMenu", "active", on and "true" or "false")
+end
+
+local function step(token)
+  if not BOT.running or token ~= BOT.token then return end
+  BOT.i = BOT.i + 1
+  local st = BOT.steps[BOT.i]
+  if not st then
+    BOT.running = false
+    botLabels()
+    return
+  end
+  local s = SPEEDS[BOT.speed]
+  if st.msg then
+    if st.msg.t then st.msg.t = st.msg.t / s end
+    onExternalMessage(st.msg)
+  end
+  Wait.time(function() step(token) end, (st.wait or 0) / s)
+end
+
+function stopBots(quiet)
+  local was = BOT.running
+  BOT.running = false
+  BOT.token = BOT.token + 1
+  if was and not quiet then hideOverlays() end
+  botLabels()
+end
+
+function startBots(which)
+  stopBots(true)
+  showBotMenu(false)
+  BOT.steps = JSON.decode(SCRIPT_GAMES[which])
+  BOT.i = 0
+  BOT.running = true
+  BOT.token = BOT.token + 1
+  botLabels()
+  step(BOT.token)
+end
+
+function toggleBotMenu(player)
+  if BOT.running then
+    stopBots(false)
+    broadcastToAll("Bots stopped. RESET clears the table.", GOLDEN)
+    return
+  end
+  showBotMenu(not BOT.menu)
+  botLabels()
+end
+
+function botFull(player) startBots("full") end
+function botShort(player) startBots("short") end
+
+function botSpeed(player)
+  BOT.speed = BOT.speed % #SPEEDS + 1
+  botLabels()
 end

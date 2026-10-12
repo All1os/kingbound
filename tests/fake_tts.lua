@@ -249,6 +249,15 @@ local function countCards()
   return n
 end
 
+if START_BOTS then
+  -- Press BOT GAME and pick a game: the save's own scripted game runs on the simulated clock.
+  toggleBotMenu({color = "Red"})
+  _G[START_BOTS == "full" and "botFull" or "botShort"]({color = "Red"})
+  local limit = CLOCK + 5000
+  while BOT.running and CLOCK < limit do runTimers(CLOCK + 5) end
+  if BOT.running then ERRORS[#ERRORS + 1] = "the scripted game did not finish" end
+  onExternalMessage({op = "check"})
+end
 for k, st in ipairs(STEPS) do
   local ok, e = pcall(onExternalMessage, st.msg)
   if not ok then ERRORS[#ERRORS + 1] = "step " .. k .. " (" .. tostring(st.msg.op) .. "): " .. tostring(e) end
@@ -294,7 +303,7 @@ local seen = nil
 for _, r in ipairs(REPLIES) do if r.kind == "check" then seen = r.text end end
 if seen ~= "cards=132 tiles=49 pawns=4 markers=4 boards=4 die=1" then bad("check reply: " .. tostring(seen)) end
 -- the human buttons on the finished table
-for _, f in ipairs({"clearFight", "resetGame", "buildBoard", "setupGame", "drawAction", "wilds1", "wilds2", "wilds3", "merchant", "trial", "clearFight", "resetGame"}) do
+for _, f in ipairs({"resetGame", "startGame", "toggleBotMenu", "botSpeed", "toggleBotMenu", "resetGame", "startGame"}) do
   local ok, e = pcall(_G[f], {color = "Red", steam_name = "test"})
   if not ok then bad("button " .. f .. ": " .. tostring(e)) end
   runTimers(CLOCK + 3)

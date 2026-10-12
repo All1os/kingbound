@@ -59,7 +59,7 @@ class Recorder:
         self.sent.append(json.loads(json.dumps(data)))
 
 
-def run(seed, mode):
+def run(seed, mode, button=False):
     g = Game(seed, mode)
     g.play()
     rec = Recorder()
@@ -81,19 +81,28 @@ def run(seed, mode):
     with tempfile.NamedTemporaryFile("w", suffix=".lua", delete=False) as f:
         f.write("OBJECTS = " + lua(objects()) + "\n")
         f.write("SCRIPT = [=========[" + script + "]=========]\n")
-        f.write("STEPS = " + lua(steps) + "\n")
+        f.write("STEPS = " + lua([] if button else steps) + "\n")
+        if button:
+            f.write(f"START_BOTS = {json.dumps('short' if mode == 'demo' else 'full')}\n")
         f.write("EXPECT = " + lua(expect) + "\n")
         path = f.name
     r = subprocess.run(["lua", str(REPO / "tests/fake_tts.lua"), path], capture_output=True, text=True)
     Path(path).unlink()
     out = (r.stdout + r.stderr).strip()
-    print(f"seed {seed} ({mode}, {len(g.events)} events): {out}")
+    how = "BOT GAME button" if button else "bots/play.py commands"
+    print(f"seed {seed} ({mode}, {how}, {len(g.events)} events): {out}")
     return r.returncode == 0
 
 
 if __name__ == "__main__":
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
-    mode = "demo" if "--demo" in sys.argv else "full"
-    seeds = [int(a) for a in args] or ([94] if mode == "demo" else [1])
-    ok = all([run(s, mode) for s in seeds])
+    if args:
+        mode = "demo" if "--demo" in sys.argv else "full"
+        ok = all([run(int(s), mode) for s in args])
+    else:
+        # Default: both games stored in the save, played by the BOT GAME button, and the same games
+        # sent as bots/play.py would send them.
+        from play import DEFAULT_SEED
+        ok = all([run(DEFAULT_SEED["full"], "full", button=True), run(DEFAULT_SEED["demo"], "demo", button=True),
+                  run(DEFAULT_SEED["full"], "full"), run(DEFAULT_SEED["demo"], "demo")])
     sys.exit(0 if ok else 1)

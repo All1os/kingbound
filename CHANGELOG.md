@@ -4,6 +4,10 @@ All notable changes to the Kingbound prototype. Each version is also a GitHub re
 
 ## Unreleased
 
+- Three buttons instead of ten, under TTS's own toolbar at the top left (the old column covered the toolbar's menus): START GAME, BOT GAME and RESET. START GAME now shuffles the board and deals in one click. Drawing cards, revealing enemies and clearing a fight are done by hand.
+- BOT GAME plays a scripted bot game inside TTS, with no terminal: the full game (18:26) or the short one (4:38), at 0.75x to 2x speed. `build.py` lets the bots play both games and stores every command in the save; the button replays them. Pressing it again (STOP BOTS) stops the game. `bots/play.py` still sends any seed from a terminal.
+- Script errors during a bot game are also printed in TTS's chat.
+
 ## v0.1 (2026-10-13)
 
 ### Tabletop Simulator prototype
