@@ -15,6 +15,8 @@ L = JSON.decode([==[__LAYOUT__]==])
 TOKENS = JSON.decode([==[__TOKENS__]==])
 
 COLORS = {Red = {0.86, 0.1, 0.09}, Yellow = {0.9, 0.9, 0.17}, Green = {0.19, 0.7, 0.17}, Blue = {0.12, 0.53, 1}}
+HEX = {Red = "#E8574E", Yellow = "#F2E64A", Green = "#55D04B", Blue = "#4FA3FF"}
+NAMES = {}      -- "Ann (Rogue)" by colour, from the bots' player updates
 GOLDEN = {1, 0.82, 0.3}
 SEAT = {}
 for i, s in ipairs(L.seats) do s.i = i SEAT[s.color] = s end
@@ -203,6 +205,24 @@ function clearTokens()
   for _, o in ipairs(getObjectsWithTag("dmg")) do o.destruct() end
 end
 
+-- Whatever a bot touches glows in its colour for a few seconds and gives a short pop (a quarter
+-- bigger and back), so the eye catches it on video. TTS can't draw the glow any thicker (Yavuz
+-- asked for the interaction outlines to stand out more, 2026-10-13).
+POPPING = {}
+function mark(o, color, secs)
+  if not alive(o) then return end
+  pcall(function() o.highlightOn(COLORS[color] or GOLDEN, secs or 4) end)
+  local ok, g = pcall(function() return o.getGUID() end)
+  if not ok or POPPING[g] then return end
+  local s = o.getScale()
+  POPPING[g] = true
+  o.setScale({x = s.x * 1.25, y = s.y, z = s.z * 1.25})
+  Wait.time(function()
+    if alive(o) then o.setScale(s) end
+    POPPING[g] = nil
+  end, 0.45)
+end
+
 -- Damage tokens (§6.2 step 2): 5s first, then 1s, in a 3 x 3 grid on the enemy card.
 TOKEN_SPOTS = {{-0.62, 0.95}, {0, 0.95}, {0.62, 0.95}, {-0.62, 0}, {0, 0}, {0.62, 0},
                {-0.62, -0.95}, {0, -0.95}, {0.62, -0.95}}
@@ -260,10 +280,30 @@ local function tilesByKey()
 end
 
 -- ------------------------------------------------------------------ overlays (for the bot video)
-function caption(head, text)
+function caption(head, text, color)
   UI.setAttribute("kbCaption", "active", "true")
   UI.setValue("kbCaptionHead", head or "")
+  UI.setAttribute("kbCaptionHead", "color", HEX[color] or "#D4AF4B")
   UI.setValue("kbCaptionText", text or "")
+end
+
+-- The hand of the player who acts, as card pictures above the caption (bot games only).
+HAND_SLOTS = 10
+function showHand(color)
+  local recs = color and B.hand[color] or {}
+  if not color or #recs == 0 then UI.setAttribute("kbHand", "active", "false") return end
+  UI.setAttribute("kbHand", "active", "true")
+  UI.setValue("kbHandLabel", (NAMES[color] or color) .. " · hand")
+  UI.setAttribute("kbHandLabel", "color", HEX[color] or "#F5ECD7")
+  for i = 1, HAND_SLOTS do
+    local rec = recs[i]
+    if rec then
+      UI.setAttribute("kbHand" .. i, "image", rec.id)
+      UI.setAttribute("kbHand" .. i, "active", "true")
+    else
+      UI.setAttribute("kbHand" .. i, "active", "false")
+    end
+  end
 end
 
 function status(lines)
@@ -278,6 +318,7 @@ end
 function hideOverlays()
   UI.setAttribute("kbCaption", "active", "false")
   UI.setAttribute("kbStatus", "active", "false")
+  UI.setAttribute("kbHand", "active", "false")
 end
 
 -- ------------------------------------------------------------------ the three buttons
@@ -537,15 +578,25 @@ function OPS.setup(d)
   end
 end
 
-function OPS.caption(d) caption(d.head, d.text) end
+function OPS.caption(d) caption(d.head, d.text, d.color) end
 function OPS.status(d) status(d.lines) end
 function OPS.stop(d) hideOverlays() end
 
+ACTIVE = nil
 function OPS.highlight(d)
+  if d.turn then
+    if ACTIVE and ACTIVE ~= d.color then
+      for _, o in ipairs({pawnOf(ACTIVE), boardOf(ACTIVE)}) do if o then o.highlightOff() end end
+    end
+    ACTIVE = d.color
+    HAND_OF = d.color
+    showHand(d.color)
+  end
+  local t = d.turn and 600 or (d.t or 2)
   local pawn = pawnOf(d.color)
-  if pawn then pawn.highlightOn(COLORS[d.color], d.t or 2) end
+  if pawn then pawn.highlightOn(COLORS[d.color], t) end
   local b = boardOf(d.color)
-  if b then b.highlightOn(COLORS[d.color], d.t or 2) end
+  if b then b.highlightOn(COLORS[d.color], t) end
 end
 
 function OPS.roll(d)
@@ -558,15 +609,28 @@ function OPS.roll(d)
   if d.color then die.highlightOn(COLORS[d.color] or GOLDEN, 1.5 * t) end
 end
 
+local function tileAt(r, c)
+  local p = cellPos(r, c)
+  for _, o in ipairs(getObjectsWithTag("tile")) do
+    if near(o.getPosition(), p, 0.6) then return o end
+  end
+end
+
 function OPS.move(d)
   local pawn = pawnOf(d.color)
   if not pawn then return end
   for i, rc in ipairs(d.path) do
-    Wait.time(function() pawn.setPositionSmooth(onCell(d.color, rc[1], rc[2]), false, true) end, (i - 1) * (d.t or 0.35))
+    Wait.time(function()
+      pawn.setPositionSmooth(onCell(d.color, rc[1], rc[2]), false, true)
+      local tl = tileAt(rc[1], rc[2])
+      if tl then tl.highlightOn(COLORS[d.color], i == #d.path and 5 or 2) end
+      if i == #d.path then Wait.time(function() mark(pawn, d.color, 5) end, 0.4) end
+    end, (i - 1) * (d.t or 0.35))
   end
 end
 
 function OPS.draw(d)
+  HAND_OF = d.color
   local src = L.piles[d.from or "action"]
   local s = SEAT[d.color]
   for i, id in ipairs(d.cards) do
@@ -576,20 +640,25 @@ function OPS.draw(d)
     Wait.time(function()
       rec.obj = takeById(src, id, V(spot, 1.9), rot(s.rot, true))
       if not rec.obj then reply("error", "draw: " .. id .. " is not in the deck") end
+      Wait.time(function() mark(rec.obj, d.color, 4) end, 0.6)
     end, (i - 1) * (d.t or 0.15))
   end
+  showHand(d.color)
 end
 
 function OPS.discard(d)
+  HAND_OF = d.color
   for i, id in ipairs(d.cards) do
     local rec = fromHand(d.color, id)
     if rec then Wait.time(function() toPile(rec.obj, L.piles.action_d, true) end, (i - 1) * (d.t or 0.12))
     else reply("error", "discard: " .. id .. " is not in " .. d.color .. "'s hand") end
   end
   Wait.time(function() repack(d.color) end, #d.cards * (d.t or 0.12) + 0.3)
+  showHand(d.color)
 end
 
 function OPS.play(d)
+  HAND_OF = d.color
   local row, spots = B.played, L.played
   if d.helper then row, spots = B.helper, L.helper end
   for i, id in ipairs(d.cards) do
@@ -601,6 +670,7 @@ function OPS.play(d)
         if alive(rec.obj) then
           rec.obj.setPositionSmooth(V(spot, 1.9), false, true)
           rec.obj.setRotationSmooth(rot(180, true), false, true)
+          Wait.time(function() mark(rec.obj, d.color, 5) end, 0.5)
         end
       end, (i - 1) * (d.t or 0.2))
     else
@@ -608,6 +678,7 @@ function OPS.play(d)
     end
   end
   Wait.time(function() repack(d.color) end, #d.cards * (d.t or 0.2) + 0.3)
+  showHand(d.color)
 end
 
 function OPS.reshuffle(d)
@@ -626,16 +697,22 @@ function OPS.reveal(d)
     B.enemy = takeById(L.piles[d.deck], d.id, V(L.piles.enemy, 2.0), rot(180, true))
     if not B.enemy then reply("error", "reveal: " .. tostring(d.id) .. " is not in " .. d.deck) end
   end
-  if alive(B.enemy) then B.enemy.highlightOn(GOLDEN, 2) end
+  if alive(B.enemy) then
+    local e = B.enemy
+    Wait.time(function() mark(e, ACTIVE, 5) end, 0.6)
+  end
 end
 
-function OPS.damage(d) setDamage(d.total) end
+function OPS.damage(d)
+  setDamage(d.total)
+  if alive(B.enemy) then mark(B.enemy, ACTIVE, 3) end
+end
 
 function OPS.ability(d)
   local o = B.abil[d.color] and B.abil[d.color][d.name]
   if not alive(o) then reply("error", "ability: " .. tostring(d.name) .. " not found for " .. d.color) return end
   o.setRotationSmooth(rot(SEAT[d.color].rot, not d.used), false, true)
-  if d.used then o.highlightOn(COLORS[d.color], 2) end
+  if d.used then Wait.time(function() mark(o, d.color, 5) end, 0.4) end
 end
 
 function OPS.ready(d)
@@ -664,6 +741,7 @@ function OPS.buy(d)
       if alive(rec.obj) then
         rec.obj.setPositionSmooth(V(spot, 1.9), false, true)
         rec.obj.setRotationSmooth(rot(SEAT[d.color].rot, true), false, true)
+        Wait.time(function() mark(rec.obj, d.color, 5) end, 0.6)
       end
       return
     end
@@ -684,6 +762,7 @@ function OPS.loot(d)
   local spot = addItem(d.color, rec, d.slot)
   rec.obj = takeById(L.piles.loot, d.id, V(spot, 1.9), rot(s.rot, true))
   if not rec.obj then reply("error", "loot: " .. d.id .. " is not in the Loot deck") end
+  Wait.time(function() mark(rec.obj, d.color, 5) end, 0.7)
 end
 
 -- An item leaves a player: into the fight area (used in a fight, cleared with it) or straight
@@ -691,6 +770,7 @@ end
 function OPS.item(d)
   local rec = fromItems(d.color, d.id)
   if not rec then reply("error", "item: " .. tostring(d.id) .. " not held by " .. d.color) return end
+  mark(rec.obj, d.color, 5)
   if d.to == "fight" then
     table.insert(B.extra, rec)
     if alive(rec.obj) then
@@ -714,12 +794,28 @@ function OPS.objective(d)
   local o = B.obj[d.color]
   if not alive(o) then reply("error", "objective: no card for " .. d.color) return end
   o.setRotationSmooth(rot(SEAT[d.color].rot, true), false, true)
-  o.highlightOn(COLORS[d.color], 4)
+  Wait.time(function() mark(o, d.color, 8) end, 0.4)
 end
 
 function OPS.player(d)
+  if d.name then NAMES[d.color] = d.name .. " (" .. tostring(d.char) .. ")" end
   local b = boardOf(d.color)
-  if b then b.call("set", {hp = d.hp, max = d.max, gold = d.gold, STR = d.STR, AGI = d.AGI, WIS = d.WIS, title = d.title}) end
+  if b then
+    local ok, was = pcall(function() return b.call("get") end)
+    b.call("set", {hp = d.hp, max = d.max, gold = d.gold, STR = d.STR, AGI = d.AGI, WIS = d.WIS, title = d.title})
+    if ok and type(was) == "table" and (was.hp ~= d.hp or was.gold ~= d.gold or was.STR ~= d.STR
+        or was.AGI ~= d.AGI or was.WIS ~= d.WIS) then
+      mark(b, d.color, 3)
+    end
+  end
+  local m = markerOf(d.color)
+  if m and d.level then
+    local p = m.getPosition()
+    local want = trackPos(math.max(1, math.min(10, d.level)), d.color)
+    if math.abs(p.x - want[1]) > 0.3 or math.abs(p.z - want[2]) > 0.3 then
+      Wait.time(function() mark(m, d.color, 5) end, 0.6)
+    end
+  end
   if d.level then setLevel(d.color, d.level) end
 end
 
@@ -744,6 +840,7 @@ function OPS.clear(d)
   away(B.enemy)
   B.played, B.helper, B.extra, B.enemy = {}, {}, {}, nil
   clearTokens()
+  if ACTIVE then showHand(ACTIVE) end   -- after a helper played, back to the player whose turn it is
   -- Anything still in the fight area (for example cards TTS stacked into a deck) follows them.
   Wait.time(function() sweepFight() end, k * 0.1 + 1.2)
 end
@@ -775,12 +872,10 @@ function OPS.win(d)
 end
 
 function OPS.camera(d)
+  local v = d.view and viewFor(d.view, d.color)
+  if not v then return end
   for _, pl in ipairs(Player.getPlayers()) do
-    if pl.host then
-      pcall(function()
-        pl.lookAt({position = {x = d.x, y = 0, z = d.z}, pitch = d.pitch or 55, yaw = d.yaw or 0, distance = d.dist or 30})
-      end)
-    end
+    if pl.host then pcall(function() pl.lookAt(v) end) end
   end
 end
 
@@ -803,7 +898,31 @@ end
 SCRIPT_GAMES = {full = [=====[__SCRIPT_FULL__]=====], short = [=====[__SCRIPT_SHORT__]=====]}
 SCRIPT_TIME = {full = __TIME_FULL__, short = __TIME_SHORT__}
 SPEEDS = {0.75, 1, 1.25, 1.5, 2}
-BOT = {running = false, speed = 2, token = 0, steps = nil, i = 0, menu = false}
+BOT = {running = false, speed = 2, token = 0, steps = nil, i = 0, menu = false, camera = true}
+
+-- The camera goes where each step happens (bots/play.py picks the view, see Director.target).
+-- Yaw 0 looks north from the south; a seat is seen from its own side so its cards read upright.
+-- The views aim a little south of what they show, so it stays above the hand strip.
+VIEWS = {
+  table = {position = {x = 0, y = 0, z = -1.5}, pitch = 72, yaw = 0, distance = 46},
+  board = {position = {x = 3, y = 0, z = -6.5}, pitch = 66, yaw = 0, distance = 31},
+  fight = {position = {x = 14.6, y = 0, z = -5.2}, pitch = 62, yaw = 0, distance = 22},
+  shop = {position = {x = -16.4, y = 0, z = -1.0}, pitch = 62, yaw = 0, distance = 18},
+  track = {position = {x = 0, y = 0, z = -11.0}, pitch = 60, yaw = 0, distance = 18},
+  decks = {position = {x = -16.0, y = 0, z = 3.0}, pitch = 62, yaw = 0, distance = 18},
+  wilds = {position = {x = 14.6, y = 0, z = 2.5}, pitch = 62, yaw = 0, distance = 18},
+}
+
+function viewFor(name, color)
+  if name == "hand" or name == "gear" then
+    local s = SEAT[color]
+    if not s then return nil end
+    local p = s.views[name]
+    return {position = {x = p[1], y = 0, z = p[2]}, pitch = 58, yaw = s.views.yaw,
+            distance = name == "hand" and 21 or 15}
+  end
+  return VIEWS[name]
+end
 
 local function clock(sec)
   return string.format("%d:%02d", math.floor(sec / 60), math.floor(sec % 60))
@@ -814,6 +933,7 @@ local function botLabels()
   UI.setValue("kbBotFull", "Full game · " .. clock(SCRIPT_TIME.full / s))
   UI.setValue("kbBotShort", "Short game · " .. clock(SCRIPT_TIME.short / s))
   UI.setValue("kbBotSpeed", "Speed " .. tostring(s) .. "x")
+  UI.setValue("kbBotCam", BOT.camera and "Camera: follows" or "Camera: free")
   UI.setValue("kbBotBtn", BOT.running and "STOP BOTS" or "BOT GAME")
 end
 
@@ -832,7 +952,7 @@ local function step(token)
     return
   end
   local s = SPEEDS[BOT.speed]
-  if st.msg then
+  if st.msg and not (st.msg.op == "camera" and not BOT.camera) then
     if st.msg.t then st.msg.t = st.msg.t / s end
     onExternalMessage(st.msg)
   end
@@ -873,5 +993,10 @@ function botShort(player) startBots("short") end
 
 function botSpeed(player)
   BOT.speed = BOT.speed % #SPEEDS + 1
+  botLabels()
+end
+
+function botCamera(player)
+  BOT.camera = not BOT.camera
   botLabels()
 end

@@ -123,6 +123,10 @@ function newObject(o)
   self.setRotationSmooth = function(r) live() self.rot = vec(r) end
   self.isSmoothMoving = function() live() return false end
   self.highlightOn = function() live() end
+  self.highlightOff = function() live() end
+  self.scale = {x = 1, y = 1, z = 1}
+  self.getScale = function() live() return {x = self.scale.x, y = self.scale.y, z = self.scale.z} end
+  self.setScale = function(s) live() self.scale = vec(s) end
   self.setLock = function() live() end
   self.destruct = function() live() destroy(self) end
   self.setRotationValue = function(v) live() self.value = v end

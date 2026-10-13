@@ -323,9 +323,9 @@ class Game:
                 STR=p.stats["STR"], AGI=p.stats["AGI"], WIS=p.stats["WIS"], title=f"{p.name} · {p.char}",
                 name=p.name, char=p.char)
 
-    def roll(self, p, why):
+    def roll(self, p, why, spot="fight"):
         v = self.rng.randint(1, 6)
-        self.ev("roll", f"{p.name} rolls {v} ({why})", value=v, color=p.color)
+        self.ev("roll", f"{p.name} rolls {v} ({why})", value=v, color=p.color, spot=spot)
         return v
 
     def clockwise_from(self, p):
@@ -1207,7 +1207,7 @@ class Game:
                 return
             goal = "normal"
         boots = 1 if "L09" in p.equipment else 0
-        v = self.roll(p, "movement" + (", +1 Swift Boots" if boots else ""))
+        v = self.roll(p, "movement" + (", +1 Swift Boots" if boots else ""), spot="board")
         roll = v + boots
         if p.sig() == "Pathfinder" and "Pathfinder" in p.ready:
             want = roll <= 3 or (goal == "castle" and roll < dist(p.pos, CASTLE) <= roll + 3)

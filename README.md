@@ -44,6 +44,8 @@ Four bots (Ann, Ben, Cleo, Dan) play a whole game in TTS by themselves. Pawns wa
 
 In TTS: BOT GAME, then Full game or Short game. Speed changes the pace (0.75x to 2x) and can be pressed during a game; BOT GAME (now STOP BOTS) stops it. Both games are stored in the save, so nothing else needs to run.
 
+During a bot game the camera goes wherever the next step happens (Camera: free in the same menu leaves it to you), the acting player's hand is shown as cards at the bottom of the screen, the caption and the status list use each player's colour, and whatever a bot touches glows in its colour.
+
 | Game | 0.75x | 1x | 1.5x | 2x |
 |---|---|---|---|---|
 | Full game (seed 1): 13 rounds, three Trial attempts, Ann (Mage) wins | 24:35 | 18:26 | 12:17 | 9:13 |
@@ -59,7 +61,7 @@ python3 bots/play.py --seed 12       # another game; the same seed always replay
 python3 bots/play.py stop            # stops a running game (Ctrl+C in its window does the same)
 ```
 
-More options: `--dry-run` prints the game with timestamps without TTS, `--find 10` lists seeds whose games show every mechanic, `--camera` also moves your camera between the board and the fight. The bots' decisions come from the balance simulator that set the GDD's numbers. `python3 bots/stats.py 500` plays 500 games without TTS and prints what happened in them.
+More options: `--dry-run` prints the game with timestamps without TTS, `--find 10` lists seeds whose games show every mechanic, `--no-camera` leaves your camera alone. The bots' decisions come from the balance simulator that set the GDD's numbers. `python3 bots/stats.py 500` plays 500 games without TTS and prints what happened in them.
 
 ## Checks
 

@@ -6,6 +6,7 @@
   python3 bots/play.py --seed 12        another game; the same seed always replays the same game
   python3 bots/play.py --dry-run        print the game and how long it takes, without TTS
   python3 bots/play.py --find 10        list seeds whose game shows every mechanic
+  python3 bots/play.py --no-camera      don't move the camera (by default it follows every step)
   python3 bots/play.py stop             stop a running game (Ctrl+C in its window does the same)
 
 Before starting: Tabletop Simulator open, the KINGBOUND-prototype save loaded (Games → Save & Load →
@@ -177,31 +178,73 @@ class Director:
         self.tts, self.speed, self.camera = tts, speed, camera
         self.mirror = {}
         self.order = []
+        self.active = None
+        self.view = None
 
     def status(self):
+        # The player whose turn it is gets an arrow, so the colours on the table and the names match up.
         lines = []
         for color in self.order:
             m = self.mirror[color]
-            lines.append({"text": f"● {m['name']} · {m['char']} · level {m['level']} · HP {m['hp']}/{m['max']} · {m['gold']} gold",
+            mark = "▶" if color == self.active else "●"
+            lines.append({"text": f"{mark} {m['name']} · {m['char']} · level {m['level']} · HP {m['hp']}/{m['max']} · {m['gold']} gold",
                           "hex": HEX[color]})
         self.tts.send({"op": "status", "lines": lines})
 
-    def look(self, where):
+    # The camera goes to wherever the next step happens: the board for turns, rolls and moves, the
+    # fight area, the acting player's hand and Abilities, their items and board (HP, gold), the level
+    # track when a level changes, the Merchant's cards, a deck being reshuffled. Yavuz asked for every
+    # event to be on screen (2026-10-13). global.lua turns the view names into camera positions.
+    def target(self, e):
+        op, c = e["op"], e.get("color")
+        if op in ("board", "setup"):
+            return ("table", None)
+        if op in ("turn", "move"):
+            return ("board", None)
+        if op == "roll":
+            return ("board", None) if e.get("spot") == "board" else ("fight", None)
+        if op in ("reveal", "play", "damage", "fightround", "clear"):
+            return ("fight", None)
+        if op in ("draw", "discard", "ready", "ability"):
+            return ("hand", c)
+        if op in ("objective", "loot", "buy"):
+            return ("gear", c)
+        if op == "item":
+            return ("fight", None) if e.get("to") == "fight" else ("gear", c)
+        if op in ("offer", "unoffer"):
+            return ("shop", None)
+        if op == "reshuffle":
+            return ("decks", None) if e.get("deck") in ("action", "loot") else ("wilds", None)
+        if op == "player":
+            before = self.mirror.get(c)
+            if before and before.get("level") != e.get("level"):
+                return ("track", None)
+            if e.get("say"):
+                return ("gear", c)
+        return None
+
+    def aim(self, e):
         if not self.camera:
             return
-        spots = {"board": dict(x=0, z=-2, dist=40, pitch=62), "fight": dict(x=12, z=-1, dist=24, pitch=58)}
-        self.tts.send(dict(op="camera", **spots[where]))
+        t = self.target(e)
+        if t and t != self.view:
+            self.view = t
+            self.tts.send({"op": "camera", "view": t[0], "color": t[1]})
 
     def show(self, e):
         t = 1.0 / self.speed
         op = e["op"]
+        if op == "turn":
+            self.active = e["color"]
+        self.aim(e)
         if e.get("say"):
-            self.tts.send({"op": "caption", "head": e.get("head", ""), "text": e["say"]})
+            self.tts.send({"op": "caption", "head": e.get("head", ""), "text": e["say"], "color": self.active})
         if op in ("say", "fightround"):
             return
         if op == "turn":
-            self.tts.send({"op": "highlight", "color": e["color"], "t": 2.5 * t})
-            self.look("board")
+            self.tts.send({"op": "highlight", "color": e["color"], "t": 2.5 * t, "turn": True})
+            if len(self.mirror) == 4:
+                self.status()
             return
         msg = {k: v for k, v in e.items() if k not in ("say", "head")}
         msg["t"] = {"move": 0.35, "draw": 0.15, "play": 0.2, "discard": 0.12, "setup": 0.12,
@@ -213,8 +256,6 @@ class Director:
                 self.order.append(e["color"])
             if len(self.mirror) == 4:
                 self.status()
-        if op == "reveal":
-            self.look("fight")
         if op == "setup":
             self.order = [p["color"] for p in e["players"]]
 
@@ -250,7 +291,7 @@ def main():
     ap.add_argument("--speed", type=float, default=1.0)
     ap.add_argument("--dry-run", action="store_true", help="print the game and its length, no TTS")
     ap.add_argument("--find", type=int, metavar="N", help="list N seeds that show every mechanic")
-    ap.add_argument("--camera", action="store_true", help="move the host's camera between the board and the fight")
+    ap.add_argument("--no-camera", action="store_true", help="leave the camera alone (it follows every step by default)")
     a = ap.parse_args()
     if a.command == "stop":
         stop_running()
@@ -289,7 +330,7 @@ def main():
               "(Games → Save & Load → prototipler), then run this again.")
         sys.exit(1)
     PID_FILE.write_text(str(os.getpid()))
-    director = Director(tts, a.speed, a.camera)
+    director = Director(tts, a.speed, not a.no_camera)
 
     def bye(*_):
         try:

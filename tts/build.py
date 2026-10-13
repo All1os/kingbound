@@ -251,6 +251,10 @@ def save_sheet(items, fn, cols, rows, sheet_no):
 
 
 SHEETS = {1: ("cards-1.png", 10, 6), 2: ("cards-2.png", 10, 3)}
+# One small copy of each card face for the bot game's on-screen hand (XML images can't cut a sheet).
+UI_CARD = (256, 358)
+for _cid, _key, _face in SHEET1 + SHEET2:
+    _face.resize(UI_CARD, Image.LANCZOS).save(OUT / f"ui-{_cid}.png")
 save_sheet(SHEET1, "cards-1.png", 10, 6, 1)
 save_sheet(SHEET2, "cards-2.png", 10, 3, 2)
 
@@ -373,7 +377,7 @@ PLAYED = [(x, -1.8) for x in RX] + [(x, -5.4) for x in RX]
 HELPER = [(x, -9.0) for x in RX]
 AID_POS = (-16.0, -4.6)
 BAGS = {"d1": (LX[0], -9.0), "d5": (LX[1], -9.0)}
-DIE_POS = (LX[2] + 0.4, -9.0)
+DIE_POS = (18.4, 5.4)   # beside the Wilds discard piles: inside the bot camera's fight and board views
 
 
 # ------------------------------------------------------------------ other images
@@ -460,7 +464,7 @@ def fs(h): return int(round(h * K / PB_S * 700))    # text height in table units
 BTN = [bu(0.5), bu(0.5), fs(0.36)]
 UI_POS = {
     "zfix": 1,
-    "title": lp(0, -1.3), "title_font": fs(0.3),
+    "title": lp(0, -1.28), "title_font": fs(0.38),
     "hp": lp(-1.4, -0.4), "gold": lp(1.4, -0.4), "num_font": fs(0.52),
     "hp_btn": [lp(-2.47, -0.4), lp(-0.33, -0.4)], "gold_btn": [lp(0.33, -0.4), lp(2.47, -0.4)],
     "btn": BTN,
@@ -668,9 +672,13 @@ for seat in SEATS:
     ch, ob = local(seat, CHAR_U, ROW2_V), local(seat, OBJ_U, ROW2_V)
     for p in abil + equip + use + [ch, ob]:
         snap(p, cr)
+    # Bot camera views of this seat. Every view looks from the south (yaw 0): TTS turns the camera
+    # slowly, and turning to face each seat made the video drag (Yavuz, 2026-10-13); the hand strip
+    # shows the cards upright anyway. They aim between the hand row and the row behind it.
+    views = {"hand": list(local(seat, -2.5, 6.0)), "gear": list(local(seat, 9.0, 6.0)), "yaw": 0}
     lua_seats.append({"color": color, "rot": cr, "hand": hand, "char": ch, "abil": abil, "equip": equip,
                       "use": use, "obj": ob, "camp": list(camp), "off": list(PAWN_OFF[color]),
-                      "moff": list(MARK_OFF[color]), "u": right_of(seat)})
+                      "moff": list(MARK_OFF[color]), "u": right_of(seat), "views": views})
 
 # Decks (§2). The Champion card waits face up next to the board (§10.2).
 action_ids = [c[0] for c in C.ACTION for _ in range(c[4])]
@@ -729,7 +737,7 @@ def scripted(seed, mode):
     g = Game(seed, mode)
     g.play()
     rec = _Recorder()
-    director = Director(rec, 1.0, camera=False)
+    director = Director(rec, 1.0, camera=True)
     steps = [{"msg": {"op": "reset"}, "wait": 2.0}]
     for e in g.events:
         before = len(rec.sent)
@@ -764,16 +772,24 @@ MENU = [("", "startGame", "#7A6012", "START GAME"), ('id="kbBotBtn" ', "toggleBo
         ("", "resetGame", "#3C2819", "RESET")]
 BOTMENU = [('id="kbBotFull" ', "botFull", "#3E5A34", f"Full game · {mmss(TIME_FULL)}"),
            ('id="kbBotShort" ', "botShort", "#3E5A34", f"Short game · {mmss(TIME_SHORT)}"),
-           ('id="kbBotSpeed" ', "botSpeed", "#3C2819", "Speed 1x")]
+           ('id="kbBotSpeed" ', "botSpeed", "#3C2819", "Speed 1x"),
+           ('id="kbBotCam" ', "botCamera", "#3C2819", "Camera: follows")]
+HAND_SLOTS = 10
 XML = ('<VerticalLayout id="kbMenu" height="{h}" width="150" rectAlignment="UpperLeft" offsetXY="8 -410" spacing="6">\n'.format(h=len(MENU) * 38)
        + "\n".join(BTN.format(idattr=i, f=f_, c=c_, t=t_) for i, f_, c_, t_ in MENU)
        + "\n</VerticalLayout>\n"
        + '<VerticalLayout id="kbBotMenu" active="false" height="{h}" width="200" rectAlignment="UpperLeft" offsetXY="164 -448" spacing="6">\n'.format(h=len(BOTMENU) * 38)
        + "\n".join(BTN.format(idattr=i, f=f_, c=c_, t=t_) for i, f_, c_, t_ in BOTMENU)
        + "\n</VerticalLayout>\n"
-       # Bot overlays, hidden until a bot game runs: a caption at the bottom and a status list on the right.
+       # Bot overlays, hidden until a bot game runs: the hand of the player who acts, a caption at the
+       # bottom and a status list on the right.
+       + '<Panel id="kbHand" active="false" rectAlignment="LowerCenter" offsetXY="0 152" width="1400" height="190" color="#00000000">\n'
+       + '  <Text id="kbHandLabel" rectAlignment="UpperCenter" offsetXY="0 0" height="30" fontSize="21" color="#F5ECD7" alignment="MiddleCenter" outline="#000000" outlineSize="1 1"></Text>\n'
+       + '  <HorizontalLayout rectAlignment="LowerCenter" height="157" spacing="6" childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false">\n'
+       + "\n".join(f'    <Image id="kbHand{i}" active="false" width="112" height="157" preferredWidth="112" preferredHeight="157" preserveAspect="true"></Image>' for i in range(1, HAND_SLOTS + 1))
+       + '\n  </HorizontalLayout>\n</Panel>\n'
        + '<Panel id="kbCaption" active="false" rectAlignment="LowerCenter" offsetXY="0 30" width="1250" height="118" color="#000000C8">\n'
-       + '  <Text id="kbCaptionHead" rectAlignment="UpperCenter" offsetXY="0 -8" height="30" fontSize="22" color="#D4AF4B" alignment="MiddleCenter"></Text>\n'
+       + '  <Text id="kbCaptionHead" rectAlignment="UpperCenter" offsetXY="0 -6" height="32" fontSize="25" color="#D4AF4B" alignment="MiddleCenter"></Text>\n'
        + '  <Text id="kbCaptionText" rectAlignment="LowerCenter" offsetXY="0 10" height="72" width="1210" fontSize="30" color="#F5ECD7" alignment="MiddleCenter" horizontalOverflow="Wrap" verticalOverflow="Overflow"></Text>\n'
        + '</Panel>\n'
        + '<Panel id="kbStatus" active="false" rectAlignment="MiddleRight" offsetXY="-12 40" width="430" height="200" color="#000000B4">\n'
@@ -791,6 +807,7 @@ save = {
             "four bots play by themselves, RESET puts everything back. Player boards: click the buttons.",
     "Hands": {"Enable": True, "DisableUnused": False, "Hiding": 0},
     "LuaScript": LUA, "LuaScriptState": "", "XmlUI": XML, "SnapPoints": snaps, "ObjectStates": objs,
+    "CustomUIAssets": [{"Type": 0, "Name": cid, "URL": url(f"ui-{cid}.png")} for cid, _, _ in SHEET1 + SHEET2],
 }
 (OUT / f"{SAVE_NAME}.json").write_text(json.dumps(save, indent=1, ensure_ascii=False))
 shutil.copy(OUT / f"{SAVE_NAME}.json", SAVES / f"{SAVE_NAME}.json")
