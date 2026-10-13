@@ -492,7 +492,24 @@ def board_img(color):
     im.save(OUT / f"board-{color.lower()}.png")
 
 
+from engine import SEATS as _BOT_SEATS
+BOT_NAMES = {c: n for n, c in _BOT_SEATS}
+
+
+def name_img(color):
+    w, h = 900, 260
+    col = tuple(int(c * 255) for c in RGB[color])
+    im = Image.new("RGB", (w, h), (28, 24, 22))
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, w - 1, h - 1), outline=col, width=18)
+    t = BOT_NAMES[color].upper()
+    d.text((w / 2, h / 2), t, font=fit(d, t, BLACK, 150, w - 80), fill=col, anchor="mm")
+    im.save(OUT / f"name-{color.lower()}.png")
+
+
 frame_img(); track_img(); aid_img()
+for _c, *_ in SEATS:
+    name_img(_c)
 for color, *_ in SEATS:
     circle_img(f"marker-{color.lower()}.png", tuple(int(c * 255) for c in RGB[color]), ring=(20, 20, 20))
     board_img(color)
@@ -649,7 +666,10 @@ PB_LUA = (ROOT / "player_board.lua").read_text().replace("__POS__", to_lua(UI_PO
 lua_seats = []
 for seat in SEATS:
     color, hx, hz, rot = seat
-    cr = rot + 180.0
+    # The camera always looks from the bottom of the table (it never turns), so the seat opposite
+    # (Green) has its cards and board turned to face the bottom too (Yavuz, 2026-10-13). The side
+    # seats keep facing their player: turned, their cards would overlap in a column.
+    cr = 180.0 if rot in (0.0, 180.0) else rot + 180.0
     objs.append(base("HandTrigger", {"posX": hx, "posY": 4.8, "posZ": hz, "rotX": 0.0, "rotY": rot,
                                      "rotZ": 0.0, "scaleX": 11.8, "scaleY": 9.2, "scaleZ": 4.9},
                      FogColor=color, Locked=True))
@@ -672,10 +692,14 @@ for seat in SEATS:
     ch, ob = local(seat, CHAR_U, ROW2_V), local(seat, OBJ_U, ROW2_V)
     for p in abil + equip + use + [ch, ob]:
         snap(p, cr)
-    # Bot camera views of this seat. Every view looks from the south (yaw 0): TTS turns the camera
-    # slowly, and turning to face each seat made the video drag (Yavuz, 2026-10-13); the hand strip
-    # shows the cards upright anyway. They aim between the hand row and the row behind it.
+    # Bot camera views of this seat, seen from the player's side so their cards read upright (yaw 0
+    # looks north from the south, 90 east from the west). global.lua turns the camera the short way
+    # round. They aim between the hand row and the row behind it.
     views = {"hand": list(local(seat, -2.5, 6.0)), "gear": list(local(seat, 9.0, 6.0)), "yaw": 0}
+    # Name plate at the left end of the hand row, readable from the bottom of the table.
+    nx, nz = local(seat, -15.2, 4.4)
+    objs.append(tile(f"name-{color.lower()}.png", tr(nx, nz, 180.0, s=0.65, y=1.05), f"{BOT_NAMES[color]}",
+                     thick=0.08, Tags=["nameplate"], GMNotes=color))
     lua_seats.append({"color": color, "rot": cr, "hand": hand, "char": ch, "abil": abil, "equip": equip,
                       "use": use, "obj": ob, "camp": list(camp), "off": list(PAWN_OFF[color]),
                       "moff": list(MARK_OFF[color]), "u": right_of(seat), "views": views})
@@ -792,7 +816,7 @@ XML = ('<VerticalLayout id="kbMenu" height="{h}" width="150" rectAlignment="Uppe
        + '  <Text id="kbCaptionHead" rectAlignment="UpperCenter" offsetXY="0 -6" height="32" fontSize="25" color="#D4AF4B" alignment="MiddleCenter"></Text>\n'
        + '  <Text id="kbCaptionText" rectAlignment="LowerCenter" offsetXY="0 10" height="72" width="1210" fontSize="30" color="#F5ECD7" alignment="MiddleCenter" horizontalOverflow="Wrap" verticalOverflow="Overflow"></Text>\n'
        + '</Panel>\n'
-       + '<Panel id="kbStatus" active="false" rectAlignment="MiddleRight" offsetXY="-12 40" width="430" height="200" color="#000000B4">\n'
+       + '<Panel id="kbStatus" active="false" rectAlignment="MiddleRight" offsetXY="-12 40" width="500" height="200" color="#000000B4">\n'
        + '  <VerticalLayout padding="12 12 10 10" spacing="4">\n'
        + "\n".join(f'    <Text id="kbStatus{i}" fontSize="19" color="#F5ECD7" alignment="MiddleLeft"></Text>' for i in range(1, 5))
        + '\n  </VerticalLayout>\n</Panel>')

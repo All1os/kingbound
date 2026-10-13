@@ -6,7 +6,7 @@ sabotage and interference (§6.7), Dig Deep (§6.2), hidden objectives (§9), Pi
 King's Trial (§8).
 
 Game(seed).play() runs a whole game in memory and fills game.events, a list of small dicts such
-as {"op": "roll", "color": "Red", "value": 4, "say": "Ann rolls 4"}. bots/play.py shows them in
+as {"op": "roll", "color": "Red", "value": 4, "say": "Bora rolls 4"}. bots/play.py shows them in
 Tabletop Simulator; bots/stats.py plays many games without TTS. The same seed always gives the
 same game: every random choice goes through one random.Random(seed), and no decision iterates a
 set or depends on hash order.
@@ -54,8 +54,9 @@ CASTLE = C.CASTLE
 TIER_DECK = {1: "w1", 2: "w2", 3: "w3"}
 ROMAN = {1: "I", 2: "II", 3: "III"}
 
-# Bots sit clockwise from the bottom of the table, in the colours of the team's table sketch.
-SEATS = [("Ann", "Red"), ("Ben", "Yellow"), ("Cleo", "Green"), ("Dan", "Blue")]
+# Bots sit clockwise from the bottom of the table, in the colours of the team's table sketch, and
+# carry the team's names (Yavuz's choice, 2026-10-13).
+SEATS = [("Bora", "Red"), ("Anastasya", "Yellow"), ("Amira", "Green"), ("Esma", "Blue")]
 CAMP_OF = {"Red": (4, 3), "Yellow": (3, 2), "Green": (2, 3), "Blue": (3, 4)}
 
 

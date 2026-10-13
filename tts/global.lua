@@ -16,7 +16,7 @@ TOKENS = JSON.decode([==[__TOKENS__]==])
 
 COLORS = {Red = {0.86, 0.1, 0.09}, Yellow = {0.9, 0.9, 0.17}, Green = {0.19, 0.7, 0.17}, Blue = {0.12, 0.53, 1}}
 HEX = {Red = "#E8574E", Yellow = "#F2E64A", Green = "#55D04B", Blue = "#4FA3FF"}
-NAMES = {}      -- "Ann (Rogue)" by colour, from the bots' player updates
+NAMES = {}      -- "Bora (Rogue)" by colour, from the bots' player updates
 GOLDEN = {1, 0.82, 0.3}
 SEAT = {}
 for i, s in ipairs(L.seats) do s.i = i SEAT[s.color] = s end
@@ -871,6 +871,8 @@ function OPS.win(d)
   if champ then champ.highlightOn(GOLDEN, 60) end
 end
 
+-- lookAt only takes a yaw from 0 to 360 (a negative one is read as 0, checked live), so the yaw is
+-- sent as it is and TTS picks the way round.
 function OPS.camera(d)
   local v = d.view and viewFor(d.view, d.color)
   if not v then return end

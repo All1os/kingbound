@@ -5,14 +5,17 @@ All notable changes to the Kingbound prototype. Each version is also a GitHub re
 ## Unreleased
 
 - Three buttons instead of ten, under TTS's own toolbar at the top left (the old column covered the toolbar's menus): START GAME, BOT GAME and RESET. START GAME now shuffles the board and deals in one click. Drawing cards, revealing enemies and clearing a fight are done by hand.
-- BOT GAME plays a scripted bot game inside TTS, with no terminal: the full game (18:26) or the short one (4:38), at 0.75x to 2x speed. `build.py` lets the bots play both games and stores every command in the save; the button replays them. Pressing it again (STOP BOTS) stops the game. `bots/play.py` still sends any seed from a terminal.
+- BOT GAME plays a scripted bot game inside TTS, with no terminal: the full game or the short one, at 0.75x to 2x speed. `build.py` lets the bots play both games and stores every command in the save; the button replays them. Pressing it again (STOP BOTS) stops the game. `bots/play.py` still sends any seed from a terminal.
 - Script errors during a bot game are also printed in TTS's chat.
 - Bot games show the cards: the hand of the player who acts is shown as card pictures at the bottom of the screen.
 - Who is who: the caption's first line is in the acting player's colour, the status list marks whose turn it is (▶), that player's pawn and board glow for the whole turn, and the names on the player boards are bigger.
-- The camera follows every step of a bot game: the board for turns, rolls and moves, the fight area, the acting player's hand and Abilities, their items and board when HP or gold change, the level track when a level changes, the Merchant's cards, a deck being reshuffled. It never turns (TTS turns the camera slowly), and Camera: follows / free in the BOT GAME menu switches it off.
+- The camera follows every step of a bot game: the board for turns, rolls and moves, the fight area, the acting player's hand and Abilities, their items and board when HP or gold change, the level track when a level changes, the Merchant's cards, a deck being reshuffled. It always looks from the bottom of the table and never turns; Camera: follows / free in the BOT GAME menu switches it off. In a fight it stays on the fight area for the fighter's own cards and only leaves for another player stepping in.
 - Whatever a bot touches glows in its colour for a few seconds and gives a short pop; the tiles a pawn walks over light up.
 - The die sits beside the Wilds discard piles, inside the camera's board and fight views.
 - `bots/play.py` moves the camera the same way by default (`--no-camera` leaves it alone).
+- The opposite seat (Green) has its cards and player board turned to face the bottom of the table, so they read the right way up on camera; the side seats still face their own player.
+- The bots are called Bora, Anastasya, Amira and Esma, and each seat has a name plate in its colour at the left end of the hand row.
+- The full bot game now takes 18:51 and the short one 4:48 at speed 1 (longer names, longer captions).
 
 ## v0.1 (2026-10-13)
 

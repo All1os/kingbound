@@ -180,6 +180,7 @@ class Director:
         self.order = []
         self.active = None
         self.view = None
+        self.fighting = False
 
     def status(self):
         # The player whose turn it is gets an arrow, so the colours on the table and the names match up.
@@ -197,6 +198,15 @@ class Director:
     # event to be on screen (2026-10-13). global.lua turns the view names into camera positions.
     def target(self, e):
         op, c = e["op"], e.get("color")
+        # In a fight the camera stays on the fight area for the fighter's own cards, digs, Abilities
+        # and HP; it only leaves for another player stepping in (sabotage, a boost, an item), so it
+        # doesn't swing round the table every few seconds (Yavuz: "it turns around itself", 2026-10-13).
+        if op == "player":
+            before = self.mirror.get(c)
+            if before and before.get("level") != e.get("level"):
+                return ("track", None)      # a level change is always shown on the track
+        if self.fighting and op in ("draw", "discard", "ability", "player", "item") and c == self.active:
+            return ("fight", None)
         if op in ("board", "setup"):
             return ("table", None)
         if op in ("turn", "move"):
@@ -224,6 +234,10 @@ class Director:
         return None
 
     def aim(self, e):
+        if e["op"] == "reveal" and e.get("deck") in ("w1", "w2", "w3", "champ"):
+            self.fighting = True
+        if e["op"] == "turn":
+            self.fighting = False
         if not self.camera:
             return
         t = self.target(e)
