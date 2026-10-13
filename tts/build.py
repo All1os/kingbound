@@ -31,14 +31,18 @@ SAVES.mkdir(parents=True, exist_ok=True)
 
 FONT = "/System/Library/Fonts/Supplemental/"
 def f(name, size): return ImageFont.truetype(FONT + name, size)
-BLACK, BOLD, REG, ITAL = "Arial Black.ttf", "Arial Bold.ttf", "Arial.ttf", "Arial Italic.ttf"
+# Book-like lettering for titles, a plain face for rules text (narrative: "historical book lettering
+# while remaining clear").
+BLACK, BOLD, REG, ITAL = "Georgia Bold.ttf", "Arial Bold.ttf", "Arial.ttf", "Georgia Italic.ttf"
 
-PAPER, INK, CREAM = (245, 240, 228), (25, 22, 20), (245, 236, 215)
-GOLD = (212, 175, 75)
-TYPE_COL = {"STR": (178, 40, 34), "AGI": (36, 125, 62), "WIS": (40, 84, 172)}    # GDD §15.2: STR red, AGI green, WIS blue
+# Palette from the narrative document: aged parchment, ink black, antique gold, oxide red, deep forest
+# green, muted cobalt.
+PAPER, INK, CREAM = (236, 223, 193), (30, 25, 21), (244, 232, 204)
+GOLD = (181, 145, 66)
+TYPE_COL = {"STR": (152, 52, 36), "AGI": (44, 92, 54), "WIS": (54, 80, 136)}    # GDD §15.2: STR red, AGI green, WIS blue
 TIER_COL = {1: (150, 186, 112), 2: (84, 124, 70), 3: (40, 66, 42)}               # light / medium / dark by tier and ring
 TIER_INK = {1: INK, 2: CREAM, 3: CREAM}
-CHAMP_COL, LOOT_COL, OBJ_COL, CHAR_COL = (92, 44, 122), (150, 104, 40), (30, 30, 30), (38, 54, 86)
+CHAMP_COL, LOOT_COL, OBJ_COL, CHAR_COL = (120, 40, 32), (140, 100, 42), (30, 25, 21), (54, 80, 136)
 KIND_COL = {"boost": (178, 92, 22), "sabotage": (122, 30, 62), "signature": (36, 98, 120)}
 TOWN_COL = {"Merchant": (205, 165, 60), "Barracks": (150, 60, 45), "Healer": (236, 236, 240),
             "Camp": (214, 118, 48), "Castle": (92, 44, 122)}

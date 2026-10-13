@@ -18,7 +18,7 @@ ACTION = [
     ("AG2", "Ambush", "AGI", 2, 3, "Deal 4 + AGI damage. In round 1, deal 3 more.", dict(dmg=4, r1=3)),
     ("AG3", "Dodge", "AGI", 1, 3, "Gain 3 + AGI Block.", dict(block=3)),
     ("AG4", "Quick Stab", "AGI", 0, 2, "Deal 1 + AGI damage.", dict(dmg=1)),
-    ("AG5", "Vanish", "AGI", 0, 2, "Flee now, no roll. Not while Snared.", dict(vanish=True)),
+    ("AG5", "Vanish", "AGI", 0, 2, "Flee now, no roll. Not while veiled.", dict(vanish=True)),
     ("WI1", "Spark", "WIS", 1, 5, "Deal 2 + WIS damage.", dict(dmg=2)),
     ("WI2", "Firebolt", "WIS", 2, 3, "Deal 5 + WIS damage.", dict(dmg=5)),
     ("WI3", "Ward", "WIS", 1, 3, "Gain 3 + WIS Block.", dict(block=3)),
@@ -82,7 +82,7 @@ LOOT = [
     ("L10", "Training Manual", 4, 2, "Raise any stat by 1 (max 5).", False),
     ("L11", "Healing Potion", 2, 3, "Heal 5 HP. Any time, even in another player's turn, but not once you are at 0 HP.", False),
     ("L12", "Bomb", 2, 2, "In any fight: deal 5 damage to the enemy.", False),
-    ("L13", "Smoke Bomb", 1, 1, "In your fight: flee, no roll. Not while Snared.", False),
+    ("L13", "Smoke Bomb", 1, 1, "In your fight: flee, no roll. Not while veiled.", False),
     ("L14", "Cursed Totem", 2, 2, "In another player's fight: the enemy deals 3 more damage this round.", False),
     ("L15", "Elixir", 3, 1, "Draw Action cards up to your hand size.", False),
 ]
@@ -91,29 +91,29 @@ EQUIPMENT_LIMIT = 3  # §7
 # ------------------------------------------------------------------ §10.5 Characters (5) and Abilities (15)
 # (ID, name, STR, AGI, WIS, HP, energy, hand, how it plays)
 CHARACTERS = [
-    ("C1", "Knight", 3, 0, 1, 13, 3, 5, "Steady hitter; a good helper to hire"),
-    ("C2", "Rogue", 1, 3, 0, 8, 4, 5, "Fast, uses up cards quickly, steals gold"),
-    ("C3", "Mage", 0, 1, 3, 10, 3, 5, "Big damage, fragile"),
-    ("C4", "Cleric", 2, 0, 3, 12, 3, 5, "Two good stats, can draw extra cards"),
-    ("C5", "Ranger", 1, 2, 1, 13, 3, 6, "Spread-out stats, bigger hand, moves far"),
+    ("C1", "Bellkeeper", 3, 0, 1, 13, 3, 5, "Defensive warrior; a good helper to hire"),
+    ("C2", "Foxglove", 1, 3, 0, 8, 4, 5, "Agile trickster: fast, uses up cards quickly, steals gold"),
+    ("C3", "Ash Scribe", 0, 1, 3, 10, 3, 5, "Scholar: big damage, fragile"),
+    ("C4", "Briar Knight", 2, 3, 0, 9, 3, 5, "Duelist: two good stats, can draw extra cards"),
+    ("C5", "Hollow Pilgrim", 1, 2, 1, 13, 3, 6, "Wanderer: spread-out stats, bigger hand, moves far"),
 ]
 # (ID, character, name, kind, when, text): kind is boost / sabotage / signature (§6.7, §10.5).
 ABILITIES = [
-    ("KN1", "Knight", "Cleave", "boost", "Any fight.", "Deal 3 damage to the enemy."),
-    ("KN2", "Knight", "Provoke", "sabotage", "Another player's fight only.", "The enemy deals 3 more damage this round."),
-    ("KN3", "Knight", "Shield Wall", "signature", "Any fight.", "The fighter gains 5 Block this round."),
-    ("RO1", "Rogue", "Backstab", "boost", "Any fight.", "Deal 4 damage to the enemy."),
-    ("RO2", "Rogue", "Trip", "sabotage", "Another player's fight only.", "The fighter's Block this round becomes 0 (cards and items)."),
-    ("RO3", "Rogue", "Pickpocket", "signature", "Your turn.", "Take 2 gold from a player on your tile or a tile next to you."),
-    ("MA1", "Mage", "Fireball", "boost", "Any fight.", "Deal 5 damage to the enemy."),
-    ("MA2", "Mage", "Hex", "sabotage", "Another player's fight only.", "Remove 4 damage from the enemy."),
-    ("MA3", "Mage", "Arcane Surge", "signature", "Your fight.", "Gain 2 energy this round."),
-    ("CL1", "Cleric", "Holy Light", "boost", "Any fight.", "Deal 4 damage to the enemy; the fighter heals 2 HP."),
-    ("CL2", "Cleric", "Penance", "sabotage", "Another player's fight only.", "The fighter loses 2 HP."),
-    ("CL3", "Cleric", "Prayer", "signature", "Your turn or your fight.", "Draw 2 Action cards."),
-    ("RA1", "Ranger", "Volley", "boost", "Any fight.", "Deal 3 damage to the enemy; the fighter gains 2 Block."),
-    ("RA2", "Ranger", "Snare", "sabotage", "Another player's fight only.", "The fighter can't flee for the rest of this fight."),
-    ("RA3", "Ranger", "Pathfinder", "signature", "After your movement roll.", "Add 3 to it."),
+    ("KN1", "Bellkeeper", "Iron Toll", "boost", "Any fight.", "Deal 3 damage to the enemy."),
+    ("KN2", "Bellkeeper", "Stand Fast", "sabotage", "Another player's fight only.", "The enemy deals 3 more damage this round."),
+    ("KN3", "Bellkeeper", "Echo Guard", "signature", "Any fight.", "The fighter gains 5 Block this round."),
+    ("RO1", "Foxglove", "Quickstep", "boost", "Any fight.", "Deal 4 damage to the enemy."),
+    ("RO2", "Foxglove", "Pocket Sand", "sabotage", "Another player's fight only.", "The fighter's Block this round becomes 0 (cards and items)."),
+    ("RO3", "Foxglove", "False Image", "signature", "Your turn.", "Take 2 gold from a player on your tile or a tile next to you."),
+    ("MA1", "Ash Scribe", "Mark of Knowing", "boost", "Any fight.", "Deal 5 damage to the enemy."),
+    ("MA2", "Ash Scribe", "Ink Snare", "sabotage", "Another player's fight only.", "Remove 4 damage from the enemy."),
+    ("MA3", "Ash Scribe", "Recollection", "signature", "Your fight.", "Gain 2 energy this round."),
+    ("CL1", "Briar Knight", "Thorn Lunge", "boost", "Any fight.", "Deal 4 damage to the enemy; the fighter heals 2 HP."),
+    ("CL2", "Briar Knight", "Briar Mark", "sabotage", "Another player's fight only.", "The fighter loses 2 HP."),
+    ("CL3", "Briar Knight", "Riposte", "signature", "Your turn or your fight.", "Draw 2 Action cards."),
+    ("RA1", "Hollow Pilgrim", "Wandering Step", "boost", "Any fight.", "Deal 3 damage to the enemy; the fighter gains 2 Block."),
+    ("RA2", "Hollow Pilgrim", "Lantern Veil", "sabotage", "Another player's fight only.", "The fighter can't flee for the rest of this fight."),
+    ("RA3", "Hollow Pilgrim", "Wayfinder", "signature", "After your movement roll.", "Add 3 to it."),
 ]
 
 # ------------------------------------------------------------------ §10.6 Hidden objectives (8)

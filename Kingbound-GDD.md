@@ -10,7 +10,11 @@ Game Design Document v0.1: prototype rules. Based on Yusuf's original Kingbound 
 
 References: Munchkin (fighting and looting), Catan (random board), Slay the Spire (fighting with energy and cards).
 
-The king needs one new soldier. Four recruits roam the realm, fight monsters, train and gear up. The first to reach level 10 is chosen. The last level only comes from beating the King's Champion at the Castle, and while you fight it, the other three try to stop you.
+In the Kingdom of Names, the deeds of great soldiers are written into the Royal Chronicle. Every Royal Selection brings four candidates together for one place in the royal army. They roam the Unwritten Lands, fight monsters, train and gear up, each with a private ambition of their own. The first to reach level 10 earns the place and a name worthy of the Chronicle. The last level only comes from beating the King's Champion at the Castle, and while you fight it, the other three try to stop you.
+
+### The world
+
+To be Kingbound is to be bound to the crown by ambition, duty or the wish to be remembered. The kingdom is older than the competition: beyond its settlements lie ruins, forgotten roads and creatures known only from old accounts. The mood is adventurous fantasy, not dark fantasy: danger is real, but the world invites exploring, and a rival can be an obstacle, a temporary ally or an unexpected helper. The look is an old illustrated chronicle: medieval woodcuts, illuminated manuscripts, folklore pictures and antique maps, in oxide red, deep forest green, ink black, aged parchment, antique gold and muted cobalt.
 
 ### Design goals
 
@@ -88,7 +92,7 @@ The town tiles land in different places every game, so the routes change.
 1. Build the board (§3).
 2. Shuffle the 5 Character cards and deal 1 face up to each player. Put the fifth back in the box. Take your 3 Ability cards face up (ready).
 3. Shuffle the 8 Objective cards and deal 1 face down to each player. Look only at your own.
-4. Shuffle the Action deck. Each player draws up to their hand size (5, Ranger 6).
+4. Shuffle the Action deck. Each player draws up to their hand size (5, Hollow Pilgrim 6).
 5. Shuffle the three Wilds decks and the Loot deck, each on its own.
 6. Each player starts at level 1, with HP at the maximum printed on their character, and takes 3 gold.
 7. Each player puts their pawn on a different Camp. Pick the first player at random. Play goes clockwise.
@@ -135,8 +139,8 @@ Any time outside a fight, two players may trade gold and Loot items in any mix, 
 
 | Resource | How it works |
 |---|---|
-| Hand | Your Action cards. A card you play is gone until you REST, so the same hand has to last through several fights. Hand size (5, Ranger 6) is how many cards you draw up to when you REST; some effects let you hold more. |
-| Energy | 3 each round (Rogue 4). Each card costs 0, 1 or 2 energy. Energy you don't spend is lost at the end of the round. |
+| Hand | Your Action cards. A card you play is gone until you REST, so the same hand has to last through several fights. Hand size (5, Hollow Pilgrim 6) is how many cards you draw up to when you REST; some effects let you hold more. |
+| Energy | 3 each round (Foxglove 4). Each card costs 0, 1 or 2 energy. Energy you don't spend is lost at the end of the round. |
 | Stats | Each Action card has a type: STR, AGI or WIS. Add your stat of that type to the card's number. Strike says "Deal 2 + STR damage": with STR 3 it deals 5, with STR 0 it deals 2. |
 | Abilities | Every character has 3. Using one turns it face down; you get it back when you REST. |
 | HP | Enemies take it away. You can also spend it in your own fight to draw more cards (Dig Deep, §6.2 step 2). |
@@ -178,7 +182,7 @@ Roll the die.
 | 4-6 | You escape. The fight ends with no reward. Some enemies take gold when you flee; their card says so. |
 | 1-3 | You fail. The enemy attacks you, and only your Guard roll and item Block reduce the damage. Then the next round starts and you choose again. |
 
-The AGI card Vanish and the Smoke Bomb item let you escape without rolling. Snare (Ranger) stops every kind of fleeing.
+The AGI card Vanish and the Smoke Bomb item let you escape without rolling. Lantern Veil (Hollow Pilgrim) stops every kind of fleeing.
 
 ### 6.5 Winning and being knocked out
 
@@ -212,14 +216,14 @@ Every kill brings a rival closer to level 10, but your sabotage only comes back 
 
 ### 6.8 Example fight
 
-Mira plays the Knight: STR 3, AGI 0, WIS 1, HP 13, 3 energy. Mira is level 4, carries an Iron Sword (+1 damage on STR cards) and holds Strike, Heavy Blow, Brace, Spark and Dodge. Mira stops on a Wilds II tile and draws an Orc Raider (HP 13, ATK 4, 3 gold).
+Mira plays the Bellkeeper: STR 3, AGI 0, WIS 1, HP 13, 3 energy. Mira is level 4, carries an Iron Sword (+1 damage on STR cards) and holds Strike, Heavy Blow, Brace, Spark and Dodge. Mira stops on a Wilds II tile and draws an Orc Raider (HP 13, ATK 4, 3 gold).
 
-**Before round 1.** Ben (Rogue) offers Backstab for 2 gold. Mira expects 15 damage to be enough and says no.
+**Before round 1.** Ben (Foxglove) offers Quickstep for 2 gold. Mira expects 15 damage to be enough and says no.
 
 **Round 1.**
 
 - Mira plays Heavy Blow (2 energy) for 5 + 3 STR + 1 sword = 9, and Strike (1 energy) for 2 + 3 + 1 = 6. That makes 15 damage.
-- Interference: Ben passes. Lea (Mage) uses Hex and removes 4 damage, so the damage is 11.
+- Interference: Ben passes. Lea (Ash Scribe) uses Ink Snare and removes 4 damage, so the damage is 11.
 - Check: 11 is less than 13, so the Orc survives.
 - The Orc attacks: ATK 4, no Block. Mira rolls a 4 on the Guard roll, so takes 1 less. Mira goes from 13 HP to 10.
 
@@ -228,7 +232,7 @@ Mira plays the Knight: STR 3, AGI 0, WIS 1, HP 13, 3 energy. Mira is level 4, ca
 - Mira has Brace, Spark and Dodge left. Spark (1 energy) deals 2 + 1 WIS = 3 (the sword only helps STR cards). The damage is now 14, so the Orc falls before it can attack.
 - Mira gains 2 levels (4 → 6) and 3 gold.
 
-Lea's Hex stays face down until Lea rests. Mira has two cards left and neither deals damage, so Mira will probably REST next turn.
+Lea's Ink Snare stays face down until Lea rests. Mira has two cards left and neither deals damage, so Mira will probably REST next turn.
 
 ## 7. Getting stronger
 
@@ -280,7 +284,7 @@ Every type has the same skeleton (basic attack ×5, big attack ×3, defence ×3)
 | AG2 | Ambush | AGI | 2 | 3 | Deal 4 + AGI damage. In round 1, deal 3 more. |
 | AG3 | Dodge | AGI | 1 | 3 | Gain 3 + AGI Block. |
 | AG4 | Quick Stab | AGI | 0 | 2 | Deal 1 + AGI damage. |
-| AG5 | Vanish | AGI | 0 | 2 | Flee now, no roll. Not while Snared. |
+| AG5 | Vanish | AGI | 0 | 2 | Flee now, no roll. Not while veiled. |
 | WI1 | Spark | WIS | 1 | 5 | Deal 2 + WIS damage. |
 | WI2 | Firebolt | WIS | 2 | 3 | Deal 5 + WIS damage. |
 | WI3 | Ward | WIS | 1 | 3 | Gain 3 + WIS Block. |
@@ -358,7 +362,7 @@ Every type has the same skeleton (basic attack ×5, big attack ×3, defence ×3)
 | L10 | Training Manual | 4 | 2 | Raise any stat by 1 (max 5). |
 | L11 | Healing Potion | 2 | 3 | Heal 5 HP. Any time, even in another player's turn, but not once you are at 0 HP. |
 | L12 | Bomb | 2 | 2 | In any fight: deal 5 damage to the enemy. |
-| L13 | Smoke Bomb | 1 | 1 | In your fight: flee, no roll. Not while Snared. |
+| L13 | Smoke Bomb | 1 | 1 | In your fight: flee, no roll. Not while veiled. |
 | L14 | Cursed Totem | 2 | 2 | In another player's fight: the enemy deals 3 more damage this round. |
 | L15 | Elixir | 3 | 1 | Draw Action cards up to your hand size. |
 
@@ -366,21 +370,21 @@ Every type has the same skeleton (basic attack ×5, big attack ×3, defence ×3)
 
 | Character | STR | AGI | WIS | HP | Energy | Hand | How it plays |
 |---|---|---|---|---|---|---|---|
-| Knight | 3 | 0 | 1 | 13 | 3 | 5 | Steady hitter; a good helper to hire |
-| Rogue | 1 | 3 | 0 | 8 | 4 | 5 | Fast, uses up cards quickly, steals gold |
-| Mage | 0 | 1 | 3 | 10 | 3 | 5 | Big damage, fragile |
-| Cleric | 2 | 0 | 3 | 12 | 3 | 5 | Two good stats, can draw extra cards |
-| Ranger | 1 | 2 | 1 | 13 | 3 | 6 | Spread-out stats, bigger hand, moves far |
+| Bellkeeper | 3 | 0 | 1 | 13 | 3 | 5 | Defensive warrior; a good helper to hire |
+| Foxglove | 1 | 3 | 0 | 8 | 4 | 5 | Agile trickster: fast, uses up cards quickly, steals gold |
+| Ash Scribe | 0 | 1 | 3 | 10 | 3 | 5 | Scholar: big damage, fragile |
+| Briar Knight | 2 | 3 | 0 | 9 | 3 | 5 | Duelist: two good stats, can draw extra cards |
+| Hollow Pilgrim | 1 | 2 | 1 | 13 | 3 | 6 | Wanderer: spread-out stats, bigger hand, moves far |
 
 Each character has three Abilities: one **boost** (any fight), one **sabotage** (another player's fight only) and one **signature**. A used Ability is turned face down until you REST.
 
 | Character | Boost | Sabotage | Signature |
 |---|---|---|---|
-| Knight | **Cleave:** deal 3 damage to the enemy. | **Provoke:** the enemy deals 3 more damage this round. | **Shield Wall** (any fight): the fighter gains 5 Block this round. |
-| Rogue | **Backstab:** deal 4 damage to the enemy. | **Trip:** the fighter's Block this round becomes 0 (cards and items). | **Pickpocket** (your turn): take 2 gold from a player on your tile or a tile next to you. |
-| Mage | **Fireball:** deal 5 damage to the enemy. | **Hex:** remove 4 damage from the enemy. | **Arcane Surge** (your fight): gain 2 energy this round. |
-| Cleric | **Holy Light:** deal 4 damage to the enemy; the fighter heals 2 HP. | **Penance:** the fighter loses 2 HP. | **Prayer** (your turn or your fight): draw 2 Action cards. |
-| Ranger | **Volley:** deal 3 damage to the enemy; the fighter gains 2 Block. | **Snare:** the fighter can't flee for the rest of this fight. | **Pathfinder** (after your movement roll): add 3 to it. |
+| Bellkeeper | **Iron Toll:** deal 3 damage to the enemy. | **Stand Fast:** the enemy deals 3 more damage this round. | **Echo Guard** (any fight): the fighter gains 5 Block this round. |
+| Foxglove | **Quickstep:** deal 4 damage to the enemy. | **Pocket Sand:** the fighter's Block this round becomes 0 (cards and items). | **False Image** (your turn): take 2 gold from a player on your tile or a tile next to you. |
+| Ash Scribe | **Mark of Knowing:** deal 5 damage to the enemy. | **Ink Snare:** remove 4 damage from the enemy. | **Recollection** (your fight): gain 2 energy this round. |
+| Briar Knight | **Thorn Lunge:** deal 4 damage to the enemy; the fighter heals 2 HP. | **Briar Mark:** the fighter loses 2 HP. | **Riposte** (your turn or your fight): draw 2 Action cards. |
+| Hollow Pilgrim | **Wandering Step:** deal 3 damage to the enemy; the fighter gains 2 Block. | **Lantern Veil:** the fighter can't flee for the rest of this fight. | **Wayfinder** (after your movement roll): add 3 to it. |
 
 ### 10.6 Hidden objectives: 8 cards
 
@@ -399,10 +403,10 @@ Reward for each: show the card and gain 2 levels (not above 9).
 
 ## 11. Example: the first table round
 
-- Ann (Mage) rolls 4 at the north Camp. There is a Merchant in the middle ring within reach, but Ann has 3 gold and would rather fight. Ann steps onto the Wilds I tile next to the Camp and draws a Bandit (HP 7, ATK 3). Spark deals 2 + 3 WIS = 5 and Quick Stab deals 1 + 1 AGI = 2. That is 7 damage, and the Bandit falls in round 1. Ann gains 1 level and 2 gold and has 3 cards left.
-- Ben (Rogue) rolls 2 at the east Camp, moves one tile out into the middle ring and lands on a Wilds II tile: a Harpy (HP 11, ATK 5). Ambush deals 4 + 3 AGI + 3 for round 1 = 10, and Quick Stab deals 1 + 3 = 4. That is 14 damage for 2 of Ben's 4 energy, and the Harpy falls. Ben is level 3 after one turn.
-- Cleo (Cleric) holds three AGI cards (AGI 0) and RESTs: Cleo discards them and draws 3 new cards.
-- Dan (Knight) rolls 5 and stops on a Wilds I tile: Lost Purse, +2 gold. Dan now has 5 gold, enough to raise STR from 3 to 4 at a Barracks next turn.
+- Ann (Ash Scribe) rolls 4 at the north Camp. There is a Merchant in the middle ring within reach, but Ann has 3 gold and would rather fight. Ann steps onto the Wilds I tile next to the Camp and draws a Bandit (HP 7, ATK 3). Spark deals 2 + 3 WIS = 5 and Quick Stab deals 1 + 1 AGI = 2. That is 7 damage, and the Bandit falls in round 1. Ann gains 1 level and 2 gold and has 3 cards left.
+- Ben (Foxglove) rolls 2 at the east Camp, moves one tile out into the middle ring and lands on a Wilds II tile: a Harpy (HP 11, ATK 5). Ambush deals 4 + 3 AGI + 3 for round 1 = 10, and Quick Stab deals 1 + 3 = 4. That is 14 damage for 2 of Ben's 4 energy, and the Harpy falls. Ben is level 3 after one turn.
+- Cleo (Briar Knight) holds three WIS cards (WIS 0) and RESTs: Cleo discards them and draws 3 new cards.
+- Dan (Bellkeeper) rolls 5 and stops on a Wilds I tile: Lost Purse, +2 gold. Dan now has 5 gold, enough to raise STR from 3 to 4 at a Barracks next turn.
 
 ## 12. Playtesting
 

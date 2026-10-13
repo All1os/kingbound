@@ -2,7 +2,7 @@
 
 The bots' decisions come from the balance simulator that set the GDD's numbers (sim.py, October
 2026), ported here and extended so that a recorded game shows every mechanic: help deals (§6.6),
-sabotage and interference (§6.7), Dig Deep (§6.2), hidden objectives (§9), Pickpocket and the
+sabotage and interference (§6.7), Dig Deep (§6.2), hidden objectives (§9), False Image and the
 King's Trial (§8).
 
 Game(seed).play() runs a whole game in memory and fills game.events, a list of small dicts such
@@ -41,9 +41,9 @@ CHAR = {ch[1]: dict(id=ch[0], STR=ch[2], AGI=ch[3], WIS=ch[4], hp=ch[5], energy=
 ABIL = {ch[1]: [a[2] for a in C.ABILITIES_OF[ch[1]]] for ch in C.CHARACTERS}   # boost, sabotage, signature
 ABIL_ID = {a[2]: a[0] for a in C.ABILITIES}
 OBJ_NAME = {o[0]: o[1] for o in C.OBJECTIVES}
-# Every boost deals damage (sim v1: a defensive-only boost left the Knight and Cleric fleeing far
+# Every boost deals damage (sim v1: a defensive-only boost left the Bellkeeper and Briar Knight fleeing far
 # more often), so a bot treats its boost as free damage.
-DMG_ABILITY = {"Cleave": 3, "Backstab": 4, "Fireball": 5, "Volley": 3, "Holy Light": 4}
+DMG_ABILITY = {"Iron Toll": 3, "Quickstep": 4, "Mark of Knowing": 5, "Wandering Step": 3, "Thorn Lunge": 4}
 WEAPON_FOR = {"STR": "L01", "AGI": "L02", "WIS": "L03"}
 STAT_MAX = 5
 DIG_COST = 2        # Dig Deep: lose 2 HP to draw 1 Action card (§6.2 step 2)
@@ -560,12 +560,12 @@ class Game:
             remaining = E["hp"] - damage
             atk_now = E["atk"] + (2 if E["trait"] == "charge" and rnd == 1 else 0)
             self.ev("fightround", f"Round {rnd} against the {E['name']}: {damage} of {E['hp']} damage so far.", round=rnd)
-            # Prayer (Cleric signature, your fight): draw 2 when the hand is short.
-            if p.sig() == "Prayer" and "Prayer" in p.ready and (len(p.hand) <= 3 or hand_potential(p, E) < remaining):
-                self.use_ability(p, "Prayer", f"{p.name} uses Prayer: draws 2 Action cards.")
+            # Riposte (Briar Knight signature, your fight): draw 2 when the hand is short.
+            if p.sig() == "Riposte" and "Riposte" in p.ready and (len(p.hand) <= 3 or hand_potential(p, E) < remaining):
+                self.use_ability(p, "Riposte", f"{p.name} uses Riposte: draws 2 Action cards.")
                 self.draw_cards(p, 2)
             free = self.free_damage(p)
-            surge = 2 if (p.sig() == "Arcane Surge" and "Arcane Surge" in p.ready) else 0
+            surge = 2 if (p.sig() == "Recollection" and "Recollection" in p.ready) else 0
             help_pot = 0
             if helper:
                 help_pot = self.helper_plan(helper, E, rnd, 999)["dmg"]
@@ -613,7 +613,7 @@ class Game:
                 elif plan is None:
                     want_flee = True
                 elif not plan["kills"] and plan["hp_after"] <= 0:
-                    defensive = (p.sig() == "Shield Wall" and "Shield Wall" in p.ready) or "L11" in p.consumables
+                    defensive = (p.sig() == "Echo Guard" and "Echo Guard" in p.ready) or "L11" in p.consumables
                     want_flee = not defensive
             if want_flee:
                 vanish = next((c for c in p.hand if ACT[c]["vanish"]), None)
@@ -656,10 +656,10 @@ class Game:
                 b = p.boost()
                 if b in p.ready and (need > 0 or trial):
                     extra = ""
-                    if b == "Holy Light":
+                    if b == "Thorn Lunge":
                         heal += 2
                         extra = " and heals 2 HP"
-                    if b == "Volley":
+                    if b == "Wandering Step":
                         blk += 2
                         extra = " and gains 2 Block"
                     self.use_ability(p, b, f"{p.name} uses {b}: {DMG_ABILITY[b]} damage{extra}.")
@@ -670,7 +670,7 @@ class Game:
                     dealt += 5
                     need -= 5
                 if surge and plan.get("cost", 0) > p.energy:
-                    self.use_ability(p, "Arcane Surge", f"{p.name} uses Arcane Surge: +2 energy this round.")
+                    self.use_ability(p, "Recollection", f"{p.name} uses Recollection: +2 energy this round.")
             if heal:
                 before = p.hp
                 p.hp = min(p.maxhp, p.hp + heal)
@@ -681,11 +681,11 @@ class Game:
             round_dealt = dealt
             damage += dealt
             self.ev("damage", total=damage)
-            # Shield Wall or a potion before the hit lands, if the hit would knock the fighter out.
+            # Echo Guard or a potion before the hit lands, if the hit would knock the fighter out.
             if damage < E["hp"]:
                 expect = max(0, atk_now - blk - p.item_block() - 1)
-                if expect >= p.hp and p.sig() == "Shield Wall" and "Shield Wall" in p.ready:
-                    self.use_ability(p, "Shield Wall", f"{p.name} raises Shield Wall: +5 Block this round.")
+                if expect >= p.hp and p.sig() == "Echo Guard" and "Echo Guard" in p.ready:
+                    self.use_ability(p, "Echo Guard", f"{p.name} raises Echo Guard: +5 Block this round.")
                     blk += 5
                     expect = max(0, expect - 5)
                 if expect >= p.hp and "L11" in p.consumables:
@@ -706,7 +706,7 @@ class Game:
                     b = hp_plan["boost"]
                     self.use_ability(helper, b, f"{helper.name} adds {b}: {DMG_ABILITY[b]} damage.")
                     hd += DMG_ABILITY[b]
-                    if b == "Volley":
+                    if b == "Wandering Step":
                         hblk += 2
                 if cap is not None:
                     hd = min(hd, cap - round_dealt)
@@ -728,24 +728,24 @@ class Game:
                 if o not in spoilers:
                     spoilers.append(o)
                 self.stats["sabotage"] += 1
-                if kind == "Hex":
+                if kind == "Ink Snare":
                     damage = max(0, damage - 4)
-                    self.use_ability(o, "Hex", say)
+                    self.use_ability(o, "Ink Snare", say)
                     self.ev("damage", total=damage)
-                elif kind == "Provoke":
+                elif kind == "Stand Fast":
                     provoke += 3
-                    self.use_ability(o, "Provoke", say)
-                elif kind == "Trip":
+                    self.use_ability(o, "Stand Fast", say)
+                elif kind == "Pocket Sand":
                     block_total = 0
-                    self.use_ability(o, "Trip", say)
-                elif kind == "Penance":
-                    self.use_ability(o, "Penance", say)
+                    self.use_ability(o, "Pocket Sand", say)
+                elif kind == "Briar Mark":
+                    self.use_ability(o, "Briar Mark", say)
                     p.hp = max(0, p.hp - 2)
                     hp_low = min(hp_low, p.hp)
                     self.sync(p)
-                elif kind == "Snare":
+                elif kind == "Lantern Veil":
                     snared = True
-                    self.use_ability(o, "Snare", say)
+                    self.use_ability(o, "Lantern Veil", say)
                 elif kind == "Totem":
                     provoke += 3
                     self.use_item(o, "L14", say, True)
@@ -786,19 +786,19 @@ class Game:
             return None
         has_totem = "L14" in o.consumables
         if sab in o.ready:
-            if sab == "Hex" and would_kill and damage - 4 < E["hp"]:
-                return "Hex", f"{o.name} casts Hex on {p.name}'s fight: 4 damage comes off the {E['name']}."
-            if sab == "Hex" and trial and damage > 0:
-                return "Hex", f"{o.name} casts Hex: 4 damage comes off the Champion."
+            if sab == "Ink Snare" and would_kill and damage - 4 < E["hp"]:
+                return "Ink Snare", f"{o.name} casts Ink Snare on {p.name}'s fight: 4 damage comes off the {E['name']}."
+            if sab == "Ink Snare" and trial and damage > 0:
+                return "Ink Snare", f"{o.name} casts Ink Snare: 4 damage comes off the Champion."
             if not would_kill:
-                if sab == "Provoke":
-                    return "Provoke", f"{o.name} uses Provoke: the {E['name']} deals 3 more damage this round."
-                if sab == "Penance":
-                    return "Penance", f"{o.name} uses Penance: {p.name} loses 2 HP."
-                if sab == "Trip" and block_total >= 2:
-                    return "Trip", f"{o.name} uses Trip: {p.name}'s {block_total} Block drops to 0."
-                if sab == "Snare" and (trial and rnd == 1 or potential < remaining + 4):
-                    return "Snare", f"{o.name} uses Snare: {p.name} can't flee for the rest of this fight."
+                if sab == "Stand Fast":
+                    return "Stand Fast", f"{o.name} uses Stand Fast: the {E['name']} deals 3 more damage this round."
+                if sab == "Briar Mark":
+                    return "Briar Mark", f"{o.name} uses Briar Mark: {p.name} loses 2 HP."
+                if sab == "Pocket Sand" and block_total >= 2:
+                    return "Pocket Sand", f"{o.name} uses Pocket Sand: {p.name}'s {block_total} Block drops to 0."
+                if sab == "Lantern Veil" and (trial and rnd == 1 or potential < remaining + 4):
+                    return "Lantern Veil", f"{o.name} uses Lantern Veil: {p.name} can't flee for the rest of this fight."
         if has_totem and not would_kill and (trial or threat or spoiler):
             return "Totem", f"{o.name} raises a Cursed Totem: the {E['name']} deals 3 more damage this round."
         return None
@@ -1056,15 +1056,15 @@ class Game:
             self.say(f"{p.name} stops at the Healer but needs no healing.")
 
     def pickpocket(self, p):
-        """Rogue signature (§10.5): on your turn, take 2 gold from a player on your tile or next to it."""
-        if p.sig() != "Pickpocket" or "Pickpocket" not in p.ready:
+        """Foxglove signature (§10.5): on your turn, take 2 gold from a player on your tile or next to it."""
+        if p.sig() != "False Image" or "False Image" not in p.ready:
             return
         marks = [q for q in self.players if q is not p and dist(q.pos, p.pos) <= 1 and q.gold > 0]
         if not marks:
             return
         q = max(marks, key=lambda x: (x.level, x.gold))
         n = min(2, q.gold)
-        self.use_ability(p, "Pickpocket", f"{p.name} uses Pickpocket on {q.name}: takes {plural(n, 'gold')}.")
+        self.use_ability(p, "False Image", f"{p.name} uses False Image on {q.name}: takes {plural(n, 'gold')}.")
         q.gold -= n
         p.gold += n
         self.stats["pickpocket"] += 1
@@ -1171,8 +1171,8 @@ class Game:
     def take_turn(self, p):
         self.head = f"Round {self.round} · {p.label} · level {p.level}"
         self.ev("turn", f"{p.label}'s turn: level {p.level}, {p.hp}/{p.maxhp} HP, {p.gold} gold.", color=p.color)
-        if p.sig() == "Prayer" and "Prayer" in p.ready and len(p.hand) <= 2:
-            self.use_ability(p, "Prayer", f"{p.name} uses Prayer: draws 2 Action cards.")
+        if p.sig() == "Riposte" and "Riposte" in p.ready and len(p.hand) <= 2:
+            self.use_ability(p, "Riposte", f"{p.name} uses Riposte: draws 2 Action cards.")
             self.draw_cards(p, 2)
         while p.hp <= p.maxhp * 0.4 and "L11" in p.consumables:
             self.use_item(p, "L11", f"{p.name} drinks a Healing Potion.", False)
@@ -1210,10 +1210,10 @@ class Game:
         boots = 1 if "L09" in p.equipment else 0
         v = self.roll(p, "movement" + (", +1 Swift Boots" if boots else ""), spot="board")
         roll = v + boots
-        if p.sig() == "Pathfinder" and "Pathfinder" in p.ready:
+        if p.sig() == "Wayfinder" and "Wayfinder" in p.ready:
             want = roll <= 3 or (goal == "castle" and roll < dist(p.pos, CASTLE) <= roll + 3)
             if want:
-                self.use_ability(p, "Pathfinder", f"{p.name} uses Pathfinder: {roll} + 3 = {roll + 3}.")
+                self.use_ability(p, "Wayfinder", f"{p.name} uses Wayfinder: {roll} + 3 = {roll + 3}.")
                 roll += 3
         reach = [pos for pos in b if 1 <= dist(pos, p.pos) <= roll]
         dest = self.choose_dest(p, reach, goal)

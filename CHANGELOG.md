@@ -4,6 +4,10 @@ All notable changes to the Kingbound prototype. Each version is also a GitHub re
 
 ## Unreleased
 
+- Story and look from the narrative document (`narrative and settingKINGBOUND.docx`): the GDD opens with the Royal Selection and the Royal Chronicle and has a short section on the world; cards use the document's palette (aged parchment, ink black, antique gold, oxide red for STR, deep forest green for AGI, muted cobalt for WIS) and book-like lettering for titles.
+- Characters and Abilities renamed after the narrative, effects unchanged: Knight → Bellkeeper (Iron Toll, Stand Fast, Echo Guard), Rogue → Foxglove (Quickstep, Pocket Sand, False Image), Mage → Ash Scribe (Mark of Knowing, Ink Snare, Recollection), Cleric → Briar Knight (Thorn Lunge, Briar Mark, Riposte), Ranger → Hollow Pilgrim (Wandering Step, Lantern Veil, Wayfinder). "Snared" on Vanish and Smoke Bomb reads "veiled". The team's word Ability stays (the document says cantrip).
+- Briar Knight is a STR/AGI duelist in the narrative: STR 2, AGI 3, WIS 0, HP 9 (was the Cleric's STR 2, WIS 3, HP 12). With AGI 3 at HP 12 it won 36% of 1,000 bot games; at HP 9 the five characters win 21-29% (1,200 games), about as spread as before.
+- Which Ability name goes with which effect was our call where the document gives only names: the boost deals damage, the sabotage hurts a rival's fight, the signature keeps its old job.
 - Three buttons instead of ten, under TTS's own toolbar at the top left (the old column covered the toolbar's menus): START GAME, BOT GAME and RESET. START GAME now shuffles the board and deals in one click. Drawing cards, revealing enemies and clearing a fight are done by hand.
 - BOT GAME plays a scripted bot game inside TTS, with no terminal: the full game or the short one, at 0.75x to 2x speed. `build.py` lets the bots play both games and stores every command in the save; the button replays them. Pressing it again (STOP BOTS) stops the game. `bots/play.py` still sends any seed from a terminal.
 - Script errors during a bot game are also printed in TTS's chat.

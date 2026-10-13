@@ -1,6 +1,6 @@
 # Kingbound
 
-Prototype of Kingbound, a competitive adventure card game for 4 players. Recruits roam a 7×7 board, fight monsters with a hand of Action cards, train and gear up. The first to win the King's Trial at the Castle is chosen by the king.
+Prototype of Kingbound, a competitive adventure card game for 4 players. In the Royal Selection, four candidates roam the Unwritten Lands on a 7×7 board, fight monsters with a hand of Action cards, train and gear up. The first to win the King's Trial at the Castle joins the royal army and a place in the Royal Chronicle.
 
 Version history: [CHANGELOG.md](CHANGELOG.md). Each version is also a GitHub release.
 
@@ -40,7 +40,7 @@ Drawing cards, revealing enemies and clearing a fight are done by hand.
 
 ## Bots for the gameplay video
 
-Four bots (Bora, Anastasya, Amira and Esma) play a whole game in TTS by themselves. Pawns walk, the die rolls, cards are drawn and played face up, damage tokens go on the enemy, and the HP, gold and level counters change. A caption at the bottom of the screen says what each step is ("Bora (Mage) fights a Bandit: 7 damage, wins, +1 level") and a panel on the right shows everyone's level, HP and gold. The bots make help deals, sabotage each other, dig deep, complete hidden objectives and face the King's Trial.
+Four bots (Bora, Anastasya, Amira and Esma) play a whole game in TTS by themselves. Pawns walk, the die rolls, cards are drawn and played face up, damage tokens go on the enemy, and the HP, gold and level counters change. A caption at the bottom of the screen says what each step is ("Bora (Ash Scribe) fights a Bandit: 7 damage, wins, +1 level") and a panel on the right shows everyone's level, HP and gold. The bots make help deals, sabotage each other, dig deep, complete hidden objectives and face the King's Trial.
 
 In TTS: BOT GAME, then Full game or Short game. Speed changes the pace (0.75x to 2x) and can be pressed during a game; BOT GAME (now STOP BOTS) stops it. Both games are stored in the save, so nothing else needs to run.
 
@@ -48,8 +48,8 @@ During a bot game the camera goes wherever the next step happens (Camera: free i
 
 | Game | 0.75x | 1x | 1.5x | 2x |
 |---|---|---|---|---|
-| Full game (seed 1): 13 rounds, three Trial attempts, Bora (Mage) wins | 25:08 | 18:51 | 12:34 | 9:25 |
-| Short game (seed 94): starts at levels 6-8, ends with the Trial, Anastasya (Mage) wins | 6:24 | 4:48 | 3:12 | 2:24 |
+| Full game (seed 1): 12 rounds, Amira (Bellkeeper) wins | 24:59 | 18:44 | 12:29 | 9:22 |
+| Short game (seed 94): starts at levels 6-8, ends with the Trial, Anastasya (Ash Scribe) wins | 6:30 | 4:52 | 3:15 | 2:26 |
 
 The same games, or any other seed, can also be sent from a terminal in this folder (TTS open, save loaded):
 
