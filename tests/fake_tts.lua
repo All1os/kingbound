@@ -118,7 +118,7 @@ function newObject(o)
   self.getPosition = function() live() return {x = self.pos.x, y = self.pos.y, z = self.pos.z} end
   self.setPosition = function(p) live() self.pos = vec(p) end
   self.setPositionSmooth = function(p) live() self.pos = vec(p) end
-  self.getRotation = function() return self.rot end
+  self.getRotation = function() live() return {x = self.rot.x, y = self.rot.y, z = self.rot.z} end
   self.setRotation = function(r) live() self.rot = vec(r) end
   self.setRotationSmooth = function(r) live() self.rot = vec(r) end
   self.isSmoothMoving = function() live() return false end

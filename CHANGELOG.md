@@ -13,7 +13,7 @@ All notable changes to the Kingbound prototype. Each version is also a GitHub re
 - Whatever a bot touches glows in its colour for a few seconds and gives a short pop; the tiles a pawn walks over light up.
 - The die sits beside the Wilds discard piles, inside the camera's board and fight views.
 - `bots/play.py` moves the camera the same way by default (`--no-camera` leaves it alone).
-- Every seat's cards and player board face the bottom of the table, where the camera always is, so all of them read the right way up on camera. The side seats got a new layout so their upright cards don't overlap: a 7-card hand row, then character, Abilities and objective, then items, with the board at the end.
+- The camera always looks from the bottom of the table and never turns. When it shows a card at another seat (drawn, flipped, bought), the card turns to face the camera for a few seconds, then back to its player.
 - The bots are called Bora, Anastasya, Amira and Esma, and each seat has a name plate in its colour at the left end of the hand row.
 - The full bot game now takes 18:51 and the short one 4:48 at speed 1 (longer names, longer captions).
 

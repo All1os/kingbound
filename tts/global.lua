@@ -208,9 +208,30 @@ end
 -- Whatever a bot touches glows in its colour for a few seconds and gives a short pop (a quarter
 -- bigger and back), so the eye catches it on video. TTS can't draw the glow any thicker (Yavuz
 -- asked for the interaction outlines to stand out more, 2026-10-13).
+-- The camera always looks from the bottom of the table and never turns (Yavuz, 2026-10-13), so a
+-- card at another seat turns to face it while it is shown, then turns back if it is still there.
+local function faceCamera(o, secs)
+  if o.type ~= "Card" then return end
+  local r = o.getRotation()
+  if math.abs(((r.y - 180) + 540) % 360 - 180) < 5 then return end
+  o.setRotationSmooth({x = r.x, y = 180, z = r.z}, false, true)
+  Wait.time(function()
+    if not alive(o) then return end
+    local q, r2 = o.getPosition(), o.getRotation()
+    local inFight = near(q, L.piles.enemy, 1.5)
+    for _, list in ipairs({L.played, L.helper, L.extra, L.offer}) do
+      for _, s in ipairs(list) do if near(q, s, 1.5) then inFight = true end end
+    end
+    if not inFight and math.abs(((r2.y - 180) + 540) % 360 - 180) < 5 then
+      o.setRotationSmooth({x = r2.x, y = r.y, z = r2.z}, false, true)
+    end
+  end, secs)
+end
+
 POPPING = {}
 function mark(o, color, secs)
   if not alive(o) then return end
+  pcall(function() faceCamera(o, (secs or 4) + 0.5) end)
   pcall(function() o.highlightOn(COLORS[color] or GOLDEN, secs or 4) end)
   local ok, g = pcall(function() return o.getGUID() end)
   if not ok or POPPING[g] then return end

@@ -666,17 +666,11 @@ PB_LUA = (ROOT / "player_board.lua").read_text().replace("__POS__", to_lua(UI_PO
 lua_seats = []
 for seat in SEATS:
     color, hx, hz, rot = seat
-    # The camera always looks from the bottom of the table (it never turns), so the seat opposite
-    # (Green) has its cards and board turned to face the bottom too (Yavuz, 2026-10-13). The side
-    # seats keep facing their player: turned, their cards would overlap in a column.
-    cr = 180.0   # every seat's cards and board face the bottom of the table, where the camera always is
-    side = rot in (90.0, 270.0)
+    cr = rot + 180.0   # cards and board face their own player; global.lua turns a card to the camera while shown
     objs.append(base("HandTrigger", {"posX": hx, "posY": 4.8, "posZ": hz, "rotX": 0.0, "rotY": rot,
                                      "rotZ": 0.0, "scaleX": 11.8, "scaleY": 9.2, "scaleZ": 4.9},
                      FogColor=color, Locked=True))
-    # Side seats: cards stand upright (3.1 deep along the seat), so they get wider spacing and three
-    # rows: hand, then character + Abilities + objective, then items; the board sits beside them.
-    bx, bz = local(seat, 11.2, 6.4) if side else local(seat, *BOARD_UV)
+    bx, bz = local(seat, *BOARD_UV)
     objs.append(tile(f"board-{color.lower()}.png", tr(bx, bz, cr, s=PB_S, y=1.05), f"{color} board",
                      "HP, max HP, gold and stats. Click the buttons.", thick=0.1,
                      LuaScript=PB_LUA, LuaScriptState=json.dumps({"title": color}), Tags=["pboard"], GMNotes=color))
@@ -688,29 +682,19 @@ for seat in SEATS:
     mx = TRACK["x"] + (1 - 5.5) * TRACK["dx"] + MARK_OFF[color][0]
     objs.append(tile(f"marker-{color.lower()}.png", tr(mx, TRACK["z"] + MARK_OFF[color][1], 180.0, s=0.3, y=1.3),
                      f"{color} level", locked=False, circle=True, thick=0.15, Tags=["marker"], GMNotes=color))
-    if side:
-        S = 3.3
-        hand = [local(seat, -13.2 + S * k, 4.0) for k in range(7)]   # 8th card on: stacked on the 7th
-        ch = local(seat, -13.2, 6.4)
-        abil = [local(seat, -13.2 + S * k, 6.4) for k in (1, 2, 3)]
-        ob = local(seat, -13.2 + S * 4, 6.4)
-        equip = [local(seat, -13.2 + S * k, 8.8) for k in (0, 1, 2)]
-        use = [local(seat, -13.2 + S * k, 8.8) for k in (3, 4, 5)]
-    else:
-        hand = [local(seat, u, HAND_V) for u in HAND_U]
-        abil = [local(seat, u, ROW2_V) for u in ABIL_U]
-        equip = [local(seat, u, ROW2_V) for u in EQUIP_U]
-        use = [local(seat, u, ROW2_V) for u in USE_U]
-        ch, ob = local(seat, CHAR_U, ROW2_V), local(seat, OBJ_U, ROW2_V)
+    hand = [local(seat, u, HAND_V) for u in HAND_U]
+    abil = [local(seat, u, ROW2_V) for u in ABIL_U]
+    equip = [local(seat, u, ROW2_V) for u in EQUIP_U]
+    use = [local(seat, u, ROW2_V) for u in USE_U]
+    ch, ob = local(seat, CHAR_U, ROW2_V), local(seat, OBJ_U, ROW2_V)
     for p in abil + equip + use + [ch, ob]:
         snap(p, cr)
     # Bot camera views of this seat, seen from the player's side so their cards read upright (yaw 0
     # looks north from the south, 90 east from the west). global.lua turns the camera the short way
     # round. They aim between the hand row and the row behind it.
-    views = ({"hand": list(local(seat, -1.0, 6.4)), "gear": list(local(seat, 4.0, 7.0)), "yaw": 0} if side else
-             {"hand": list(local(seat, -2.5, 6.0)), "gear": list(local(seat, 9.0, 6.0)), "yaw": 0})
+    views = {"hand": list(local(seat, -2.5, 6.0)), "gear": list(local(seat, 9.0, 6.0)), "yaw": 0}
     # Name plate at the left end of the hand row, readable from the bottom of the table.
-    nx, nz = local(seat, -16.6, 5.8) if side else local(seat, -15.2, 4.4)
+    nx, nz = local(seat, -15.2, 4.4)
     objs.append(tile(f"name-{color.lower()}.png", tr(nx, nz, 180.0, s=0.65, y=1.05), f"{BOT_NAMES[color]}",
                      thick=0.08, Tags=["nameplate"], GMNotes=color))
     lua_seats.append({"color": color, "rot": cr, "hand": hand, "char": ch, "abil": abil, "equip": equip,
