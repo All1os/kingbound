@@ -4,6 +4,11 @@ All notable changes to the Kingbound prototype. Each version is also a GitHub re
 
 ## Unreleased
 
+- Real-time Kingbound in `realtime/`: the team's final design (2026-10-18, Escape: The Curse of the Temple as reference) as a Tabletop Simulator prototype. Room tiles with passages, 4 symbol dice per player, monster and treasure tokens, a Loot Deck, player mats, an action chart and an on-screen 10-minute timer. Where the design document is open (dice faces, counts, points, Loot cards), the choices are listed in `realtime/README.md`.
+- `realtime/tutorial.py` plays a 3:52 tutorial for the presentation: the goal, setup, one player practising without the timer, bigger monsters and Loot, then a real game with everyone at once and the scoring. On screen there is only a one- or two-word name for each part with the dice symbols it costs; `tutorial-cues.md` has what to say over it. `--record` records the screen.
+- `realtime/photos.py` takes a photo of every element for the slides.
+- `realtime/tts/hotload.py` puts a new build on the table of a running TTS, so the save no longer has to be loaded by hand after each change.
+
 - Story and look from the narrative document (`narrative and settingKINGBOUND.docx`): the GDD opens with the Royal Selection and the Royal Chronicle and has a short section on the world; cards use the document's palette (aged parchment, ink black, antique gold, oxide red for STR, deep forest green for AGI, muted cobalt for WIS) and book-like lettering for titles.
 - Characters and Abilities renamed after the narrative, effects unchanged: Knight → Bellkeeper (Iron Toll, Stand Fast, Echo Guard), Rogue → Foxglove (Quickstep, Pocket Sand, False Image), Mage → Ash Scribe (Mark of Knowing, Ink Snare, Recollection), Cleric → Briar Knight (Thorn Lunge, Briar Mark, Riposte), Ranger → Hollow Pilgrim (Wandering Step, Lantern Veil, Wayfinder). "Snared" on Vanish and Smoke Bomb reads "veiled". The team's word Ability stays (the document says cantrip).
 - Briar Knight is a STR/AGI duelist in the narrative: STR 2, AGI 3, WIS 0, HP 9 (was the Cleric's STR 2, WIS 3, HP 12). With AGI 3 at HP 12 it won 36% of 1,000 bot games; at HP 9 the five characters win 21-29% (1,200 games), about as spread as before.

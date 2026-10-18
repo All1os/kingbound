@@ -12,6 +12,7 @@ Version history: [CHANGELOG.md](CHANGELOG.md). Each version is also a GitHub rel
 | `tts/output/` | The card sheets, tiles and other images, and the save `KINGBOUND-prototype.json` |
 | `bots/` | Four bots that play the game in TTS (`play.py`), their rules engine (`engine.py`) and a statistics run (`stats.py`) |
 | `tests/` | `check_tts_script.py` runs the table script against a fake TTS |
+| `realtime/` | The team's final design (2026-10-18): a real-time dice version for 3-5 players, with its own TTS prototype, tutorial video script and photo script. See `realtime/README.md` |
 
 ## Tabletop Simulator
 
