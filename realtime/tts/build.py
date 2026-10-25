@@ -37,12 +37,12 @@ SYM_NAME = {"move": "MOVEMENT", "attack": "ATTACK", "magic": "MAGIC"}
 STONE, WALL, FLOOR = (92, 86, 78), (44, 40, 36), (150, 140, 122)
 TRAP_COL, PRANK_COL, SAFE_COL = (204, 112, 26), (112, 48, 128), (92, 44, 122)
 STEEL = (204, 204, 210)
-# 3-5 players (§1). The bots of v0.1 sat at four seats; the fifth is Yusuf's, the team's fifth member.
+# 3-5 players (§1): five seats. The mats show only the seat colour: the team members' names came off when the
+# save went on the Steam Workshop (Yavuz, 2026-10-25: "kartlardan isimleri kaldır").
 COLORS = ["Red", "Yellow", "Green", "Blue", "Purple"]
 RGB = {"Red": (0.856, 0.1, 0.094), "Yellow": (0.905, 0.898, 0.172), "Green": (0.192, 0.701, 0.168),
        "Blue": (0.118, 0.53, 1.0), "Purple": (0.627, 0.125, 0.941)}
 PIX = {"Red": (200, 60, 52), "Yellow": (214, 190, 40), "Green": (64, 160, 60), "Blue": (52, 120, 210), "Purple": (140, 64, 196)}
-NAMES = {"Red": "Bora", "Yellow": "Anastasya", "Green": "Amira", "Blue": "Esma", "Purple": "Yusuf"}
 
 # ------------------------------------------------------------------ game content (our choices where the document is open)
 # Dice (§5): a D6 with Movement, Attack and Magic; the document names no other face, so two of each.
@@ -417,7 +417,7 @@ def mat_img(color):
     d.rectangle((0, 0, MAT_W - 1, MAT_H - 1), outline=PIX[color], width=16)
     d.rectangle((0, 0, MAT_W, 78), fill=PIX[color])
     light = color in ("Yellow",)
-    d.text((MAT_W / 2, 40), f"{NAMES[color]}  ·  {color}", font=f(BLACK, 44), fill=INK if light else CREAM, anchor="mm")
+    d.text((MAT_W / 2, 40), color.upper(), font=f(BLACK, 46), fill=INK if light else CREAM, anchor="mm")
     for key, (x0, x1, head, sub) in MAT_BOX.items():
         fill = {"carry": (242, 220, 196), "points": (226, 230, 196)}.get(key)
         d.rounded_rectangle((x0, 100, x1, 540), 16, fill=fill, outline=(150, 130, 100), width=4)
@@ -683,9 +683,9 @@ objs.append(base("Deck", tr(*LOOT_POS, face_down=True, s=0.75, y=1.3), "Loot Dec
 DICE_IMG = url("dice.png")
 for c in COLORS:
     mx = MAT_X[c]
-    objs.append(tile(f"mat-{c.lower()}.png", tr(mx, MAT_Z, s=MAT_S, y=1.02), f"{NAMES[c]} ({c})", thick=0.06,
+    objs.append(tile(f"mat-{c.lower()}.png", tr(mx, MAT_Z, s=MAT_S, y=1.02), f"{c} mat", thick=0.06,
                      Tags=["mat"], GMNotes=c))
-    objs.append(base("PlayerPawn", tr(*PAWN_HOME[c], 0.0, s=1.1, y=1.6), f"{NAMES[c]}'s character", Locked=False,
+    objs.append(base("PlayerPawn", tr(*PAWN_HOME[c], 0.0, s=1.1, y=1.6), f"{c} character", Locked=False,
                      ColorDiffuse={"r": RGB[c][0], "g": RGB[c][1], "b": RGB[c][2]}, Tags=["pawn"], GMNotes=c))
     for i in range(4):
         objs.append(base("Custom_Dice", tr(*DICE_SUPPLY[COLORS.index(c) * 4 + i], 0.0, s=1.5, y=1.46), f"{c} die {i + 1}",

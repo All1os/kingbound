@@ -1,7 +1,7 @@
 {
  "SaveName": "KINGBOUND-realtime",
- "EpochTime": 1792954451,
- "Date": "10/25/2026 09:54:11 PM",
+ "EpochTime": 1792957043,
+ "Date": "10/25/2026 10:37:23 PM",
  "VersionNumber": "v14.2.2",
  "GameMode": "Kingbound real-time prototype",
  "Tags": [],
@@ -3054,7 +3054,7 @@
     "scaleY": 1.0,
     "scaleZ": 2.54545
    },
-   "Nickname": "Bora (Red)",
+   "Nickname": "Red mat",
    "Description": "",
    "GMNotes": "Red",
    "Locked": true,
@@ -3066,7 +3066,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/12213910308309115207/D95DFF942EDBEA1CF63183B37BB9159BAF9FA477/",
+    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-red.15e095dea8.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3095,7 +3095,7 @@
     "scaleY": 1.0,
     "scaleZ": 1.1
    },
-   "Nickname": "Bora's character",
+   "Nickname": "Red character",
    "Description": "",
    "GMNotes": "Red",
    "Locked": false,
@@ -3301,7 +3301,7 @@
     "scaleY": 1.0,
     "scaleZ": 2.54545
    },
-   "Nickname": "Anastasya (Yellow)",
+   "Nickname": "Yellow mat",
    "Description": "",
    "GMNotes": "Yellow",
    "Locked": true,
@@ -3313,7 +3313,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15191166431234086476/E7166D240C24A4D11D202D6C272916585A686700/",
+    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-yellow.46133851be.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3342,7 +3342,7 @@
     "scaleY": 1.0,
     "scaleZ": 1.1
    },
-   "Nickname": "Anastasya's character",
+   "Nickname": "Yellow character",
    "Description": "",
    "GMNotes": "Yellow",
    "Locked": false,
@@ -3548,7 +3548,7 @@
     "scaleY": 1.0,
     "scaleZ": 2.54545
    },
-   "Nickname": "Amira (Green)",
+   "Nickname": "Green mat",
    "Description": "",
    "GMNotes": "Green",
    "Locked": true,
@@ -3560,7 +3560,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/16248316739504947778/303D692C62F284246289686061056BBB45144DF4/",
+    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-green.a99683bb58.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3589,7 +3589,7 @@
     "scaleY": 1.0,
     "scaleZ": 1.1
    },
-   "Nickname": "Amira's character",
+   "Nickname": "Green character",
    "Description": "",
    "GMNotes": "Green",
    "Locked": false,
@@ -3795,7 +3795,7 @@
     "scaleY": 1.0,
     "scaleZ": 2.54545
    },
-   "Nickname": "Esma (Blue)",
+   "Nickname": "Blue mat",
    "Description": "",
    "GMNotes": "Blue",
    "Locked": true,
@@ -3807,7 +3807,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/9508163759151590538/33CFF073CD4F2A7BB866C09B6F1BCF5CB1064380/",
+    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-blue.c8d07e357b.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3836,7 +3836,7 @@
     "scaleY": 1.0,
     "scaleZ": 1.1
    },
-   "Nickname": "Esma's character",
+   "Nickname": "Blue character",
    "Description": "",
    "GMNotes": "Blue",
    "Locked": false,
@@ -4042,7 +4042,7 @@
     "scaleY": 1.0,
     "scaleZ": 2.54545
    },
-   "Nickname": "Yusuf (Purple)",
+   "Nickname": "Purple mat",
    "Description": "",
    "GMNotes": "Purple",
    "Locked": true,
@@ -4054,7 +4054,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15404194635317680111/DE695C39965CB149585CAC33A97F68328C0C12AE/",
+    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-purple.3ad058265d.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -4083,7 +4083,7 @@
     "scaleY": 1.0,
     "scaleZ": 1.1
    },
-   "Nickname": "Yusuf's character",
+   "Nickname": "Purple character",
    "Description": "",
    "GMNotes": "Purple",
    "Locked": false,

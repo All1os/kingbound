@@ -41,7 +41,7 @@ Sit at Red, Yellow, Green, Blue or Purple and press START GAME (top left, under 
 | Treasures | All need 2 Magic. 3 common (1 point), 3 rare (3 points), 6 special (1 point and a Loot card). The feedback asked for more Loot: 6 special treasures instead of 3 |
 | Loot Deck | 18 cards, two of each: Iron Sword (counts as 1 Attack), Swift Boots (1 Movement), Rune Amulet (1 Magic), Lucky Charm (once: turn a die to any symbol), Fire Bomb (once: beat a weak monster without rolling) and the four Pranks |
 | Acting | Moving goes to a connected room. A monster or treasure is taken in its own room |
-| Seats | Five, for 3-5 players (§1): Red Bora, Yellow Anastasya, Green Amira, Blue Esma, Purple Yusuf |
+| Seats | Five, for 3-5 players (§1): Red, Yellow, Green, Blue and Purple. The mats show only the colour |
 | Tie | Most monsters defeated wins (the document's own suggestion, §11) |
 | Timer | On screen, top right. START GAME starts it; it follows the clock, so it never drifts |
 

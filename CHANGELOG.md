@@ -12,7 +12,8 @@ The team's answer to the teacher's feedback (§12-§14) is in `realtime/` (save 
 - Trap Tiles (§13): 6 trap rooms in the stack, two each of Spike Pit, Pressure Plate and Collapsing Passage, with the rule printed on the tile. A trap goes off every time someone walks in. "Losing a turn" became "stop and count to 10". A Collapsing Passage room caves in after its visitor leaves and gets one of the 2 new rubble tokens.
 - Prank Cards (§14): Sticky Fingers, Wrong Turn, Monster Magnet and Trap Surprise, two of each, join the Loot Deck (18 cards instead of 10). Play any time, but not on a player in the Safe Room.
 - The feedback in the counts: 7 monster rooms instead of 11 and 9 monster tokens instead of 13 ("reduce fighting"); 6 special treasures instead of 3, so more Loot comes out ("not enough loot cards"). Common treasures went from 6 to 3.
-- A fifth seat, Purple (Yusuf), for 3-5 players (§1).
+- A fifth seat, Purple, for 3-5 players (§1). The mats show only their seat colour (RED, YELLOW ...) and the mats and
+  characters are named by colour: the team members' names are off the table now that the save is on the Workshop.
 - The save can now be played, not only filmed. START GAME shuffles the room stack, the token piles and the Loot Deck, gives 4 dice to every seated player (all five sets if nobody sits at a mat colour), puts the characters in the Safe Room and starts the 10-minute timer. At 0:00 the screen shows TIME'S UP. RESET TABLE puts everything back, Loot cards included. Rooms, tokens, dice, characters and rubble are no longer locked; the tutorial locks them while it films.
 - Face-down rooms and tokens are called just "Room", "Monster token" or "Treasure token", so hovering over them gives nothing away. Loot cards and the Safe Room show their rule on hover.
 - The timer of a real game follows the clock, so it can't drift.
