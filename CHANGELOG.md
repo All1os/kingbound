@@ -19,7 +19,7 @@ The team's answer to the teacher's feedback (§12-§14) is in `realtime/` (save 
 - The timer of a real game follows the clock, so it can't drift.
 - The action chart has a new row, "Secure treasure: in the Safe Room, no dice", and says that only POINTS count.
 - Steam Workshop: `realtime/workshop/` has the thumbnail (the dungeon around the Safe Room, with Beep from Kenshi standing beside it), the description and the steps for updating the item. `build.py` writes Steam Cloud URLs from `tts/cloud_urls.json` instead of local paths, so the save opens on other computers; `tts/cloud_urls.py` fills that file after TTS's Cloud Manager has uploaded the images.
-- On the Steam Workshop as KINGBOUND prototype (ID 3827233466, hidden until its visibility is changed on the Workshop page). Every image is on the Steam Cloud, the thumbnail is Beep with a 3, after THE LIMIT and SHOWDOWN.
+- On the Steam Workshop as KINGBOUND prototype (ID 3827233466, hidden until its visibility is changed on the Workshop page; updated the same day with the colour-only mats). Every image is on the Steam Cloud, the thumbnail is Beep with a 3, after THE LIMIT and SHOWDOWN.
 - Not updated yet: the tutorial video and `tutorial-cues.md` still teach the rules from before the update.
 - Checked in a running TTS: every piece is on the table (28 rooms and the Safe Room, 21 tokens, 2 rubble, 18 Loot cards, 20 dice, 5 characters, 5 mats) and no image is left loading. START GAME, TIME'S UP and RESET TABLE work, and so do the tutorial's steps that put tokens on a mat, secure treasure and draw Loot. Two bugs were found and fixed: RESET TABLE left dice and characters locked, and it didn't take back Loot cards that had been stacked into a small deck of their own.
 

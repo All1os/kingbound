@@ -1,4 +1,36 @@
 {
+ "mat-blue.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/10795587603105060893/C8D07E357B8E4FD3D06496FBE078FC67AF27EEA5/",
+  "sha1": "c8d07e357b8e4fd3d06496fbe078fc67af27eea5"
+ },
+ "mat-green.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/17583267102987203309/A99683BB58261ECB24EDEB51FAC7D54C152B2A1D/",
+  "sha1": "a99683bb58261ecb24edeb51fac7d54c152b2a1d"
+ },
+ "mat-purple.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/9245668513045073575/3AD058265DF6EC06E4E7FF79C33D78699C3CDC18/",
+  "sha1": "3ad058265df6ec06e4e7ff79c33d78699c3cdc18"
+ },
+ "mat-red.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/11011292902371579170/15E095DEA87DFD8DCD09617FF05BAC8A2A5F06AA/",
+  "sha1": "15e095dea87dfd8dcd09617ff05bac8a2a5f06aa"
+ },
+ "mat-yellow.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/15083542332630577410/46133851BE8F5775166B0F4A07EAFD0F60CC28F3/",
+  "sha1": "46133851be8f5775166b0f4a07eafd0f60cc28f3"
+ },
+ "icon-move.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-move.png",
+  "sha1": "0c7f94d2cbd63a9e5c15c95d7c81fd6b2de67629"
+ },
+ "icon-attack.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-attack.png",
+  "sha1": "a651c8a9b1650ffc75cf4fdf03d2d56f144db10f"
+ },
+ "icon-magic.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-magic.png",
+  "sha1": "14c6d48eecfc0f321557e58c519a21ada1a94700"
+ },
  "chart.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/15880866809270505020/07E24CD8882F6B2CAB7AFCBF4A5196265E83088B/",
   "sha1": "07e24cd8882f6b2cab7afcbf4a5196265e83088b"
@@ -14,26 +46,6 @@
  "loot-sheet.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/17904574809107591618/A912AC78B61021E0B4CE03E6B8F5EA92C72F3A5C/",
   "sha1": "a912ac78b61021e0b4ce03e6b8f5ea92c72f3a5c"
- },
- "mat-blue.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/9508163759151590538/33CFF073CD4F2A7BB866C09B6F1BCF5CB1064380/",
-  "sha1": "33cff073cd4f2a7bb866c09b6f1bcf5cb1064380"
- },
- "mat-green.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/16248316739504947778/303D692C62F284246289686061056BBB45144DF4/",
-  "sha1": "303d692c62f284246289686061056bbb45144df4"
- },
- "mat-purple.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/15404194635317680111/DE695C39965CB149585CAC33A97F68328C0C12AE/",
-  "sha1": "de695c39965cb149585cac33a97f68328c0c12ae"
- },
- "mat-red.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/12213910308309115207/D95DFF942EDBEA1CF63183B37BB9159BAF9FA477/",
-  "sha1": "d95dff942edbea1cf63183b37bb9159baf9fa477"
- },
- "mat-yellow.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/15191166431234086476/E7166D240C24A4D11D202D6C272916585A686700/",
-  "sha1": "e7166d240c24a4d11d202d6c272916585a686700"
  },
  "mon-back.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
@@ -158,17 +170,5 @@
  "tre-special.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/15861105972111560787/2B661946379DA018CEC1D69D03A576CBCDC65533/",
   "sha1": "2b661946379da018cec1d69d03a576cbcdc65533"
- },
- "icon-move.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-move.png",
-  "sha1": "0c7f94d2cbd63a9e5c15c95d7c81fd6b2de67629"
- },
- "icon-attack.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-attack.png",
-  "sha1": "a651c8a9b1650ffc75cf4fdf03d2d56f144db10f"
- },
- "icon-magic.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-magic.png",
-  "sha1": "14c6d48eecfc0f321557e58c519a21ada1a94700"
  }
 }

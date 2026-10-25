@@ -55,7 +55,12 @@ def main():
         for p, v in strings(o):
             if v.startswith(str(ASSETS)) and theirs.get(p, "").startswith("http"):
                 cloud_of[v] = theirs[p]
-    out = {}
+    # Start from what is already on the cloud: an image whose file hasn't changed keeps its URL (the build
+    # wrote that URL, so the comparison above only finds the images that were local; 2026-10-25 a rerun
+    # without this kept only the new ones).
+    old = json.loads((ROOT / "cloud_urls.json").read_text()) if (ROOT / "cloud_urls.json").exists() else {}
+    out = {fn: c for fn, c in old.items()
+           if (OUT / fn).exists() and hashlib.sha1((OUT / fn).read_bytes()).hexdigest() == c["sha1"]}
     for local, cloud in sorted(cloud_of.items()):
         fn = re.sub(r"\.[0-9a-f]{10}\.png$", ".png", Path(local).name)
         out[fn] = {"url": cloud, "sha1": hashlib.sha1((OUT / fn).read_bytes()).hexdigest()}
