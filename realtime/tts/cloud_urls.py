@@ -1,6 +1,11 @@
 """Writes cloud_urls.json after TTS has put the images on the Steam Cloud.
 
   python3 cloud_urls.py SAVED.json
+  python3 cloud_urls.py --github COMMIT
+
+The second form needs no TTS: every image the build still points to on this Mac gets its address in
+this public repository at COMMIT instead (the commit must already be pushed with those images), so
+the save opens anywhere until the images go to the Steam Cloud.
 
 Before it: build, load the save in TTS, Modding > Cloud Manager > Upload All, then save the game
 (SAVED.json is that save, in TTS's Saves folder). The saved game is compared with output/KINGBOUND-realtime.json
@@ -40,13 +45,19 @@ def key(o):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("saved", help="the game TTS saved after Upload All")
+    ap.add_argument("saved", nargs="?", help="the game TTS saved after Upload All")
     ap.add_argument("--icons", metavar="COMMIT", help="commit of this repository that holds output/icon-*.png")
+    ap.add_argument("--github", metavar="COMMIT", help="give every image still on this Mac its address in the repository")
     a = ap.parse_args()
     built = json.loads((OUT / "KINGBOUND-realtime.json").read_text())
-    saved = json.loads(Path(a.saved).expanduser().read_text())
+    saved = json.loads(Path(a.saved).expanduser().read_text()) if a.saved else {"ObjectStates": []}
     by_key = {key(o): o for o in saved["ObjectStates"]}
     cloud_of = {}
+    if a.github:
+        for _, v in strings(built):
+            if v.startswith(str(ASSETS)):
+                fn = re.sub(r"\.[0-9a-f]{10}\.png$", ".png", Path(v).name)
+                cloud_of[v] = REPO_RAW.format(commit=a.github, fn=fn)
     for o in built["ObjectStates"]:
         s = by_key.get(key(o))
         if not s:

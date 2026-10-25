@@ -1,7 +1,7 @@
 {
  "SaveName": "KINGBOUND-realtime",
- "EpochTime": 1792965216,
- "Date": "10/26/2026 12:53:36 AM",
+ "EpochTime": 1792965368,
+ "Date": "10/26/2026 12:56:08 AM",
  "VersionNumber": "v14.2.2",
  "GameMode": "Kingbound",
  "Tags": [],
@@ -30,9 +30,9 @@
     "rotX": 0.0,
     "rotY": 180.0,
     "rotZ": 0.0,
-    "scaleX": 1.1,
+    "scaleX": 1.2,
     "scaleY": 1.0,
-    "scaleZ": 1.1
+    "scaleZ": 1.2
    },
    "Nickname": "Kingbound",
    "Description": "",
@@ -46,7 +46,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/13150897305889550319/92E0254AF1947F6A5990E444B2D826352A67DFB8/",
+    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/title.5f80afb7b1.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,

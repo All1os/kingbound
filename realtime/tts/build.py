@@ -13,7 +13,7 @@ Run: python3 build.py
 """
 import hashlib, json, math, random, shutil, time
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 VERSION = "1.1"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table
 ROOT = Path(__file__).parent
@@ -444,12 +444,42 @@ def mat_img(color):
 
 
 def title_img():
-    w, h = 1200, 300
-    im = Image.new("RGB", (w, h), (40, 30, 26))
+    """The name plate: only KINGBOUND (Yavuz, 2026-10-26), in the Safe Room's royal purple and gold."""
+    w, h = 1400, 360
+    deep, royal, bronze = (26, 14, 34), (70, 34, 92), (110, 78, 30)
+    im = Image.new("RGB", (w, h))
+    px = im.load()
+    for y in range(h):                       # purple, lighter in the middle, dark at the edges
+        k = 1 - abs(y - h * 0.45) / (h * 0.55)
+        row = tuple(int(deep[i] + (royal[i] - deep[i]) * max(0.0, k)) for i in range(3))
+        for x in range(w):
+            px[x, y] = row
     d = ImageDraw.Draw(im)
-    d.rectangle((10, 10, w - 10, h - 10), outline=GOLD, width=8)
-    d.text((w / 2, 120), "KINGBOUND", font=f(BLACK, 110), fill=GOLD, anchor="mm")
-    d.text((w / 2, 220), "real-time dungeon race  ·  3-5 players  ·  10 minutes", font=f(REG, 40), fill=CREAM, anchor="mm")
+    # Two gold frames and a diamond in each corner.
+    d.rectangle((14, 14, w - 15, h - 15), outline=GOLD, width=8)
+    d.rectangle((34, 34, w - 35, h - 35), outline=bronze, width=3)
+    for cx, cy in ((34, 34), (w - 35, 34), (34, h - 35), (w - 35, h - 35)):
+        d.polygon([(cx, cy - 16), (cx + 16, cy), (cx, cy + 16), (cx - 16, cy)], fill=GOLD, outline=bronze)
+    crown(d, w / 2, 66, 24, GOLD, bronze)
+    # Letters spaced out, with a soft shadow under them.
+    font, track = f(BLACK, 150), 18
+    widths = [d.textlength(ch, font=font) for ch in "KINGBOUND"]
+    x0, base = (w - (sum(widths) + track * 8)) / 2, 236
+    shadow = Image.new("L", (w, h), 0)
+    sd = ImageDraw.Draw(shadow)
+    x = x0
+    for ch, cw in zip("KINGBOUND", widths):
+        sd.text((x + 6, base + 8), ch, font=font, fill=200, anchor="ls")
+        x += cw + track
+    im.paste((8, 4, 12), (0, 0), shadow.filter(ImageFilter.GaussianBlur(6)))
+    x = x0
+    for ch, cw in zip("KINGBOUND", widths):
+        d.text((x, base), ch, font=font, fill=GOLD, anchor="ls", stroke_width=3, stroke_fill=bronze)
+        x += cw + track
+    # A line under the name with a diamond in the middle.
+    for x1, x2 in ((x0, w / 2 - 22), (w / 2 + 22, x0 + sum(widths) + track * 8)):
+        d.line((x1, 282, x2, 282), fill=GOLD, width=3)
+    d.polygon([(w / 2, 270), (w / 2 + 12, 282), (w / 2, 294), (w / 2 - 12, 282)], fill=GOLD, outline=bronze)
     return save(im, "title.png")
 
 
@@ -659,7 +689,7 @@ def cell_pos(c): return (round(DUNGEON[0] + c[0] * GRID, 3), round(DUNGEON[1] + 
 
 # Pieces players move are unlocked; the director locks them while it films (OPS.reset with stage).
 objs = []
-objs.append(tile("title.png", tr(*TITLE_POS, s=1.1, y=1.02), "Kingbound", thick=0.05, Tags=["title"]))
+objs.append(tile("title.png", tr(*TITLE_POS, s=1.2, y=1.02), "Kingbound", thick=0.05, Tags=["title"]))
 objs.append(tile(ROOM_IMG[(0, 0)], tr(*cell_pos((0, 0)), s=ROOM_S, y=0.98), "Safe Room", back=ROOM_BACK,
                  desc="Start here. Bring your CARRIED treasure back here to secure it: move it to POINTS, no dice.",
                  Tooltip=True, Tags=["room", "saferoom"], GMNotes="0,0"))

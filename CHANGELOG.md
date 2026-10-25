@@ -5,6 +5,7 @@
 - Every player's mat lies on their own side of the table and faces them: Red in the south, Yellow in the west, Green in the north, Blue in the east, Purple next to Red. The dungeon grows from the middle of the table.
 - Each mat shows what each action needs, so the shared action chart is gone.
 - Each player's dice start on their mat.
+- The name plate on the table only says KINGBOUND, in a new design.
 
 ## v1.0 (2026-10-26)
 
