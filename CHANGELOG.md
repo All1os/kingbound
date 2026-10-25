@@ -1,94 +1,18 @@
 # Changelog
 
-All notable changes to the Kingbound prototype. Each version is also a GitHub release.
+## v1.0 (2026-10-26)
 
-## Unreleased
+The finished game: a real-time dungeon race for 3 to 5 players in Tabletop Simulator, 10 minutes long.
 
-### Real-time Kingbound: the design document's update of 2026-10-25
-
-The team's answer to the teacher's feedback (§12-§14) is in `realtime/` (save version 0.3-realtime). Choices where the document is open are in `realtime/README.md`.
-
-- Safe Room (§12): the start room in the middle is the Safe Room, with the crown from the document's picture. Each mat has a CARRIED box for treasure that is not secured yet and a POINTS box. A player standing in the Safe Room moves their CARRIED treasure to POINTS, with no dice. Only POINTS count at the end. Defeated monsters go straight to POINTS.
-- Trap Tiles (§13): 6 trap rooms in the stack, two each of Spike Pit, Pressure Plate and Collapsing Passage, with the rule printed on the tile. A trap goes off every time someone walks in. "Losing a turn" became "stop and count to 10". A Collapsing Passage room caves in after its visitor leaves and gets one of the 2 new rubble tokens.
-- Prank Cards (§14): Sticky Fingers, Wrong Turn, Monster Magnet and Trap Surprise, two of each, join the Loot Deck (18 cards instead of 10). Play any time, but not on a player in the Safe Room.
-- The feedback in the counts: 7 monster rooms instead of 11 and 9 monster tokens instead of 13 ("reduce fighting"); 6 special treasures instead of 3, so more Loot comes out ("not enough loot cards"). Common treasures went from 6 to 3.
-- A fifth seat, Purple, for 3-5 players (§1). The mats show only their seat colour (RED, YELLOW ...) and the mats and
-  characters are named by colour: the team members' names are off the table now that the save is on the Workshop.
-- The save can now be played, not only filmed. START GAME shuffles the room stack, the token piles and the Loot Deck, gives 4 dice to every seated player (all five sets if nobody sits at a mat colour), puts the characters in the Safe Room and starts the 10-minute timer. At 0:00 the screen shows TIME'S UP. RESET TABLE puts everything back, Loot cards included. Rooms, tokens, dice, characters and rubble are no longer locked; the tutorial locks them while it films.
-- Rooms, monster tokens, treasure tokens and rubble are decks of cards instead of tall piles of loose tiles: a deck of 28 square room cards and three decks of round cards. START GAME shuffles them; RESET TABLE sends every card back to its own deck, also cards that were stacked into small decks and a deck that was down to its last card. A round token and a square room card never join into one deck, so a token lies on its room. A face-down card hides its name and text; face up, room, token and Loot cards show their rule on hover, and so does the Safe Room.
-- `tts/hotload.py` sends the table's script first and the pieces after it. The other way round only worked while the open save was the build itself: after a save made in TTS, TTS reloaded that save's pieces.
-- Not updated yet: `photos.py` still stages rooms and tokens as loose tiles.
-- The timer of a real game follows the clock, so it can't drift.
-- The action chart has a new row, "Secure treasure: in the Safe Room, no dice", and says that only POINTS count.
-- Steam Workshop: `realtime/workshop/` has the thumbnail (the dungeon around the Safe Room, with Beep from Kenshi standing beside it), the description and the steps for updating the item. `build.py` writes Steam Cloud URLs from `tts/cloud_urls.json` instead of local paths, so the save opens on other computers; `tts/cloud_urls.py` fills that file after TTS's Cloud Manager has uploaded the images.
-- On the Steam Workshop as KINGBOUND prototype (ID 3827233466, hidden until its visibility is changed on the Workshop page; updated with the colour-only mats and with the decks). Every image is on the Steam Cloud, the thumbnail is Beep with a 3, after THE LIMIT and SHOWDOWN.
-- Not updated yet: the tutorial video and `tutorial-cues.md` still teach the rules from before the update.
-- Checked in a running TTS: every piece is on the table (28 rooms and the Safe Room, 21 tokens, 2 rubble, 18 Loot cards, 20 dice, 5 characters, 5 mats) and no image is left loading. START GAME, TIME'S UP and RESET TABLE work, and so do the tutorial's steps that put tokens on a mat, secure treasure and draw Loot. Two bugs were found and fixed: RESET TABLE left dice and characters locked, and it didn't take back Loot cards that had been stacked into a small deck of their own.
-
-### Earlier changes since v0.1
-
-- Real-time Kingbound in `realtime/`: the team's final design (2026-10-18, Escape: The Curse of the Temple as reference) as a Tabletop Simulator prototype. Room tiles with passages, 4 symbol dice per player, monster and treasure tokens, a Loot Deck, player mats, an action chart and an on-screen 10-minute timer. Where the design document is open (dice faces, counts, points, Loot cards), the choices are listed in `realtime/README.md`.
-- `realtime/tutorial.py` plays a 3:52 tutorial for the presentation: the goal, setup, one player practising without the timer, bigger monsters and Loot, then a real game with everyone at once and the scoring. On screen there is only a one- or two-word name for each part with the dice symbols it costs; `tutorial-cues.md` has what to say over it. `--record` records the screen.
-- `realtime/photos.py` takes a photo of every element for the slides.
-- `realtime/tts/hotload.py` puts a new build on the table of a running TTS, so the save no longer has to be loaded by hand after each change.
-
-- Story and look from the narrative document (`narrative and settingKINGBOUND.docx`): the GDD opens with the Royal Selection and the Royal Chronicle and has a short section on the world; cards use the document's palette (aged parchment, ink black, antique gold, oxide red for STR, deep forest green for AGI, muted cobalt for WIS) and book-like lettering for titles.
-- Characters and Abilities renamed after the narrative, effects unchanged: Knight → Bellkeeper (Iron Toll, Stand Fast, Echo Guard), Rogue → Foxglove (Quickstep, Pocket Sand, False Image), Mage → Ash Scribe (Mark of Knowing, Ink Snare, Recollection), Cleric → Briar Knight (Thorn Lunge, Briar Mark, Riposte), Ranger → Hollow Pilgrim (Wandering Step, Lantern Veil, Wayfinder). "Snared" on Vanish and Smoke Bomb reads "veiled". The team's word Ability stays (the document says cantrip).
-- Briar Knight is a STR/AGI duelist in the narrative: STR 2, AGI 3, WIS 0, HP 9 (was the Cleric's STR 2, WIS 3, HP 12). With AGI 3 at HP 12 it won 36% of 1,000 bot games; at HP 9 the five characters win 21-29% (1,200 games), about as spread as before.
-- Which Ability name goes with which effect was our call where the document gives only names: the boost deals damage, the sabotage hurts a rival's fight, the signature keeps its old job.
-- Three buttons instead of ten, under TTS's own toolbar at the top left (the old column covered the toolbar's menus): START GAME, BOT GAME and RESET. START GAME now shuffles the board and deals in one click. Drawing cards, revealing enemies and clearing a fight are done by hand.
-- BOT GAME plays a scripted bot game inside TTS, with no terminal: the full game or the short one, at 0.75x to 2x speed. `build.py` lets the bots play both games and stores every command in the save; the button replays them. Pressing it again (STOP BOTS) stops the game. `bots/play.py` still sends any seed from a terminal.
-- Script errors during a bot game are also printed in TTS's chat.
-- Bot games show the cards: the hand of the player who acts is shown as card pictures at the bottom of the screen.
-- Who is who: the caption's first line is in the acting player's colour, the status list marks whose turn it is (▶), that player's pawn and board glow for the whole turn, and the names on the player boards are bigger.
-- The camera follows every step of a bot game: the board for turns, rolls and moves, the fight area, the acting player's hand and Abilities, their items and board when HP or gold change, the level track when a level changes, the Merchant's cards, a deck being reshuffled. It always looks from the bottom of the table and never turns; Camera: follows / free in the BOT GAME menu switches it off. In a fight it stays on the fight area for the fighter's own cards and only leaves for another player stepping in.
-- Whatever a bot touches glows in its colour for a few seconds and gives a short pop; the tiles a pawn walks over light up.
-- The die sits beside the Wilds discard piles, inside the camera's board and fight views.
-- `bots/play.py` moves the camera the same way by default (`--no-camera` leaves it alone).
-- The camera always looks from the bottom of the table and never turns. When it shows a card at another seat (drawn, flipped, bought), the card turns to face the camera for a few seconds, then back to its player.
-- The bots are called Bora, Anastasya, Amira and Esma, and each seat has a name plate in its colour at the left end of the hand row.
-- The full bot game now takes 18:51 and the short one 4:48 at speed 1 (longer names, longer captions).
+- Everyone plays at once with 4 dice each. The dice show Movement, Attack and Magic.
+- A deck of 28 rooms that you open one by one around the Safe Room: empty rooms, monster rooms, treasure rooms and six traps (Spike Pit, Pressure Plate, Collapsing Passage).
+- Monster tokens in three strengths and treasure tokens worth 1 to 3 points. A special treasure also gives a Loot card.
+- Treasure counts only once it is carried back to the Safe Room.
+- A Loot Deck of 18 cards: weapons, equipment, one-use items and four Prank cards to play against the other players.
+- A mat for each player with boxes for dice, Loot, carried treasure and points.
+- START GAME shuffles the decks, deals the dice and starts the 10-minute timer. RESET TABLE puts everything back.
+- On the Steam Workshop.
 
 ## v0.1 (2026-10-13)
 
-### Tabletop Simulator prototype
-
-- `tts/build.py` builds the save from `Kingbound-GDD.md`, the same way as The Limit: text-only card faces drawn with Pillow on two sheets (4000×3360 and 4000×1680 px), a different back for each deck, 49 tiles, the level track, player boards, tokens and the save with its Lua.
-- 132 cards, counted against the GDD: 45 Action, Wilds I / II / III 14 / 14 / 10, 1 King's Champion, 20 Loot, 8 hidden objectives, 5 characters, 15 Abilities. Every name, number and text was checked against the GDD's tables cell by cell (0 differences).
-- The board: 49 tiles on a 7×7 grid with the rings turned inside out (§3): the Castle in the middle, the 4 Camps next to it, Wilds I on the inner corners, the middle ring (10 Wilds II, 2 Merchant, 2 Barracks, 2 Healer) and the outer ring (21 Wilds III, 1 Merchant, 1 Barracks, 1 Healer) each shuffled within itself. Tiles are coloured by ring. The save opens with a board already built.
-- Level track 1 to 10 under the board with a marker per player; a player board per seat with HP, max HP, gold and STR / AGI / WIS; damage tokens worth 1 and 5; four pawns; one die; a player aid.
-- Buttons: BUILD BOARD, SETUP, DRAW ACTION, WILDS I / II / III, MERCHANT, KING'S TRIAL, CLEAR FIGHT, RESET. Everything can still be done by hand.
-- `tts/preview.py` draws the table from above, so the layout can be checked without TTS.
-
-### Bots for the gameplay video
-
-- `bots/play.py`: four bots play Kingbound in a running TTS, from setup to the King's Trial, and the table moves with them: pawns walk, the die rolls, cards are drawn and played, damage tokens go on the enemy, HP / gold / level counters change. Every step gets a caption at the bottom of the screen and a status panel shows everyone's level, HP and gold.
-- Speed is adjustable (`--speed`), a seed replays the same game (`--seed`), one command starts it and `play.py stop` (or Ctrl+C) stops it.
-- Short demo mode (`--mode demo`): starts mid-game with everyone at level 6 to 8 and ends with the Trial. The default demo game takes 4:36 at speed 1.0; the default full game 18:24 (12:16 at speed 1.5).
-- `bots/engine.py`: the rules and the bots' decisions, ported from the balance simulator that set the GDD's numbers, with its references moved to the team GDD. Extended so the video shows every mechanic: help deals for pay, sabotage Abilities and the Cursed Totem, Dig Deep, hidden objectives, Pickpocket and the King's Trial. In 500 bot games: median 14 table rounds; per game 5.4 help deals, 7.4 sabotages, 8.4 digs, 1.6 completed objectives and 2.0 Trial attempts.
-- `bots/stats.py` plays many games without TTS and prints what happened in them.
-- `tests/check_tts_script.py` runs the table script against a fake TTS with the commands of a whole bot game, then presses every button. It found one real bug before release (a Merchant visit would not have shown the item that was bought). 65 games pass.
-- `tests/live_check.py` checks the save in a running TTS: the script answers, all 132 cards, 49 tiles, 4 pawns, 4 level markers and 4 player boards are on the table, the demo game runs without a script error, then the table is reset.
-
-### Decisions the GDD left open
-
-- Seats are Red, Yellow, Green and Blue (the colours of the team's table sketch), clockwise from the bottom. Each player starts on the Camp on their side of the Castle (§4 only asks for different Camps).
-- Characters, Abilities and the Champion have no IDs in the GDD; the cards use C1-C5, KN1 to RA3 and CH.
-- Cards carry the GDD text word for word. A few lines from other sections were added: "WIN: +N LEVELS" on enemies (§6.5), the Trial lines on the Champion (§8), the equipment limit or "One use: discard after use" on Loot (§7, §10.4), the reward on objectives (§10.6). The back of an Ability card reads USED, since a used Ability is turned face down (§10.5).
-- One shared player aid board instead of four (§2 lists four), to keep the table readable.
-- The bots lay their hands face up on the table instead of in hidden hand zones, so the video shows their cards.
-- Bot rulings where the rules are silent: a Healing Potion in the bot's own fight is drunk in step 2, not as an answer to sabotage ("You can't answer until the next round", §6.2); the Champion's 10-damage cap counts the damage put on it in a round and Hex removes tokens after that; a helper plays only its own cards and its boost; bots never trade; the Rogue uses Pickpocket at the start of its turn or right after moving; Training Manual and Elixir are used as soon as they are taken; with 3 equipment items a new one only replaces the weakest if it is better; after Ambush! an event is resolved as a normal draw.
-- Bots sabotage the Trial, a leader about to reach level 7 or more, or any fight when they hold the Spoiler objective, and keep their sabotage for the Trial once someone else is at level 9. Help costs 1, 2 or 3 gold by tier (1 less for a Sellsword) or the enemy's loot, and nobody helps a leader who is close to winning.
-
-### Fixed after the first test in Tabletop Simulator
-
-- The save would not load: the player boards and the player aid had their description written into the "Locked" field, which must be true or false. `build.py` now checks the type of every field before writing the save.
-- The level track, the player aid and the player boards were drawn square. TTS draws a tile square when Stretch is off and in the image's shape when it is on (2 × scale deep, 2 × scale × width / height wide); non-square tiles now use Stretch with an even scale.
-- Bot commands did not find their cards: TTS hands the nested lists of a message to Lua as C# objects. Each command now travels as one JSON string that the table script decodes.
-- Player boards are bigger (6.3 × 3.6) and simpler: − and + beside HP and gold, FULL and MAX − / + under HP, − and + for each stat. They now sit fully on the felt.
-- Checked in TTS: the save loads, every piece is on the table (132 cards, 49 tiles, 4 pawns, 4 level markers, 4 player boards, the die), and the short bot game ran at double speed with no script error and all 132 cards still on the table.
-
-## Next
-
-- Record the gameplay video with `bots/play.py`.
-- To share the save, upload the images with TTS's Cloud Manager and fill in `tts/cloud_urls.json`.
+An earlier, turn-based design for 4 players. They move around a 7×7 board, fight monsters with Action cards, collect Loot and level up, and the first to win the King's Trial at the Castle wins the game. Its rules are in `Kingbound-GDD.pdf`.

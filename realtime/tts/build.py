@@ -1,12 +1,12 @@
 """Builds the Tabletop Simulator save for the real-time Kingbound (rules: the team's
 "KINGBOUND — Detailed Game Design Document" of 2026-10-18 and its update of 2026-10-25, which adds the
-teacher's feedback and three changes: §12 Safe Room, §13 Trap Tiles, §14 Prank Cards; summary in
-../README.md).
+teacher's feedback and three changes: §12 Safe Room, §13 Trap Tiles, §14 Prank Cards; the rules for
+players are in ../../README.md).
 
-Everything the document lists (§2, §12-§14): room tiles with the Safe Room in the middle and trap
-tiles in the stack, character tokens, 4 symbol dice per player, the Loot Deck with its Prank Cards,
+Everything the document lists (§2, §12-§14): room cards with the Safe Room in the middle and trap
+rooms in the deck, character tokens, 4 symbol dice per player, the Loot Deck with its Prank Cards,
 monster and treasure tokens, and a 10-minute timer (on screen, Global UI). The document leaves counts,
-points and card texts open; the prototype's choices are in ../README.md and in the constants below.
+points and card texts open; our choices and their reasons are in the constants below.
 Images are drawn with Pillow and copied into TTS's Mods/ folder (macOS doesn't let TTS read
 ~/Desktop); their names carry a content hash so TTS never shows a stale cached image.
 Run: python3 build.py
@@ -15,7 +15,7 @@ import hashlib, json, math, random, shutil, time
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
-VERSION = "0.3-realtime"
+VERSION = "1.0"   # Yavuz, 2026-10-26: "son versiyonu v1 olarak yap çünkü oyun tamamlandı"
 ROOT = Path(__file__).parent
 OUT = ROOT / "output"
 ASSETS = Path.home() / "Library/Tabletop Simulator/Mods/kingbound-realtime"
@@ -799,7 +799,7 @@ XML = (
 now = time.localtime()
 save_json = {
     "SaveName": SAVE_NAME, "EpochTime": int(time.time()), "Date": time.strftime("%m/%d/%Y %I:%M:%S %p", now),
-    "VersionNumber": "v14.2.2", "GameMode": "Kingbound real-time prototype", "Tags": [], "Gravity": 0.5,
+    "VersionNumber": "v14.2.2", "GameMode": "Kingbound", "Tags": [], "Gravity": 0.5,
     "PlayArea": 0.5, "Table": "Table_RPG", "Sky": "Sky_Regal",
     "Note": "",
     "Hands": {"Enable": False, "DisableUnused": False, "Hiding": 0},
