@@ -1,6 +1,6 @@
-"""The Steam Workshop thumbnail (1024 x 1024), put together from the save's own images.
+"""A picture of the game (1024 x 1024) for the Workshop page, put together from the save's own images.
 
-Run after tts/build.py: python3 thumbnail.py  ->  thumbnail.png next to this file.
+Run after tts/build.py: python3 thumbnail.py  ->  preview.png next to this file.
 beep.png is Beep (Kenshi) from Yavuz's own model, cut out of its render (beep-odev/beep-onizleme.png);
 Yavuz asked for him on the thumbnail (2026-10-25). Without beep.png the dungeon is centred alone.
 """
@@ -64,5 +64,5 @@ if beep:
     im = Image.alpha_composite(im.convert("RGBA"), shadow)
     im.alpha_composite(b, (bx, by))
     im = im.convert("RGB")
-im.save(HERE / "thumbnail.png")
-print("thumbnail.png", im.size, "with Beep" if beep else "")
+im.save(HERE / "preview.png")
+print("preview.png", im.size, "with Beep" if beep else "")

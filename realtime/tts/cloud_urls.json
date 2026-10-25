@@ -1,0 +1,174 @@
+{
+ "chart.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/15880866809270505020/07E24CD8882F6B2CAB7AFCBF4A5196265E83088B/",
+  "sha1": "07e24cd8882f6b2cab7afcbf4a5196265e83088b"
+ },
+ "dice.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/13977810175204459767/358A846AC6969FDB9571FF767753E6AF821847B4/",
+  "sha1": "358a846ac6969fdb9571ff767753e6af821847b4"
+ },
+ "loot-back.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/16373906344898136676/A2715B140A4EF25FD5C828872E9FAE2A9A4D0CBC/",
+  "sha1": "a2715b140a4ef25fd5c828872e9fae2a9a4d0cbc"
+ },
+ "loot-sheet.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/17904574809107591618/A912AC78B61021E0B4CE03E6B8F5EA92C72F3A5C/",
+  "sha1": "a912ac78b61021e0b4ce03e6b8f5ea92c72f3a5c"
+ },
+ "mat-blue.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/9508163759151590538/33CFF073CD4F2A7BB866C09B6F1BCF5CB1064380/",
+  "sha1": "33cff073cd4f2a7bb866c09b6f1bcf5cb1064380"
+ },
+ "mat-green.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/16248316739504947778/303D692C62F284246289686061056BBB45144DF4/",
+  "sha1": "303d692c62f284246289686061056bbb45144df4"
+ },
+ "mat-purple.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/15404194635317680111/DE695C39965CB149585CAC33A97F68328C0C12AE/",
+  "sha1": "de695c39965cb149585cac33a97f68328c0c12ae"
+ },
+ "mat-red.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/12213910308309115207/D95DFF942EDBEA1CF63183B37BB9159BAF9FA477/",
+  "sha1": "d95dff942edbea1cf63183b37bb9159baf9fa477"
+ },
+ "mat-yellow.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/15191166431234086476/E7166D240C24A4D11D202D6C272916585A686700/",
+  "sha1": "e7166d240c24a4d11d202d6c272916585a686700"
+ },
+ "mon-back.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
+  "sha1": "9d39ba7e81870b9b9f9b75adcd842f2afa1d300b"
+ },
+ "mon-medium.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/17356075591333272029/0CA76302371AC275AB5F46BCBA7244ECB115E7F4/",
+  "sha1": "0ca76302371ac275ab5f46bcba7244ecb115e7f4"
+ },
+ "mon-strong.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/13169326221914930537/4FEA473818E34133BCD214A117DC1C95F34FF967/",
+  "sha1": "4fea473818e34133bcd214a117dc1c95f34ff967"
+ },
+ "mon-weak.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/14616847569944269177/60C7E5AF21F57A57B8BF9F575005B80AB6770D01/",
+  "sha1": "60c7e5af21f57a57b8bf9f575005b80ab6770d01"
+ },
+ "room-back.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+  "sha1": "8581b4400c52cf5970dc439ae12d115d9197ed75"
+ },
+ "room-empty-ENS.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/15525864622811056270/46A96095CB3362AF9D45E4A7315171B17BAEB075/",
+  "sha1": "46a96095cb3362af9d45e4a7315171b17baeb075"
+ },
+ "room-empty-ENSW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/17461969487618490844/E9816F9F7EA46439535E42B7B954B3A66A4D38A6/",
+  "sha1": "e9816f9f7ea46439535e42b7b954b3a66a4d38a6"
+ },
+ "room-empty-ESW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/12713103311538068728/92F83173C88F400F5FF6DEA9BF43DC185E7C42B4/",
+  "sha1": "92f83173c88f400f5ff6dea9bf43dc185e7c42b4"
+ },
+ "room-empty-NS.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/14154182221799599558/130EA4F4CFA3C8BAB7ABAAAF4F5D1490C4325750/",
+  "sha1": "130ea4f4cfa3c8bab7abaaaf4f5d1490c4325750"
+ },
+ "room-empty-SW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/17458936443526363697/A47D95A3879A518428045039E6F296E1871D1627/",
+  "sha1": "a47d95a3879a518428045039e6f296e1871d1627"
+ },
+ "room-monster-ENSW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/10038606544678338759/D27AC2D9ACB51C6C00C1D3D38B68B54A9E2E8321/",
+  "sha1": "d27ac2d9acb51c6c00c1d3d38b68b54a9e2e8321"
+ },
+ "room-monster-ENW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/17590043328423286148/EDAD858E99DE2C1F57CEEFAED1F421330A32D01E/",
+  "sha1": "edad858e99de2c1f57ceefaed1f421330a32d01e"
+ },
+ "room-monster-ESW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/10530369989781687478/409F2134446BDBBBB3516BDE5AE852D19181B5F9/",
+  "sha1": "409f2134446bdbbbb3516bde5ae852d19181b5f9"
+ },
+ "room-monster-S.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/14516073425760204307/7A665EF8FB222DC2AD6CD2BC588D052A001FF3DB/",
+  "sha1": "7a665ef8fb222dc2ad6cd2bc588d052a001ff3db"
+ },
+ "room-safe-ENSW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/11524633314482592381/15D2264DF8B7436E66487F19E5566BA1D8C5C4D1/",
+  "sha1": "15d2264df8b7436e66487f19e5566ba1d8c5c4d1"
+ },
+ "room-trap-collapse-ENS.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/17490509371814262544/EE9BFA0D1DFD282123BF2448A0F74825D2CFF1AD/",
+  "sha1": "ee9bfa0d1dfd282123bf2448a0f74825d2cff1ad"
+ },
+ "room-trap-collapse-ENW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/16052520137437261261/8FDB5DF4A5F6D99A8C39017AB5A53E86D7F1C0A7/",
+  "sha1": "8fdb5df4a5f6d99a8c39017ab5a53e86d7f1c0a7"
+ },
+ "room-trap-plate-EN.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/17513740560105526048/42D5E79E14D265512A55FD17BEFFD9F35D923D4E/",
+  "sha1": "42d5e79e14d265512a55fd17beffd9f35d923d4e"
+ },
+ "room-trap-plate-NS.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/10869912414138254817/19510BEEB02D4F6BAE591183195A8F24404BABE5/",
+  "sha1": "19510beeb02d4f6bae591183195a8f24404babe5"
+ },
+ "room-trap-spike-NS.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/9858892220478890941/CF5BD885B20174742C7C1736E1A7170D9F7E0CBB/",
+  "sha1": "cf5bd885b20174742c7c1736e1a7170d9f7e0cbb"
+ },
+ "room-trap-spike-SW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/10932134459331075458/96F04AC0102851CC9F413333AC1A3EBCF927DD0A/",
+  "sha1": "96f04ac0102851cc9f413333ac1a3ebcf927dd0a"
+ },
+ "room-treasure-ENSW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/15296639170640007753/070296B78024E547906CACBB6E8A7929B497425E/",
+  "sha1": "070296b78024e547906cacbb6e8a7929b497425e"
+ },
+ "room-treasure-ENW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/9846949821669086373/7B228228F2D97DACC19A787B0BDDEE1260E47986/",
+  "sha1": "7b228228f2d97dacc19a787b0bddee1260e47986"
+ },
+ "room-treasure-NW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/15046843807112451545/EA9F470A6C80B5FA4C4D19026F3E9F41DB685F2E/",
+  "sha1": "ea9f470a6c80b5fa4c4d19026f3e9f41db685f2e"
+ },
+ "room-treasure-SW.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/16636683963914499038/C15A4E109FFCFAE952C14EF601A11F5E2586059E/",
+  "sha1": "c15a4e109ffcfae952c14ef601a11f5e2586059e"
+ },
+ "rubble.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/17955548579881616781/8EA6D8BD6C0967752A9B61906173CD1100A2AE9A/",
+  "sha1": "8ea6d8bd6c0967752a9b61906173cd1100a2ae9a"
+ },
+ "title.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/13150897305889550319/92E0254AF1947F6A5990E444B2D826352A67DFB8/",
+  "sha1": "92e0254af1947f6a5990e444b2d826352a67dfb8"
+ },
+ "tre-back.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+  "sha1": "b0fba9553d584933739fbf116eebe1a778afbbc6"
+ },
+ "tre-common.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/17128600982849101205/308D18DEA588E85E6954874C1D615FE9EA54DF37/",
+  "sha1": "308d18dea588e85e6954874c1d615fe9ea54df37"
+ },
+ "tre-rare.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/14692634199457042145/69F488CC92F44776FB3CBE5FD1DF317E0576DD74/",
+  "sha1": "69f488cc92f44776fb3cbe5fd1df317e0576dd74"
+ },
+ "tre-special.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/15861105972111560787/2B661946379DA018CEC1D69D03A576CBCDC65533/",
+  "sha1": "2b661946379da018cec1d69d03a576cbcdc65533"
+ },
+ "icon-move.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-move.png",
+  "sha1": "0c7f94d2cbd63a9e5c15c95d7c81fd6b2de67629"
+ },
+ "icon-attack.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-attack.png",
+  "sha1": "a651c8a9b1650ffc75cf4fdf03d2d56f144db10f"
+ },
+ "icon-magic.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-magic.png",
+  "sha1": "14c6d48eecfc0f321557e58c519a21ada1a94700"
+ }
+}

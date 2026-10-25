@@ -4,7 +4,8 @@ The real-time Kingbound is on the Steam Workshop as a Tabletop Simulator mod.
 
 | File | What it is |
 |---|---|
-| `thumbnail.png` | The Workshop thumbnail (1024 x 1024), made by `thumbnail.py` from the save's own images and Beep |
+| `thumbnail.png` | The Workshop thumbnail: the same Beep drawing (izzychan.wordpress.com) as Yavuz's THE LIMIT and SHOWDOWN items, numbered 3 as SHOWDOWN's is numbered 2 |
+| `preview.png` | A picture of the game for the Workshop page, made by `thumbnail.py` from the save's own images and `beep.png` |
 | `beep.png` | Beep (Kenshi) from Yavuz's own model, cut out of its render |
 | `description.txt` | The Workshop description (Steam's BBCode) |
 
