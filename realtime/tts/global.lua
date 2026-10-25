@@ -1,15 +1,15 @@
 --[[ Kingbound real-time prototype: Global script (build.py fills in the __PLACEHOLDERS__).
 
-Two jobs. For players: START GAME shuffles the room stack, the token piles and the Loot Deck, hands
+Two jobs. For players: START GAME shuffles the decks (rooms, monster and treasure tokens, Loot), hands
 out the dice, puts the characters in the Safe Room and starts the 10-minute timer; RESET TABLE puts
 everything back. Everything else is done by hand, as on a real table.
 For the tutorial video: the director (../tutorial.py) decides everything in Python and sends "show
 this" commands through TTS's External Editor API; this script only moves pieces, rolls dice to the
 faces it is told, and draws the caption, the timer and the scores. Nothing here makes a game decision.
 
-GM Notes: room tiles hold their dungeon cell ("x,z") or "spareN"; tokens their ID (m-weak-1,
-t-rare-2 ...); rubble "rubble-n"; dice "Color:n"; pawns and mats their colour; Loot cards their ID
-(L1-L5, Prank cards P1-P4).
+Rooms, tokens, rubble and Loot are cards in five decks. A card's GM Notes say what it is: a room its
+dungeon cell ("x,z") or "spareN", a token its ID (m-weak-1, t-rare-2 ...), rubble "rubble-n", Loot its
+ID (L1-L5, Prank cards P1-P4). Dice hold "Color:n"; pawns and mats their colour; the Safe Room tile "0,0".
 ]]
 KB_VERSION = "__VERSION__"
 L = JSON.decode([==[__LAYOUT__]==])
@@ -25,11 +25,13 @@ local function matPos(color, px, py)
   return {x = L.mat_x[color] + (px / L.mat_px[1] - 0.5) * L.mat_size[1], y = 1.25,
           z = L.mat_z + (0.5 - py / L.mat_px[2]) * L.mat_size[2]}
 end
--- Heights measured live (2026-10-19): the felt is at y 0.96; a tile's position is its bottom face when
--- face up; a mat's top is at 1.08, a room's at 1.10; a die at scale 1.5 is 1.0 high (centre pivot).
-DIE_Y, ROOM_Y, TOKEN_ON_ROOM, TOKEN_ON_MAT = 1.58, 0.98, 1.11, 1.09
--- The pieces players move (unlocked in the save; the director locks them while it films).
-MOVABLE = {"room", "token", "rubble", "die", "pawn"}
+-- Heights measured live: the felt is at y 0.96, a mat's top at 1.08, a die at scale 1.5 is 1.0 high
+-- (centre pivot) (2026-10-19); a card lies at 0.974 on the felt, at 1.001 on another card and is 0.027
+-- thick (2026-10-25).
+DIE_Y, CARD_Y, CARD_ON_CARD, CARD_ON_MAT = 1.58, 0.974, 1.001, 1.095
+-- The loose pieces players move (unlocked in the save; the director locks them while it films).
+MOVABLE = {"die", "pawn"}
+STAGED = false
 OPS = {}
 
 -- ------------------------------------------------------------------ finding things
@@ -44,6 +46,112 @@ function pawnOf(color) return byNote("pawn", color) end
 
 function glow(o, color, secs)
   if alive(o) then pcall(function() o.highlightOn(COLORS[color] or GOLDEN, secs or 3) end) end
+end
+
+-- ------------------------------------------------------------------ cards and decks
+-- Which deck a card belongs to, from its GM Notes.
+local function kindOf(n)
+  if n == nil or n == "" then return nil end
+  if n:match("^%-?%d+,%-?%d+$") or n:match("^spare") then return "room" end
+  if n:sub(1, 2) == "m-" then return "monster" end
+  if n:sub(1, 2) == "t-" then return "treasure" end
+  if n:sub(1, 7) == "rubble-" then return "rubble" end
+  if n:match("^[LP]%d$") then return "loot" end
+end
+
+-- Each kind's deck, remembered by GUID. A deck that is down to its last card stops being a deck (TTS
+-- turns it into a single card); that card, or the first card to come back, becomes the deck again.
+DECK = {}
+local function mainDeck(kind)
+  local g = DECK[kind]
+  local o = g and getObjectFromGUID(g)
+  if alive(o) then return o end
+end
+local function isMain(o, kind)
+  if kind then return DECK[kind] == o.getGUID() end
+  for k, _ in pairs(L.decks) do if DECK[k] == o.getGUID() then return true end end
+  return false
+end
+local function deckHome(kind)
+  local p = L.deck_pos[kind]
+  return {x = p[1], y = 1.4, z = p[2]}
+end
+
+-- A card on the table, or the card with these notes taken out of whichever deck holds it; then
+-- after(card) runs with the card at pos.
+local function takeCard(id, pos, after)
+  for _, o in ipairs(getObjects()) do
+    if o.type == "Card" and notes(o) == id then
+      o.setPositionSmooth(pos, false, true)
+      o.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)
+      if after then after(o) end
+      return
+    end
+  end
+  local main = mainDeck(kindOf(id))
+  local decks = {main}
+  for _, o in ipairs(getObjects()) do if o.type == "Deck" and not isMain(o, kindOf(id)) then table.insert(decks, o) end end
+  for _, d in ipairs(decks) do
+    for _, c in ipairs(d.getObjects()) do
+      if c.gm_notes == id then
+        d.takeObject({guid = c.guid, position = pos, rotation = {x = 0, y = 180, z = 0}, smooth = true,
+                      callback_function = after})
+        return
+      end
+    end
+  end
+end
+
+-- A card (or a small deck players made) goes back into its kind's deck.
+local function sendHome(kind, o)
+  o.setLock(false)
+  local main = mainDeck(kind)
+  if main and not isMain(o, kind) then
+    local d = main.putObject(o)
+    if alive(d) then DECK[kind] = d.getGUID() end   -- two single cards become a new deck
+  else
+    o.setPosition(deckHome(kind))
+    o.setRotation({x = 0, y = 180, z = 180})
+    o.setScale({x = L.deck_s[kind], y = 1, z = L.deck_s[kind]})
+    DECK[kind] = o.getGUID()
+  end
+end
+
+-- Every card on the table goes home. A small deck of one kind goes home whole; a mixed one (a monster
+-- and a treasure token stacked on a mat) is taken apart first. Joining two cards destroys both and
+-- makes a new deck, so a piece met later in the loop may be gone: touching it stopped the whole RESET
+-- ("Value cannot be null", seen live 2026-10-25). Each piece is checked, and one that fails is skipped.
+local function gatherOne(o)
+  if not alive(o) then return end
+  if o.type == "Card" then
+    local kind = kindOf(notes(o))
+    if kind and not isMain(o, kind) then sendHome(kind, o) end
+  elseif o.type == "Deck" and not isMain(o) then
+    local kinds, first = {}, nil
+    for _, c in ipairs(o.getObjects()) do
+      local k = kindOf(c.gm_notes)
+      if k then kinds[k] = true first = first or k end
+    end
+    local n = 0
+    for _ in pairs(kinds) do n = n + 1 end
+    if n == 1 then
+      sendHome(first, o)
+    elseif n > 1 then
+      -- All but the last card: taking a deck's last card throws an error Lua can't catch (the deck is
+      -- turning into that card, seen live 2026-10-25). The card left over goes home in the second pass.
+      local cards = o.getObjects()
+      for i = 1, #cards - 1 do
+        local k = kindOf(cards[i].gm_notes)
+        if k then
+          o.takeObject({guid = cards[i].guid, position = deckHome(k), smooth = false,
+                        callback_function = function(card) sendHome(k, card) end})
+        end
+      end
+    end
+  end
+end
+local function gatherCards()
+  for _, o in ipairs(getObjects()) do pcall(gatherOne, o) end
 end
 
 -- ------------------------------------------------------------------ overlays
@@ -209,17 +317,9 @@ function OPS.pawns(d)
 end
 
 function OPS.shuffle(d)
-  -- The room stack is already in the tutorial's order; this only shows it being shuffled (§3 step 3).
-  local rooms = {}
-  for _, o in ipairs(getObjectsWithTag("room")) do
-    if notes(o) ~= "0,0" and o.getRotation().z > 90 then table.insert(rooms, o) end
-  end
-  for k, o in ipairs(rooms) do
-    local p = o.getPosition()
-    local dx = (k % 2 == 0) and 1.6 or -1.6
-    Wait.time(function() o.setPositionSmooth({x = p.x + dx, y = p.y, z = p.z}, false, true) end, 0.02 * k)
-    Wait.time(function() o.setPositionSmooth(p, false, true) end, 0.6 + 0.02 * k)
-  end
+  -- §3 step 3: the room deck is shuffled (the tutorial still finds its rooms by their notes).
+  local deck = mainDeck("room")
+  if deck and deck.type == "Deck" then deck.shuffle() glow(deck, d.color, 2) end
 end
 
 function OPS.button(d)
@@ -265,27 +365,31 @@ function OPS.keep(d)
 end
 
 -- ------------------------------------------------------------------ the dungeon (§6, §12)
+-- A card the director put somewhere stays there while it films.
+local function settle(card, pos, scale, color)
+  card.setScale({x = scale, y = 1, z = scale})
+  if STAGED then card.setLock(true) end
+  card.setPositionSmooth(pos, false, true)
+  glow(card, color, 3)
+end
+
 function OPS.reveal(d)
-  -- The room tile of this cell comes off the stack, turns over and lands next to the room it was
+  -- The room card of this cell comes off the room deck, turns over and lands next to the room it was
   -- revealed from, passages lined up (build.py drew them that way).
-  local o = byNote("room", d.cell[1] .. "," .. d.cell[2])
-  if not o then return end
   local p = cellPos(d.cell)
-  o.setPositionSmooth({x = p.x, y = 2.6, z = p.z}, false, true)
-  o.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)
-  Wait.time(function() o.setPositionSmooth({x = p.x, y = ROOM_Y, z = p.z}, false, true) glow(o, d.color, 3) end, 0.7)
+  takeCard(d.cell[1] .. "," .. d.cell[2], {x = p.x, y = 2.6, z = p.z}, function(card)
+    Wait.time(function() settle(card, {x = p.x, y = CARD_Y, z = p.z}, L.deck_s.room, d.color) end, 0.4)
+  end)
   if d.token then
-    Wait.time(function() OPS.token({id = d.token, cell = d.cell, color = d.color}) end, 1.2)
+    Wait.time(function() OPS.token({id = d.token, cell = d.cell, color = d.color}) end, 1.4)
   end
 end
 
 function OPS.token(d)
-  local o = byNote("token", d.id)
-  if not o then return end
   local p = cellPos(d.cell)
-  o.setPositionSmooth({x = p.x, y = 2.4, z = p.z}, false, true)
-  o.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)
-  Wait.time(function() o.setPositionSmooth({x = p.x, y = TOKEN_ON_ROOM, z = p.z}, false, true) glow(o, d.color, 3) end, 0.6)
+  takeCard(d.id, {x = p.x, y = 2.4, z = p.z}, function(card)
+    Wait.time(function() settle(card, {x = p.x, y = CARD_ON_CARD, z = p.z}, L.deck_s.monster, d.color) end, 0.4)
+  end)
 end
 
 function OPS.move(d)
@@ -308,63 +412,47 @@ local function clearMats()
   CARRY, POINTS = {}, {}
   for _, c in ipairs(L.colors) do CARRY[c], POINTS[c] = {}, {} end
 end
-local function toMat(o, color, spots, n, delay)
+local function toMat(id, color, spots, n, delay)
   local px = spots[math.min(n, #spots)]
   local p = matPos(color, px[1], px[2])
   Wait.time(function()
-    o.setPositionSmooth({x = p.x, y = TOKEN_ON_MAT, z = p.z}, false, true)
-    o.setScale({x = 0.5, y = 1, z = 0.5})
-    glow(o, color, 3)
+    takeCard(id, {x = p.x, y = 2.2, z = p.z}, function(card)
+      Wait.time(function() settle(card, {x = p.x, y = CARD_ON_MAT, z = p.z}, L.mat_tok_s, color) end, 0.4)
+    end)
   end, delay)
 end
 
 function OPS.take(d)
   -- A defeated monster goes onto POINTS; a collected treasure onto CARRIED until it is secured.
-  local o = byNote("token", d.id)
-  if not o then return end
-  o.setPositionSmooth({x = o.getPosition().x, y = 3.0, z = o.getPosition().z}, false, true)
   if d.id:sub(1, 2) == "t-" then
     table.insert(CARRY[d.color], d.id)
-    toMat(o, d.color, L.carry_px, #CARRY[d.color], 0.4)
+    toMat(d.id, d.color, L.carry_px, #CARRY[d.color], 0)
   else
     table.insert(POINTS[d.color], d.id)
-    toMat(o, d.color, L.points_px, #POINTS[d.color], 0.4)
+    toMat(d.id, d.color, L.points_px, #POINTS[d.color], 0)
   end
 end
 
 function OPS.secure(d)
   -- §12: back in the Safe Room, everything CARRIED moves to POINTS, no dice.
   for k, id in ipairs(CARRY[d.color]) do
-    local o = byNote("token", id)
-    if o then
-      table.insert(POINTS[d.color], id)
-      toMat(o, d.color, L.points_px, #POINTS[d.color], (k - 1) * 0.25)
-    end
+    table.insert(POINTS[d.color], id)
+    toMat(id, d.color, L.points_px, #POINTS[d.color], (k - 1) * 0.25)
   end
   CARRY[d.color] = {}
 end
 
 function OPS.loot(d)
   -- Draw the Loot card with this ID (§9: special treasure) onto the mat's Loot box, face up.
-  local deck = getObjectsWithTag("lootdeck")[1]
   local p = matPos(d.color, L.loot_px[1], L.loot_px[2])
-  if deck and not deck.isDestroyed() then
-    for _, c in ipairs(deck.getObjects()) do
-      if c.gm_notes == d.id then
-        deck.takeObject({guid = c.guid, position = {x = p.x, y = 1.12, z = p.z}, rotation = {x = 0, y = 180, z = 0},
-                         smooth = true, callback_function = function(card)
-                           card.setLock(true)
-                           card.addTag("loot")
-                           glow(card, d.color, 4)
-                         end})
-        return
-      end
-    end
-  end
+  takeCard(d.id, {x = p.x, y = 1.4, z = p.z}, function(card)
+    card.addTag("loot")
+    Wait.time(function() settle(card, {x = p.x, y = CARD_ON_MAT, z = p.z}, L.deck_s.loot, d.color) end, 0.4)
+  end)
 end
 
 function OPS.glowloot(d)
-  for _, o in ipairs(getObjectsWithTag("loot")) do glow(o, d.color, d.secs or 3) end
+  for _, o in ipairs(getObjectsWithTag("loot")) do if o.type == "Card" then glow(o, d.color, d.secs or 3) end end
 end
 
 -- ------------------------------------------------------------------ reset
@@ -377,6 +465,9 @@ function onLoad()
   for _, o in ipairs(getObjects()) do
     HOME[o.getGUID()] = {pos = o.getPosition(), rot = o.getRotation(), scale = o.getScale(), lock = o.getLock()}
   end
+  for kind, tag in pairs(L.decks) do
+    for _, o in ipairs(getObjectsWithTag(tag)) do if o.type == "Deck" then DECK[kind] = o.getGUID() end end
+  end
   clearMats()
   for _, id in ipairs({"kbCaption", "kbScore", "kbBanner"}) do UI.setAttribute(id, "active", "false") end
 end
@@ -385,56 +476,38 @@ local function isMovable(o)
   for _, t in ipairs(MOVABLE) do if o.hasTag(t) then return true end end
   return false
 end
--- Piles (the room stack, the token piles, rubble) are put in place locked, so no piece knocks another
--- over on the way, and let go half a second later: a stack of loose tiles stays a neat stack.
-local function isPile(o)
-  return (o.hasTag("room") and notes(o) ~= "0,0") or o.hasTag("token") or o.hasTag("rubble")
-end
-local function place(objs, slots, stay_locked)
-  for k, o in ipairs(objs) do
-    local s = slots[k]
-    o.setLock(true)
-    o.setPosition(s.pos)
-    o.setRotation(s.rot)
-    o.setScale(s.scale)
-  end
-  if not stay_locked then
-    Wait.time(function() for _, o in ipairs(objs) do if alive(o) then o.setLock(false) end end end, 0.5)
-  end
-end
 
 function OPS.reset(d)
-  -- d.stage: the director films, so every piece stays locked and only its scripts move them.
-  local deck = getObjectsWithTag("lootdeck")[1]
-  local piles, slots = {}, {}
+  -- d.stage: the director films, so dice and characters stay locked and only its scripts move them.
+  STAGED = d.stage == true
+  gatherCards()
+  Wait.time(gatherCards, 1.2)    -- the last card of a small deck that was taken apart
   for _, o in ipairs(getObjects()) do
-    -- Loot cards back into the deck; two cards dropped on each other have become a small deck of
-    -- their own (seen live, 2026-10-25), so those go back too.
-    local loose = o.type == "Card" or (o.type == "Deck" and not o.hasTag("lootdeck"))
-    if loose and deck and o ~= deck then
-      o.setLock(false)
-      o.removeTag("loot")
-      deck.putObject(o)
-    else
-      local h = HOME[o.getGUID()]
-      if h and isPile(o) then
-        table.insert(piles, o)
-        table.insert(slots, h)
-      elseif h then
-        -- A die or a pawn is locked on the way home, so it doesn't tumble, then gets its own state
-        -- back. Nothing else is locked: a locked Loot Deck takes no cards back (seen live, 2026-10-25).
-        if isMovable(o) then
-          local lock = h.lock == true or d.stage == true
-          o.setLock(true)
-          Wait.time(function() if alive(o) then o.setLock(lock) end end, 1.2)
-        end
-        o.setPositionSmooth(h.pos, false, true)
-        o.setRotationSmooth(h.rot, false, true)
-        o.setScale(h.scale)
+    local h = HOME[o.getGUID()]
+    if h and o.type ~= "Card" then
+      -- A die or a pawn is locked on the way home, so it doesn't tumble, then gets its own state back.
+      -- Nothing else is locked: a locked deck takes no cards back (seen live, 2026-10-25).
+      if isMovable(o) then
+        local lock = h.lock == true or STAGED
+        o.setLock(true)
+        Wait.time(function() if alive(o) then o.setLock(lock) end end, 1.2)
       end
+      o.setPositionSmooth(h.pos, false, true)
+      o.setRotationSmooth(h.rot, false, true)
+      o.setScale(h.scale)
     end
   end
-  place(piles, slots, d.stage)
+  -- Decks back home, face down, even ones that were made again from returning cards.
+  Wait.time(function()
+    for kind, _ in pairs(L.decks) do
+      local deck = mainDeck(kind)
+      if deck then
+        deck.setPositionSmooth(deckHome(kind), false, true)
+        deck.setRotationSmooth({x = 0, y = 180, z = 180}, false, true)
+        deck.setScale({x = L.deck_s[kind], y = 1, z = L.deck_s[kind]})
+      end
+    end
+  end, 1.6)
   clearMats()
   TIMER.token = TIMER.token + 1
   TIMER.left, TIMER.play, TIMER.ends = L.game_secs, false, nil
@@ -455,33 +528,17 @@ local function seatedColors()
   return out
 end
 
-local function shufflePile(objs)
-  -- The pieces swap their starting places (§3 step 3: shuffle the room tiles).
-  local slots = {}
-  for _, o in ipairs(objs) do table.insert(slots, HOME[o.getGUID()]) end
-  table.sort(slots, function(a, b) return a.pos.y < b.pos.y end)
-  for i = #objs, 2, -1 do
-    local j = math.random(i)
-    objs[i], objs[j] = objs[j], objs[i]
-  end
-  place(objs, slots, false)
-end
-
 local starting = false
 function startGame(player)
   if starting then return end
   starting = true
   OPS.reset({})
   Wait.time(function()
-    local rooms = {}
-    for _, o in ipairs(getObjectsWithTag("room")) do
-      if notes(o) ~= "0,0" and HOME[o.getGUID()] then table.insert(rooms, o) end
+    -- §3: the rooms, the token piles and the Loot Deck are shuffled.
+    for _, kind in ipairs({"room", "monster", "treasure", "loot"}) do
+      local deck = mainDeck(kind)
+      if deck and deck.type == "Deck" then deck.shuffle() end
     end
-    shufflePile(rooms)
-    shufflePile(getObjectsWithTag("monster"))
-    shufflePile(getObjectsWithTag("treasure"))
-    local deck = getObjectsWithTag("lootdeck")[1]
-    if deck then deck.shuffle() end
     local who = seatedColors()
     OPS.deal({colors = who})
     OPS.pawns({colors = who})
@@ -491,7 +548,7 @@ function startGame(player)
       if TIMER.play and TIMER.left > 0 then OPS.banner({}) end
       starting = false
     end, 2.5)
-  end, 1.4)
+  end, 2.4)
 end
 
 -- ------------------------------------------------------------------ the director's commands

@@ -538,6 +538,31 @@ for kind, n in left.items():
         SPARE.append((room_img(kind, ds, trap), trap))
 rng.shuffle(SPARE)
 
+# Rooms, tokens and rubble are cards in decks, so players draw from a deck instead of a tall pile of
+# loose tiles (Yavuz, 2026-10-25: "deste oluşturabilirsin"). The room deck, top card first: the
+# tutorial's rooms in the order it reveals them, then the spares. START GAME shuffles every deck.
+ROOM_CARDS = ([{"fn": ROOM_IMG[c], "kind": k, "trap": None, "notes": f"{c[0]},{c[1]}"} for c, k, _ in P.ROOMS]
+              + [{"fn": fn, "kind": "trap" if trap else fn.split("-")[1], "trap": trap, "notes": f"spare{i}"}
+                 for i, (fn, trap) in enumerate(SPARE)])
+assert len(ROOM_CARDS) == sum(ROOM_COUNT.values())
+
+
+def card_sheet(fns, out, cols):
+    """Images side by side on one card sheet. TTS cuts it into cards, and square cells give square cards."""
+    cell = Image.open(OUT / fns[0]).size[0]
+    rows = math.ceil(len(fns) / cols)
+    sheet = Image.new("RGB", (cell * cols, cell * rows), (0, 0, 0))
+    for i, fn in enumerate(fns):
+        sheet.paste(Image.open(OUT / fn).convert("RGB"), ((i % cols) * cell, (i // cols) * cell))
+    save(sheet, out)
+    return cols, rows
+
+
+ROOM_SHEET = card_sheet([r["fn"] for r in ROOM_CARDS], "room-sheet.png", 7)
+MON_SHEET = card_sheet([TOKEN_IMG[("monster", k)] for k in MONSTERS], "mon-sheet.png", 3)
+TRE_SHEET = card_sheet([TOKEN_IMG[("treasure", k)] for k in TREASURES], "tre-sheet.png", 3)
+RUBBLE_SHEET = card_sheet([RUBBLE, RUBBLE], "rubble-sheet.png", 2)    # one face; a sheet has at least two cells
+
 # ------------------------------------------------------------------ images into Mods/
 for old in ASSETS.glob("*.png"):
     old.unlink()
@@ -616,8 +641,13 @@ MAT_X = {"Red": -22.0, "Yellow": -11.0, "Green": 0.0, "Blue": 11.0, "Purple": 22
 MAT_SIZE = (10.0, round(10.0 * MAT_H / MAT_W, 4))        # width, depth in table units
 MAT_S = MAT_SIZE[1] / 2                                    # Stretch on: depth = 2 x scale
 PAWN_HOME = {c: (MAT_X[c] - 3.6, MAT_Z + 3.4) for c in COLORS}   # just above the mat, clear of its dice box
-TOKEN_S = 0.7         # 1.4 across: the token in a room's middle leaves space for five characters
-STACK_DY = {"room": 0.125, "token": 0.2}                   # unlocked piles: each piece on top of the last
+# Cards (measured live, 2026-10-25): a card cut from a square cell is 3.06 across at scale 1 and 0.027
+# thick; it lies at y 0.974 on the felt and at 1.001 on another card. Cards of different shapes (a
+# square room, a round token) never join into one deck, so a token can lie on a room card.
+CARD_W = 3.06
+ROOM_CARD_S = round(3.6 / CARD_W, 4)     # a room: 3.6 across, on the 3.7 grid
+TOKEN_CARD_S = round(1.4 / CARD_W, 4)    # a token in a room's middle leaves space for five characters
+MAT_TOKEN_S = round(1.0 / CARD_W, 4)     # a token on a mat box (the tutorial)
 # The 20 dice wait in the supply until setup hands each player 4 (the tutorial's "deal" step).
 DICE_SUPPLY = [(round(11.4 + (k % 5) * 1.5, 2), round(2.2 + (k // 5) * 1.5, 2)) for k in range(4 * len(COLORS))]
 
@@ -633,51 +663,76 @@ objs.append(tile(ROOM_IMG[(0, 0)], tr(*cell_pos((0, 0)), s=ROOM_S, y=0.98), "Saf
                  desc="Start here. Bring your CARRIED treasure back here to secure it: move it to POINTS, no dice.",
                  Tooltip=True, Tags=["room", "saferoom"], GMNotes="0,0"))
 
-# Room stack: the tutorial's rooms first (top of the stack = last in the list), then the spares under
-# them. Every room in the stack is just "Room" by name, so hovering a face-down tile gives nothing away.
-stack = [(fn, None) for fn, _trap in SPARE] + [(ROOM_IMG[c], c) for c, _, _ in reversed(P.ROOMS)]
-for i, (fn, cell) in enumerate(stack):
-    objs.append(tile(fn, tr(*STACK, face_down=True, s=ROOM_S, y=1.1 + i * STACK_DY["room"]), "Room",
-                     back=ROOM_BACK, Locked=False, Tags=["room"], GMNotes=f"{cell[0]},{cell[1]}" if cell else f"spare{i}"))
-assert len(stack) == sum(ROOM_COUNT.values())
+# Cards and decks. A deck lies face down; each card carries its identity in GM Notes, so the tutorial
+# takes the card its plan needs and RESET TABLE sends every card back to its own deck. A face-down card
+# hides its name and text (HideWhenFaceDown), so hovering over a deck gives nothing away.
+ROOM_KEY, MON_KEY, TRE_KEY, RUBBLE_KEY, LOOT_KEY = 2, 3, 4, 5, 1
+SHAPE = {"rounded": 0, "square": 1, "circle": 4}     # TTS custom deck card shapes
 
-# Monster and treasure tokens (§3 step 4), face down in two piles. Each has an ID in its GM Notes;
-# the tutorial picks the one its plan needs.
+
+def cdeck(face, back, cols_rows, shape):
+    return {"FaceURL": url(face), "BackURL": url(back), "NumWidth": cols_rows[0], "NumHeight": cols_rows[1],
+            "BackIsHidden": True, "UniqueBack": False, "Type": SHAPE[shape]}
+
+
+def card(nick, desc, key, cd, index, notes, s, hide=True):
+    return base("Card", tr(0, 0, face_down=True, s=s), nick, desc, GMNotes=notes, Locked=False, Tooltip=True,
+                CardID=key * 100 + index, CustomDeck={str(key): cd}, SidewaysCard=False, HideWhenFaceDown=hide)
+
+
+def deck(nick, pos, key, cd, cards, tag, s):
+    return base("Deck", tr(*pos, face_down=True, s=s, y=1.3), nick, Locked=False, DeckIDs=[c["CardID"] for c in cards],
+                CustomDeck={str(key): cd}, ContainedObjects=cards, SidewaysCard=False, HideWhenFaceDown=True, Tags=[tag])
+
+
+# Room deck (§2.1, §13). Square corners, so rooms meet edge to edge.
+ROOM_DECK = cdeck("room-sheet.png", ROOM_BACK, ROOM_SHEET, "square")
+ROOM_TEXT = {"empty": "Nothing to fight or take.", "monster": "Turn a monster token face up on it.",
+             "treasure": "Turn a treasure token face up on it."}
+room_cards = []
+for i, r in enumerate(ROOM_CARDS):
+    if r["trap"]:
+        nick, desc = TRAPS[r["trap"]][0].title(), TRAPS[r["trap"]][2]
+    else:
+        nick, desc = f"{r['kind'].capitalize()} room", ROOM_TEXT[r["kind"]]
+    room_cards.append(card(nick, desc, ROOM_KEY, ROOM_DECK, i, r["notes"], ROOM_CARD_S))
+objs.append(deck("Rooms", STACK, ROOM_KEY, ROOM_DECK, room_cards, "roomdeck", ROOM_CARD_S))
+
+# Monster and treasure tokens (§3 step 4): round cards in two decks.
 TOKEN_IDS = []
-pile_n = {"monster": 0, "treasure": 0}
-for (cat, k), fn in TOKEN_IMG.items():
-    n = MONSTERS[k][2] if cat == "monster" else TREASURES[k][1]
-    pile = MON_PILE if cat == "monster" else TRE_PILE
-    for i in range(n):
-        tid = f"{cat[0]}-{k}-{i + 1}"
-        TOKEN_IDS.append(tid)
-        objs.append(tile(fn, tr(pile[0], pile[1], face_down=True, s=TOKEN_S, y=1.1 + pile_n[cat] * STACK_DY["token"]),
-                         f"{cat.capitalize()} token", back=MON_BACK if cat == "monster" else TRE_BACK,
-                         circle=True, thick=0.16, Locked=False, Tags=["token", cat], GMNotes=tid))
-        pile_n[cat] += 1
+for cat, table, key, back, sheet, pos, tag in (("monster", MONSTERS, MON_KEY, MON_BACK, MON_SHEET, MON_PILE, "mondeck"),
+                                               ("treasure", TREASURES, TRE_KEY, TRE_BACK, TRE_SHEET, TRE_PILE, "tredeck")):
+    cd = cdeck(f"{cat[:3]}-sheet.png", back, sheet, "circle")
+    cards = []
+    for j, (k, v) in enumerate(table.items()):
+        n = v[2] if cat == "monster" else v[1]
+        if cat == "monster":
+            desc = f"Needs {v[0]} Attack. {v[1]} point{'s' if v[1] > 1 else ''}."
+        else:
+            gain = "1 point and a Loot card" if k == "special" else f"{v[0]} point{'s' if v[0] > 1 else ''}"
+            desc = f"Needs 2 Magic. {gain}. Counts once secured in the Safe Room."
+        for i in range(n):
+            tid = f"{cat[0]}-{k}-{i + 1}"
+            TOKEN_IDS.append(tid)
+            cards.append(card(f"{k.capitalize()} {cat}", desc, key, cd, j, tid, TOKEN_CARD_S))
+    random.Random(11).shuffle(cards)
+    objs.append(deck(f"{cat.capitalize()} tokens", pos, key, cd, cards, tag, TOKEN_CARD_S))
+    objs[-1]["Tags"].append("token")       # the tutorial makes both token decks glow
 
-# Rubble (§13): one for each Collapsing Passage room.
-for i in range(TRAP_COUNT):
-    objs.append(tile(RUBBLE, tr(*RUBBLE_POS, s=TOKEN_S, y=1.1 + i * STACK_DY["token"]), "Rubble", back=RUBBLE,
-                     circle=True, thick=0.16, Locked=False, Tooltip=True,
-                     desc="Put it on a Collapsing Passage room after its visitor walks out: nobody can walk in again.",
-                     Tags=["rubble"], GMNotes=f"rubble-{i + 1}"))
+# Rubble (§13): one round card for each Collapsing Passage room.
+RUBBLE_DECK = cdeck("rubble-sheet.png", RUBBLE, RUBBLE_SHEET, "circle")
+rubble_cards = [card("Rubble", "Put it on a Collapsing Passage room after its visitor walks out: nobody can walk in again.",
+                     RUBBLE_KEY, RUBBLE_DECK, 0, f"rubble-{i + 1}", TOKEN_CARD_S, hide=False) for i in range(TRAP_COUNT)]
+objs.append(deck("Rubble", RUBBLE_POS, RUBBLE_KEY, RUBBLE_DECK, rubble_cards, "rubbledeck", TOKEN_CARD_S))
 
 # Loot Deck (§2.4, §14), face down.
-LOOT_KEY = 1
-CDECK = {"FaceURL": url("loot-sheet.png"), "BackURL": url("loot-back.png"), "NumWidth": LOOT_COLS, "NumHeight": LOOT_ROWS,
-         "BackIsHidden": True, "UniqueBack": False, "Type": 0}
+LOOT_DECK = cdeck("loot-sheet.png", "loot-back.png", (LOOT_COLS, LOOT_ROWS), "rounded")
 loot_cards = []
 for i, (cid, name, kind, text, n) in enumerate(LOOT):
     desc = f"{kind}. {text}" + (f" {PRANK_RULE}" if kind == "PRANK" else "")
-    for _ in range(n):
-        loot_cards.append(base("Card", tr(0, 0, face_down=True, s=0.75), name, desc, GMNotes=cid,
-                               Locked=False, Tooltip=True, CardID=LOOT_KEY * 100 + i, CustomDeck={str(LOOT_KEY): CDECK},
-                               SidewaysCard=False, HideWhenFaceDown=True))
+    loot_cards += [card(name, desc, LOOT_KEY, LOOT_DECK, i, cid, 0.75) for _ in range(n)]
 random.Random(3).shuffle(loot_cards)
-objs.append(base("Deck", tr(*LOOT_POS, face_down=True, s=0.75, y=1.3), "Loot Deck", Locked=False,
-                 DeckIDs=[c["CardID"] for c in loot_cards], CustomDeck={str(LOOT_KEY): CDECK},
-                 ContainedObjects=loot_cards, SidewaysCard=False, HideWhenFaceDown=True, Tags=["lootdeck"]))
+objs.append(deck("Loot Deck", LOOT_POS, LOOT_KEY, LOOT_DECK, loot_cards, "lootdeck", 0.75))
 
 # Player mats, pawns (character tokens, §2.2) and 4 dice each (§2.3).
 DICE_IMG = url("dice.png")
@@ -702,7 +757,11 @@ for o in objs:
 
 # ------------------------------------------------------------------ Lua and UI
 LAYOUT = {"icons": {"M": url("icon-move.png"), "A": url("icon-attack.png"), "G": url("icon-magic.png")},
-          "grid": GRID, "dungeon": DUNGEON, "stack": STACK, "mon": MON_PILE, "tre": TRE_PILE, "loot": LOOT_POS,
+          "grid": GRID, "dungeon": DUNGEON,
+          "decks": {"room": "roomdeck", "monster": "mondeck", "treasure": "tredeck", "rubble": "rubbledeck", "loot": "lootdeck"},
+          "deck_pos": {"room": STACK, "monster": MON_PILE, "treasure": TRE_PILE, "rubble": RUBBLE_POS, "loot": LOOT_POS},
+          "deck_s": {"room": ROOM_CARD_S, "monster": TOKEN_CARD_S, "treasure": TOKEN_CARD_S, "rubble": TOKEN_CARD_S, "loot": 0.75},
+          "mat_tok_s": MAT_TOKEN_S,
           "colors": COLORS, "mat_z": MAT_Z, "mat_x": MAT_X, "mat_size": MAT_SIZE, "mat_px": (MAT_W, MAT_H),
           "die_px": DIE_PX, "loot_px": LOOT_PX, "carry_px": CARRY_PX, "points_px": POINTS_PX,
           "pawn_home": PAWN_HOME, "faces": DIE_FACES, "game_secs": 600,
@@ -748,7 +807,7 @@ save_json = {
 }
 (OUT / f"{SAVE_NAME}.json").write_text(json.dumps(save_json, indent=1, ensure_ascii=False))
 shutil.copy(OUT / f"{SAVE_NAME}.json", SAVES / f"{SAVE_NAME}.json")
-print(f"{len(objs)} objects, {len(stack)} rooms in the stack ({sum(1 for _, t in SPARE if t)} traps), "
-      f"{len(TOKEN_IDS)} tokens, {len(loot_cards)} Loot cards")
+print(f"{len(objs)} objects: decks of {len(room_cards)} rooms ({sum(1 for _, t in SPARE if t)} traps), "
+      f"{len(TOKEN_IDS)} tokens, {len(rubble_cards)} rubble, {len(loot_cards)} Loot cards")
 print(f"images: {len(HASHED)}, {len(LOCAL)} of them local only (not on Steam Cloud){': ' + ', '.join(sorted(LOCAL)) if 0 < len(LOCAL) < 8 else ''}")
 print(f"save → {SAVES / (SAVE_NAME + '.json')}")

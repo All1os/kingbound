@@ -1,7 +1,7 @@
 {
  "SaveName": "KINGBOUND-realtime",
- "EpochTime": 1792957464,
- "Date": "10/25/2026 10:44:24 PM",
+ "EpochTime": 1792959926,
+ "Date": "10/25/2026 11:25:26 PM",
  "VersionNumber": "v14.2.2",
  "GameMode": "Kingbound real-time prototype",
  "Tags": [],
@@ -15,7 +15,7 @@
   "DisableUnused": false,
   "Hiding": 0
  },
- "LuaScript": "--[[ Kingbound real-time prototype: Global script (build.py fills in the __PLACEHOLDERS__).\n\nTwo jobs. For players: START GAME shuffles the room stack, the token piles and the Loot Deck, hands\nout the dice, puts the characters in the Safe Room and starts the 10-minute timer; RESET TABLE puts\neverything back. Everything else is done by hand, as on a real table.\nFor the tutorial video: the director (../tutorial.py) decides everything in Python and sends \"show\nthis\" commands through TTS's External Editor API; this script only moves pieces, rolls dice to the\nfaces it is told, and draws the caption, the timer and the scores. Nothing here makes a game decision.\n\nGM Notes: room tiles hold their dungeon cell (\"x,z\") or \"spareN\"; tokens their ID (m-weak-1,\nt-rare-2 ...); rubble \"rubble-n\"; dice \"Color:n\"; pawns and mats their colour; Loot cards their ID\n(L1-L5, Prank cards P1-P4).\n]]\nKB_VERSION = \"0.3-realtime\"\nL = JSON.decode([==[{\"icons\": {\"M\": \"https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-move.png\", \"A\": \"https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-attack.png\", \"G\": \"https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-magic.png\"}, \"grid\": 3.7, \"dungeon\": [0.0, 3.0], \"stack\": [-15.5, 8.0], \"mon\": [13.5, 10.0], \"tre\": [17.5, 10.0], \"loot\": [21.5, 10.0], \"colors\": [\"Red\", \"Yellow\", \"Green\", \"Blue\", \"Purple\"], \"mat_z\": -12.0, \"mat_x\": {\"Red\": -22.0, \"Yellow\": -11.0, \"Green\": 0.0, \"Blue\": 11.0, \"Purple\": 22.0}, \"mat_size\": [10.0, 5.0909], \"mat_px\": [1100, 560], \"die_px\": [[105, 255], [245, 255], [105, 435], [245, 435]], \"loot_px\": [440, 330], \"carry_px\": [[622, 245], [743, 245], [622, 358], [743, 358], [622, 471], [743, 471]], \"points_px\": [[884, 245], [1006, 245], [884, 358], [1006, 358], [884, 471], [1006, 471]], \"pawn_home\": {\"Red\": [-25.6, -8.6], \"Yellow\": [-14.6, -8.6], \"Green\": [-3.6, -8.6], \"Blue\": [7.4, -8.6], \"Purple\": [18.4, -8.6]}, \"faces\": {\"1\": \"move\", \"2\": \"move\", \"3\": \"attack\", \"4\": \"attack\", \"5\": \"magic\", \"6\": \"magic\"}, \"game_secs\": 600, \"points\": {\"m-weak\": 1, \"m-medium\": 2, \"m-strong\": 4, \"t-common\": 1, \"t-rare\": 3, \"t-special\": 1}}]==])\n\nCOLORS = {Red = {0.86, 0.1, 0.09}, Yellow = {0.95, 0.85, 0.1}, Green = {0.19, 0.7, 0.17}, Blue = {0.12, 0.53, 1},\n          Purple = {0.63, 0.13, 0.94}}\nGOLDEN = {1, 0.82, 0.3}\n-- Where each character stands inside a room, so five can share one: a ring around the token in the\n-- middle (a room is 3.6 across, a token 1.4).\nPAWN_OFF = {Green = {0, 1.15}, Yellow = {-1.09, 0.36}, Red = {-0.68, -0.93}, Purple = {0.68, -0.93}, Blue = {1.09, 0.36}}\n-- Mat geometry: a mat is L.mat_size table units; its image is L.mat_px pixels (build.py mat_img).\nlocal function matPos(color, px, py)\n  return {x = L.mat_x[color] + (px / L.mat_px[1] - 0.5) * L.mat_size[1], y = 1.25,\n          z = L.mat_z + (0.5 - py / L.mat_px[2]) * L.mat_size[2]}\nend\n-- Heights measured live (2026-10-19): the felt is at y 0.96; a tile's position is its bottom face when\n-- face up; a mat's top is at 1.08, a room's at 1.10; a die at scale 1.5 is 1.0 high (centre pivot).\nDIE_Y, ROOM_Y, TOKEN_ON_ROOM, TOKEN_ON_MAT = 1.58, 0.98, 1.11, 1.09\n-- The pieces players move (unlocked in the save; the director locks them while it films).\nMOVABLE = {\"room\", \"token\", \"rubble\", \"die\", \"pawn\"}\nOPS = {}\n\n-- ------------------------------------------------------------------ finding things\nlocal function alive(o) return o ~= nil and not o.isDestroyed() end\nlocal function notes(o) local ok, g = pcall(function() return o.getGMNotes() end) return ok and g or \"\" end\nlocal function byNote(tag, note)\n  for _, o in ipairs(getObjectsWithTag(tag)) do if notes(o) == note then return o end end\nend\nfunction cellPos(c) return {x = L.dungeon[1] + c[1] * L.grid, y = 1.1, z = L.dungeon[2] + c[2] * L.grid} end\nfunction dieOf(color, i) return byNote(\"die\", color .. \":\" .. i) end\nfunction pawnOf(color) return byNote(\"pawn\", color) end\n\nfunction glow(o, color, secs)\n  if alive(o) then pcall(function() o.highlightOn(COLORS[color] or GOLDEN, secs or 3) end) end\nend\n\n-- ------------------------------------------------------------------ overlays\n-- Only the name of the part is shown (the team explains the rest live while presenting), with the\n-- symbols the step costs as icons after it: d.icons = \"MM\" (2 Movement), \"AAA\", \"GG\" ...\nlocal function textWidth(t)\n  local w = 0\n  -- Bold 29 px capitals are about 21 px wide (42 px ones measured 31 px on screen, 2026-10-19); a\n  -- little more, so the text never runs into the icons (it overflows its box instead of wrapping).\n  for ch in t:gmatch(\".\") do w = w + ((ch == \" \" or ch == \"·\" or ch == \":\") and 10 or 24) end\n  return math.max(60, w)\nend\nfunction caption(head, icons)\n  icons = icons or \"\"\n  local tw = textWidth(head or \"\")\n  UI.setAttribute(\"kbCaptionHead\", \"preferredWidth\", tw)\n  UI.setAttribute(\"kbCaption\", \"width\", tw + 32 + #icons * 46)\n  UI.setValue(\"kbCaptionHead\", head or \"\")\n  for i = 1, 4 do\n    local k = icons:sub(i, i)\n    if k ~= \"\" then\n      UI.setAttribute(\"kbIcon\" .. i, \"image\", \"icon\" .. k)\n      UI.setAttribute(\"kbIcon\" .. i, \"active\", \"true\")\n    else\n      UI.setAttribute(\"kbIcon\" .. i, \"active\", \"false\")\n    end\n  end\n  UI.setAttribute(\"kbCaption\", \"active\", \"true\")\nend\nfunction OPS.caption(d) caption(d.head, d.icons) end\nfunction OPS.nocaption(d) UI.setAttribute(\"kbCaption\", \"active\", \"false\") end\n\nfunction OPS.banner(d)\n  if not d.text then UI.setAttribute(\"kbBanner\", \"active\", \"false\") return end\n  UI.setValue(\"kbBannerText\", d.text)\n  UI.setAttribute(\"kbBanner\", \"active\", \"true\")\nend\n\nfunction OPS.score(d)\n  if not d.lines then UI.setAttribute(\"kbScore\", \"active\", \"false\") return end\n  UI.setAttribute(\"kbScore\", \"active\", \"true\")\n  for i = 1, #L.colors do\n    local ln = d.lines[i]\n    UI.setValue(\"kbScore\" .. i, ln and ln.text or \"\")\n    if ln and ln.hex then UI.setAttribute(\"kbScore\" .. i, \"color\", ln.hex) end\n  end\nend\n\n-- The 10-minute timer (§10). It never pauses in the game. In a real game (START GAME) it follows the\n-- clock, so it can't drift; the director only speeds it up for the \"a few minutes later\" part of the\n-- video (rate = game seconds per real second).\nTIMER = {left = L.game_secs, rate = 1, token = 0, play = false, ends = nil}\nlocal function wall()\n  local ok, t = pcall(function() return os.time() end)\n  if ok and type(t) == \"number\" then return t end\nend\nlocal function showTime()\n  local s = math.max(0, math.floor(TIMER.left + 0.5))\n  UI.setValue(\"kbTimerText\", string.format(\"%d:%02d\", math.floor(s / 60), s % 60))\n  UI.setAttribute(\"kbTimerText\", \"color\", s <= 60 and \"#FF6A5A\" or \"#F5ECD7\")\nend\nlocal function timeUp()\n  OPS.banner({text = \"TIME'S UP!\"})\n  broadcastToAll(\"Time's up! Only the POINTS box counts: defeated monsters and secured treasure.\", GOLDEN)\nend\nlocal function tick(token)\n  if token ~= TIMER.token then return end\n  if TIMER.ends then TIMER.left = TIMER.ends - wall() else TIMER.left = TIMER.left - 1 end\n  if TIMER.left <= 0 then\n    TIMER.left = 0\n    showTime()\n    if TIMER.play then timeUp() end\n    return\n  end\n  showTime()\n  Wait.time(function() tick(token) end, TIMER.ends and 0.25 or 1 / TIMER.rate)\nend\nfunction OPS.timer(d)\n  UI.setAttribute(\"kbTimer\", \"active\", d.hide and \"false\" or \"true\")\n  TIMER.token = TIMER.token + 1\n  if d.left then TIMER.left = d.left end\n  TIMER.rate = d.rate or 1\n  TIMER.play = d.play or false\n  TIMER.ends = nil\n  if TIMER.play and wall() then TIMER.ends = wall() + TIMER.left end\n  showTime()\n  if d.run then\n    local token = TIMER.token\n    Wait.time(function() tick(token) end, TIMER.ends and 0.25 or 1 / TIMER.rate)\n  end\nend\n\n-- ------------------------------------------------------------------ camera\n-- Always from the south (yaw 0), so every mat and card reads upright.\nfunction viewFor(d)\n  local v = d.view\n  if v == \"table\" then return {position = {x = 0, y = 0, z = 0}, pitch = 68, yaw = 0, distance = 54} end\n  if v == \"play\" then return {position = {x = 0, y = 0, z = -4.0}, pitch = 62, yaw = 0, distance = 40} end\n  if v == \"dungeon\" then return {position = {x = 0, y = 0, z = 1.5}, pitch = 70, yaw = 0, distance = 30} end\n  if v == \"mats\" then return {position = {x = 0, y = 0, z = -9.0}, pitch = 60, yaw = 0, distance = 36} end\n  if v == \"chart\" then return {position = {x = -16.5, y = 0, z = -0.2}, pitch = 66, yaw = 0, distance = 16} end\n  if v == \"supply\" then return {position = {x = 4, y = 0, z = 7}, pitch = 64, yaw = 0, distance = 34} end\n  if v == \"title\" then return {position = {x = 0, y = 0, z = 15.8}, pitch = 70, yaw = 0, distance = 20} end\n  if v == \"mat\" then\n    return {position = {x = L.mat_x[d.color], y = 0, z = L.mat_z - 0.8}, pitch = 62, yaw = 0, distance = d.distance or 15}\n  end\n  if v == \"cell\" then\n    local p = cellPos(d.cell)\n    -- With a colour: the room and that player's mat (where the dice are) in one shot. The view frames\n    -- both (half-way put the far-left mat's dice off screen, seen 2026-10-19) and aims a little low,\n    -- because the part's name covers the bottom of the screen.\n    if d.color then\n      local mx, mz, hw, hd = L.mat_x[d.color], L.mat_z, L.mat_size[1] / 2 + 0.5, L.mat_size[2] / 2 + 0.1\n      local x0, x1 = math.min(mx - hw, p.x - 2.2), math.max(mx + hw, p.x + 2.2)\n      local z0, z1 = mz - hd, p.z + 2.2\n      local dist = math.max(d.distance or 0, (x1 - x0) / 1.2, (z1 - z0) * 1.1)\n      return {position = {x = (x0 + x1) / 2, y = 0, z = (z0 + z1) / 2 - 1.8}, pitch = 62, yaw = 0, distance = dist}\n    end\n    return {position = {x = p.x, y = 0, z = p.z - 0.8}, pitch = 64, yaw = 0, distance = d.distance or 16}\n  end\nend\nfunction OPS.camera(d)\n  local v = viewFor(d)\n  if not v then return end\n  for _, pl in ipairs(Player.getPlayers()) do\n    if pl.host then pcall(function() pl.lookAt(v) end) end\n  end\nend\n\n-- ------------------------------------------------------------------ setup (§3)\nfunction OPS.deal(d)\n  -- Each player takes their 4 dice (§3 step 1): from the middle of the table onto their mat.\n  local k = 0\n  for _, color in ipairs(d.colors or L.colors) do\n    for i = 1, 4 do\n      local die = dieOf(color, i)\n      if die then\n        k = k + 1\n        local px = L.die_px[i]\n        local p = matPos(color, px[1], px[2])\n        -- Face first, then the move: setRotationValue after setPositionSmooth cancels the move\n        -- (seen live, 2026-10-19: the dice stayed in the supply).\n        Wait.time(function()\n          die.setRotationValue(i)\n          die.setPositionSmooth({x = p.x, y = DIE_Y, z = p.z}, false, true)\n          glow(die, color, 2)\n        end, k * 0.06)\n      end\n    end\n  end\nend\n\nfunction OPS.pawns(d)\n  -- Characters go into the Safe Room (§12: it is everyone's starting room).\n  for _, color in ipairs(d.colors or L.colors) do\n    local pawn = pawnOf(color)\n    if pawn then\n      local c, off = cellPos({0, 0}), PAWN_OFF[color]\n      pawn.setPositionSmooth({x = c.x + off[1], y = 1.6, z = c.z + off[2]}, false, false)\n      glow(pawn, color, 3)\n    end\n  end\nend\n\nfunction OPS.shuffle(d)\n  -- The room stack is already in the tutorial's order; this only shows it being shuffled (§3 step 3).\n  local rooms = {}\n  for _, o in ipairs(getObjectsWithTag(\"room\")) do\n    if notes(o) ~= \"0,0\" and o.getRotation().z > 90 then table.insert(rooms, o) end\n  end\n  for k, o in ipairs(rooms) do\n    local p = o.getPosition()\n    local dx = (k % 2 == 0) and 1.6 or -1.6\n    Wait.time(function() o.setPositionSmooth({x = p.x + dx, y = p.y, z = p.z}, false, true) end, 0.02 * k)\n    Wait.time(function() o.setPositionSmooth(p, false, true) end, 0.6 + 0.02 * k)\n  end\nend\n\nfunction OPS.button(d)\n  for _, id in ipairs({\"kbStart\", \"kbReset\"}) do UI.setAttribute(id, \"active\", d.show and \"true\" or \"false\") end\nend\n\nfunction OPS.spot(d)\n  -- One player's character and mat glow: \"watch this player\".\n  glow(pawnOf(d.color), d.color, d.secs or 3)\n  glow(byNote(\"mat\", d.color), d.color, d.secs or 3)\nend\n\nfunction OPS.glowtag(d)\n  for _, o in ipairs(getObjectsWithTag(d.tag)) do glow(o, d.color, d.secs or 3) end\nend\n\n-- ------------------------------------------------------------------ dice (§4, §5)\n-- d.color, d.dice = which dice (1-4), d.values = the faces they land on (1-2 Movement, 3-4 Attack,\n-- 5-6 Magic). The dice jump, tumble and land on the face; kept dice stay where they are.\nlocal function rollOne(color, i, value, delay)\n  local die = dieOf(color, i)\n  if not die then return end\n  local px = L.die_px[i]\n  local p = matPos(color, px[1], px[2])\n  Wait.time(function()\n    die.setPositionSmooth({x = p.x, y = DIE_Y + 2.2, z = p.z}, false, true)\n    die.setRotationSmooth({x = math.random(0, 359), y = math.random(0, 359), z = math.random(0, 359)}, false, true)\n  end, delay)\n  Wait.time(function()\n    die.setRotationSmooth({x = math.random(0, 359), y = math.random(0, 359), z = math.random(0, 359)}, false, true)\n  end, delay + 0.25)\n  Wait.time(function()\n    die.setRotationValue(value)\n    die.setPositionSmooth({x = p.x, y = DIE_Y, z = p.z}, false, true)\n  end, delay + 0.55)\nend\nfunction OPS.roll(d)\n  for k, i in ipairs(d.dice) do rollOne(d.color, i, d.values[k], (k - 1) * 0.04) end\nend\nfunction OPS.keep(d)\n  -- The dice that already show what the player needs glow in their colour.\n  for _, i in ipairs(d.dice) do glow(dieOf(d.color, i), d.color, d.secs or 3) end\nend\n\n-- ------------------------------------------------------------------ the dungeon (§6, §12)\nfunction OPS.reveal(d)\n  -- The room tile of this cell comes off the stack, turns over and lands next to the room it was\n  -- revealed from, passages lined up (build.py drew them that way).\n  local o = byNote(\"room\", d.cell[1] .. \",\" .. d.cell[2])\n  if not o then return end\n  local p = cellPos(d.cell)\n  o.setPositionSmooth({x = p.x, y = 2.6, z = p.z}, false, true)\n  o.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)\n  Wait.time(function() o.setPositionSmooth({x = p.x, y = ROOM_Y, z = p.z}, false, true) glow(o, d.color, 3) end, 0.7)\n  if d.token then\n    Wait.time(function() OPS.token({id = d.token, cell = d.cell, color = d.color}) end, 1.2)\n  end\nend\n\nfunction OPS.token(d)\n  local o = byNote(\"token\", d.id)\n  if not o then return end\n  local p = cellPos(d.cell)\n  o.setPositionSmooth({x = p.x, y = 2.4, z = p.z}, false, true)\n  o.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)\n  Wait.time(function() o.setPositionSmooth({x = p.x, y = TOKEN_ON_ROOM, z = p.z}, false, true) glow(o, d.color, 3) end, 0.6)\nend\n\nfunction OPS.move(d)\n  local pawn = pawnOf(d.color)\n  if not pawn then return end\n  local path = d.path or {d.cell}\n  for k, c in ipairs(path) do\n    Wait.time(function()\n      local p, off = cellPos(c), PAWN_OFF[d.color]\n      pawn.setPositionSmooth({x = p.x + off[1], y = 1.6, z = p.z + off[2]}, false, true)\n      glow(pawn, d.color, 2)\n    end, (k - 1) * (d.t or 0.45))\n  end\nend\n\n-- What lies on each mat: CARRIED treasure (not secured yet, §12) and POINTS (defeated monsters and\n-- secured treasure; only POINTS count at the end).\nCARRY, POINTS = {}, {}\nlocal function clearMats()\n  CARRY, POINTS = {}, {}\n  for _, c in ipairs(L.colors) do CARRY[c], POINTS[c] = {}, {} end\nend\nlocal function toMat(o, color, spots, n, delay)\n  local px = spots[math.min(n, #spots)]\n  local p = matPos(color, px[1], px[2])\n  Wait.time(function()\n    o.setPositionSmooth({x = p.x, y = TOKEN_ON_MAT, z = p.z}, false, true)\n    o.setScale({x = 0.5, y = 1, z = 0.5})\n    glow(o, color, 3)\n  end, delay)\nend\n\nfunction OPS.take(d)\n  -- A defeated monster goes onto POINTS; a collected treasure onto CARRIED until it is secured.\n  local o = byNote(\"token\", d.id)\n  if not o then return end\n  o.setPositionSmooth({x = o.getPosition().x, y = 3.0, z = o.getPosition().z}, false, true)\n  if d.id:sub(1, 2) == \"t-\" then\n    table.insert(CARRY[d.color], d.id)\n    toMat(o, d.color, L.carry_px, #CARRY[d.color], 0.4)\n  else\n    table.insert(POINTS[d.color], d.id)\n    toMat(o, d.color, L.points_px, #POINTS[d.color], 0.4)\n  end\nend\n\nfunction OPS.secure(d)\n  -- §12: back in the Safe Room, everything CARRIED moves to POINTS, no dice.\n  for k, id in ipairs(CARRY[d.color]) do\n    local o = byNote(\"token\", id)\n    if o then\n      table.insert(POINTS[d.color], id)\n      toMat(o, d.color, L.points_px, #POINTS[d.color], (k - 1) * 0.25)\n    end\n  end\n  CARRY[d.color] = {}\nend\n\nfunction OPS.loot(d)\n  -- Draw the Loot card with this ID (§9: special treasure) onto the mat's Loot box, face up.\n  local deck = getObjectsWithTag(\"lootdeck\")[1]\n  local p = matPos(d.color, L.loot_px[1], L.loot_px[2])\n  if deck and not deck.isDestroyed() then\n    for _, c in ipairs(deck.getObjects()) do\n      if c.gm_notes == d.id then\n        deck.takeObject({guid = c.guid, position = {x = p.x, y = 1.12, z = p.z}, rotation = {x = 0, y = 180, z = 0},\n                         smooth = true, callback_function = function(card)\n                           card.setLock(true)\n                           card.addTag(\"loot\")\n                           glow(card, d.color, 4)\n                         end})\n        return\n      end\n    end\n  end\nend\n\nfunction OPS.glowloot(d)\n  for _, o in ipairs(getObjectsWithTag(\"loot\")) do glow(o, d.color, d.secs or 3) end\nend\n\n-- ------------------------------------------------------------------ reset\n-- Every object's starting place is remembered at load; RESET TABLE (or the director) puts it back.\nHOME = {}\nfunction onLoad()\n  local assets = {}\n  for k, u in pairs(L.icons) do table.insert(assets, {name = \"icon\" .. k, url = u}) end\n  UI.setCustomAssets(assets)\n  for _, o in ipairs(getObjects()) do\n    HOME[o.getGUID()] = {pos = o.getPosition(), rot = o.getRotation(), scale = o.getScale(), lock = o.getLock()}\n  end\n  clearMats()\n  for _, id in ipairs({\"kbCaption\", \"kbScore\", \"kbBanner\"}) do UI.setAttribute(id, \"active\", \"false\") end\nend\n\nlocal function isMovable(o)\n  for _, t in ipairs(MOVABLE) do if o.hasTag(t) then return true end end\n  return false\nend\n-- Piles (the room stack, the token piles, rubble) are put in place locked, so no piece knocks another\n-- over on the way, and let go half a second later: a stack of loose tiles stays a neat stack.\nlocal function isPile(o)\n  return (o.hasTag(\"room\") and notes(o) ~= \"0,0\") or o.hasTag(\"token\") or o.hasTag(\"rubble\")\nend\nlocal function place(objs, slots, stay_locked)\n  for k, o in ipairs(objs) do\n    local s = slots[k]\n    o.setLock(true)\n    o.setPosition(s.pos)\n    o.setRotation(s.rot)\n    o.setScale(s.scale)\n  end\n  if not stay_locked then\n    Wait.time(function() for _, o in ipairs(objs) do if alive(o) then o.setLock(false) end end end, 0.5)\n  end\nend\n\nfunction OPS.reset(d)\n  -- d.stage: the director films, so every piece stays locked and only its scripts move them.\n  local deck = getObjectsWithTag(\"lootdeck\")[1]\n  local piles, slots = {}, {}\n  for _, o in ipairs(getObjects()) do\n    -- Loot cards back into the deck; two cards dropped on each other have become a small deck of\n    -- their own (seen live, 2026-10-25), so those go back too.\n    local loose = o.type == \"Card\" or (o.type == \"Deck\" and not o.hasTag(\"lootdeck\"))\n    if loose and deck and o ~= deck then\n      o.setLock(false)\n      o.removeTag(\"loot\")\n      deck.putObject(o)\n    else\n      local h = HOME[o.getGUID()]\n      if h and isPile(o) then\n        table.insert(piles, o)\n        table.insert(slots, h)\n      elseif h then\n        -- A die or a pawn is locked on the way home, so it doesn't tumble, then gets its own state\n        -- back. Nothing else is locked: a locked Loot Deck takes no cards back (seen live, 2026-10-25).\n        if isMovable(o) then\n          local lock = h.lock == true or d.stage == true\n          o.setLock(true)\n          Wait.time(function() if alive(o) then o.setLock(lock) end end, 1.2)\n        end\n        o.setPositionSmooth(h.pos, false, true)\n        o.setRotationSmooth(h.rot, false, true)\n        o.setScale(h.scale)\n      end\n    end\n  end\n  place(piles, slots, d.stage)\n  clearMats()\n  TIMER.token = TIMER.token + 1\n  TIMER.left, TIMER.play, TIMER.ends = L.game_secs, false, nil\n  showTime()\n  for _, id in ipairs({\"kbCaption\", \"kbScore\", \"kbBanner\", \"kbTimer\"}) do UI.setAttribute(id, \"active\", \"false\") end\nend\nfunction resetGame(player) OPS.reset({}) end\n\n-- ------------------------------------------------------------------ START GAME\n-- The colours at a mat that someone sits at; nobody at a mat colour (one person trying it out) =\n-- every colour.\nlocal function seatedColors()\n  local out = {}\n  for _, pl in ipairs(Player.getPlayers()) do\n    if L.mat_x[pl.color] then table.insert(out, pl.color) end\n  end\n  if #out == 0 then return L.colors end\n  return out\nend\n\nlocal function shufflePile(objs)\n  -- The pieces swap their starting places (§3 step 3: shuffle the room tiles).\n  local slots = {}\n  for _, o in ipairs(objs) do table.insert(slots, HOME[o.getGUID()]) end\n  table.sort(slots, function(a, b) return a.pos.y < b.pos.y end)\n  for i = #objs, 2, -1 do\n    local j = math.random(i)\n    objs[i], objs[j] = objs[j], objs[i]\n  end\n  place(objs, slots, false)\nend\n\nlocal starting = false\nfunction startGame(player)\n  if starting then return end\n  starting = true\n  OPS.reset({})\n  Wait.time(function()\n    local rooms = {}\n    for _, o in ipairs(getObjectsWithTag(\"room\")) do\n      if notes(o) ~= \"0,0\" and HOME[o.getGUID()] then table.insert(rooms, o) end\n    end\n    shufflePile(rooms)\n    shufflePile(getObjectsWithTag(\"monster\"))\n    shufflePile(getObjectsWithTag(\"treasure\"))\n    local deck = getObjectsWithTag(\"lootdeck\")[1]\n    if deck then deck.shuffle() end\n    local who = seatedColors()\n    OPS.deal({colors = who})\n    OPS.pawns({colors = who})\n    OPS.timer({left = L.game_secs, run = true, play = true})\n    OPS.banner({text = \"GO!\"})\n    Wait.time(function()\n      if TIMER.play and TIMER.left > 0 then OPS.banner({}) end\n      starting = false\n    end, 2.5)\n  end, 1.4)\nend\n\n-- ------------------------------------------------------------------ the director's commands\nlocal function reply(kind, text) sendExternalMessage({kind = kind, text = text}) end\nfunction OPS.hello(d) reply(\"hello\", KB_VERSION) end\n\nfunction onExternalMessage(d)\n  if type(d) ~= \"table\" then return end\n  -- One JSON string per command: TTS hands nested lists of a custom message to Lua as C# objects\n  -- (seen live on v0.1), so the director sends {json = \"...\"}.\n  if d.json then d = JSON.decode(d.json) end\n  local f = OPS[d.op]\n  if not f then reply(\"error\", \"unknown command \" .. tostring(d.op)) return end\n  local function run()\n    local ok, err = pcall(f, d)\n    if not ok then reply(\"error\", tostring(d.op) .. \": \" .. tostring(err)) end\n  end\n  -- d.delay: wait before doing it, so one beat can be \"the dice land, then the room is revealed\".\n  if type(d.delay) == \"number\" and d.delay > 0 then Wait.time(run, d.delay) else run() end\nend\n",
+ "LuaScript": "--[[ Kingbound real-time prototype: Global script (build.py fills in the __PLACEHOLDERS__).\n\nTwo jobs. For players: START GAME shuffles the decks (rooms, monster and treasure tokens, Loot), hands\nout the dice, puts the characters in the Safe Room and starts the 10-minute timer; RESET TABLE puts\neverything back. Everything else is done by hand, as on a real table.\nFor the tutorial video: the director (../tutorial.py) decides everything in Python and sends \"show\nthis\" commands through TTS's External Editor API; this script only moves pieces, rolls dice to the\nfaces it is told, and draws the caption, the timer and the scores. Nothing here makes a game decision.\n\nRooms, tokens, rubble and Loot are cards in five decks. A card's GM Notes say what it is: a room its\ndungeon cell (\"x,z\") or \"spareN\", a token its ID (m-weak-1, t-rare-2 ...), rubble \"rubble-n\", Loot its\nID (L1-L5, Prank cards P1-P4). Dice hold \"Color:n\"; pawns and mats their colour; the Safe Room tile \"0,0\".\n]]\nKB_VERSION = \"0.3-realtime\"\nL = JSON.decode([==[{\"icons\": {\"M\": \"https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-move.png\", \"A\": \"https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-attack.png\", \"G\": \"https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-magic.png\"}, \"grid\": 3.7, \"dungeon\": [0.0, 3.0], \"decks\": {\"room\": \"roomdeck\", \"monster\": \"mondeck\", \"treasure\": \"tredeck\", \"rubble\": \"rubbledeck\", \"loot\": \"lootdeck\"}, \"deck_pos\": {\"room\": [-15.5, 8.0], \"monster\": [13.5, 10.0], \"treasure\": [17.5, 10.0], \"rubble\": [-19.9, 8.0], \"loot\": [21.5, 10.0]}, \"deck_s\": {\"room\": 1.1765, \"monster\": 0.4575, \"treasure\": 0.4575, \"rubble\": 0.4575, \"loot\": 0.75}, \"mat_tok_s\": 0.3268, \"colors\": [\"Red\", \"Yellow\", \"Green\", \"Blue\", \"Purple\"], \"mat_z\": -12.0, \"mat_x\": {\"Red\": -22.0, \"Yellow\": -11.0, \"Green\": 0.0, \"Blue\": 11.0, \"Purple\": 22.0}, \"mat_size\": [10.0, 5.0909], \"mat_px\": [1100, 560], \"die_px\": [[105, 255], [245, 255], [105, 435], [245, 435]], \"loot_px\": [440, 330], \"carry_px\": [[622, 245], [743, 245], [622, 358], [743, 358], [622, 471], [743, 471]], \"points_px\": [[884, 245], [1006, 245], [884, 358], [1006, 358], [884, 471], [1006, 471]], \"pawn_home\": {\"Red\": [-25.6, -8.6], \"Yellow\": [-14.6, -8.6], \"Green\": [-3.6, -8.6], \"Blue\": [7.4, -8.6], \"Purple\": [18.4, -8.6]}, \"faces\": {\"1\": \"move\", \"2\": \"move\", \"3\": \"attack\", \"4\": \"attack\", \"5\": \"magic\", \"6\": \"magic\"}, \"game_secs\": 600, \"points\": {\"m-weak\": 1, \"m-medium\": 2, \"m-strong\": 4, \"t-common\": 1, \"t-rare\": 3, \"t-special\": 1}}]==])\n\nCOLORS = {Red = {0.86, 0.1, 0.09}, Yellow = {0.95, 0.85, 0.1}, Green = {0.19, 0.7, 0.17}, Blue = {0.12, 0.53, 1},\n          Purple = {0.63, 0.13, 0.94}}\nGOLDEN = {1, 0.82, 0.3}\n-- Where each character stands inside a room, so five can share one: a ring around the token in the\n-- middle (a room is 3.6 across, a token 1.4).\nPAWN_OFF = {Green = {0, 1.15}, Yellow = {-1.09, 0.36}, Red = {-0.68, -0.93}, Purple = {0.68, -0.93}, Blue = {1.09, 0.36}}\n-- Mat geometry: a mat is L.mat_size table units; its image is L.mat_px pixels (build.py mat_img).\nlocal function matPos(color, px, py)\n  return {x = L.mat_x[color] + (px / L.mat_px[1] - 0.5) * L.mat_size[1], y = 1.25,\n          z = L.mat_z + (0.5 - py / L.mat_px[2]) * L.mat_size[2]}\nend\n-- Heights measured live: the felt is at y 0.96, a mat's top at 1.08, a die at scale 1.5 is 1.0 high\n-- (centre pivot) (2026-10-19); a card lies at 0.974 on the felt, at 1.001 on another card and is 0.027\n-- thick (2026-10-25).\nDIE_Y, CARD_Y, CARD_ON_CARD, CARD_ON_MAT = 1.58, 0.974, 1.001, 1.095\n-- The loose pieces players move (unlocked in the save; the director locks them while it films).\nMOVABLE = {\"die\", \"pawn\"}\nSTAGED = false\nOPS = {}\n\n-- ------------------------------------------------------------------ finding things\nlocal function alive(o) return o ~= nil and not o.isDestroyed() end\nlocal function notes(o) local ok, g = pcall(function() return o.getGMNotes() end) return ok and g or \"\" end\nlocal function byNote(tag, note)\n  for _, o in ipairs(getObjectsWithTag(tag)) do if notes(o) == note then return o end end\nend\nfunction cellPos(c) return {x = L.dungeon[1] + c[1] * L.grid, y = 1.1, z = L.dungeon[2] + c[2] * L.grid} end\nfunction dieOf(color, i) return byNote(\"die\", color .. \":\" .. i) end\nfunction pawnOf(color) return byNote(\"pawn\", color) end\n\nfunction glow(o, color, secs)\n  if alive(o) then pcall(function() o.highlightOn(COLORS[color] or GOLDEN, secs or 3) end) end\nend\n\n-- ------------------------------------------------------------------ cards and decks\n-- Which deck a card belongs to, from its GM Notes.\nlocal function kindOf(n)\n  if n == nil or n == \"\" then return nil end\n  if n:match(\"^%-?%d+,%-?%d+$\") or n:match(\"^spare\") then return \"room\" end\n  if n:sub(1, 2) == \"m-\" then return \"monster\" end\n  if n:sub(1, 2) == \"t-\" then return \"treasure\" end\n  if n:sub(1, 7) == \"rubble-\" then return \"rubble\" end\n  if n:match(\"^[LP]%d$\") then return \"loot\" end\nend\n\n-- Each kind's deck, remembered by GUID. A deck that is down to its last card stops being a deck (TTS\n-- turns it into a single card); that card, or the first card to come back, becomes the deck again.\nDECK = {}\nlocal function mainDeck(kind)\n  local g = DECK[kind]\n  local o = g and getObjectFromGUID(g)\n  if alive(o) then return o end\nend\nlocal function isMain(o, kind)\n  if kind then return DECK[kind] == o.getGUID() end\n  for k, _ in pairs(L.decks) do if DECK[k] == o.getGUID() then return true end end\n  return false\nend\nlocal function deckHome(kind)\n  local p = L.deck_pos[kind]\n  return {x = p[1], y = 1.4, z = p[2]}\nend\n\n-- A card on the table, or the card with these notes taken out of whichever deck holds it; then\n-- after(card) runs with the card at pos.\nlocal function takeCard(id, pos, after)\n  for _, o in ipairs(getObjects()) do\n    if o.type == \"Card\" and notes(o) == id then\n      o.setPositionSmooth(pos, false, true)\n      o.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)\n      if after then after(o) end\n      return\n    end\n  end\n  local main = mainDeck(kindOf(id))\n  local decks = {main}\n  for _, o in ipairs(getObjects()) do if o.type == \"Deck\" and not isMain(o, kindOf(id)) then table.insert(decks, o) end end\n  for _, d in ipairs(decks) do\n    for _, c in ipairs(d.getObjects()) do\n      if c.gm_notes == id then\n        d.takeObject({guid = c.guid, position = pos, rotation = {x = 0, y = 180, z = 0}, smooth = true,\n                      callback_function = after})\n        return\n      end\n    end\n  end\nend\n\n-- A card (or a small deck players made) goes back into its kind's deck.\nlocal function sendHome(kind, o)\n  o.setLock(false)\n  local main = mainDeck(kind)\n  if main and not isMain(o, kind) then\n    local d = main.putObject(o)\n    if alive(d) then DECK[kind] = d.getGUID() end   -- two single cards become a new deck\n  else\n    o.setPosition(deckHome(kind))\n    o.setRotation({x = 0, y = 180, z = 180})\n    o.setScale({x = L.deck_s[kind], y = 1, z = L.deck_s[kind]})\n    DECK[kind] = o.getGUID()\n  end\nend\n\n-- Every card on the table goes home. A small deck of one kind goes home whole; a mixed one (a monster\n-- and a treasure token stacked on a mat) is taken apart first. Joining two cards destroys both and\n-- makes a new deck, so a piece met later in the loop may be gone: touching it stopped the whole RESET\n-- (\"Value cannot be null\", seen live 2026-10-25). Each piece is checked, and one that fails is skipped.\nlocal function gatherOne(o)\n  if not alive(o) then return end\n  if o.type == \"Card\" then\n    local kind = kindOf(notes(o))\n    if kind and not isMain(o, kind) then sendHome(kind, o) end\n  elseif o.type == \"Deck\" and not isMain(o) then\n    local kinds, first = {}, nil\n    for _, c in ipairs(o.getObjects()) do\n      local k = kindOf(c.gm_notes)\n      if k then kinds[k] = true first = first or k end\n    end\n    local n = 0\n    for _ in pairs(kinds) do n = n + 1 end\n    if n == 1 then\n      sendHome(first, o)\n    elseif n > 1 then\n      -- All but the last card: taking a deck's last card throws an error Lua can't catch (the deck is\n      -- turning into that card, seen live 2026-10-25). The card left over goes home in the second pass.\n      local cards = o.getObjects()\n      for i = 1, #cards - 1 do\n        local k = kindOf(cards[i].gm_notes)\n        if k then\n          o.takeObject({guid = cards[i].guid, position = deckHome(k), smooth = false,\n                        callback_function = function(card) sendHome(k, card) end})\n        end\n      end\n    end\n  end\nend\nlocal function gatherCards()\n  for _, o in ipairs(getObjects()) do pcall(gatherOne, o) end\nend\n\n-- ------------------------------------------------------------------ overlays\n-- Only the name of the part is shown (the team explains the rest live while presenting), with the\n-- symbols the step costs as icons after it: d.icons = \"MM\" (2 Movement), \"AAA\", \"GG\" ...\nlocal function textWidth(t)\n  local w = 0\n  -- Bold 29 px capitals are about 21 px wide (42 px ones measured 31 px on screen, 2026-10-19); a\n  -- little more, so the text never runs into the icons (it overflows its box instead of wrapping).\n  for ch in t:gmatch(\".\") do w = w + ((ch == \" \" or ch == \"·\" or ch == \":\") and 10 or 24) end\n  return math.max(60, w)\nend\nfunction caption(head, icons)\n  icons = icons or \"\"\n  local tw = textWidth(head or \"\")\n  UI.setAttribute(\"kbCaptionHead\", \"preferredWidth\", tw)\n  UI.setAttribute(\"kbCaption\", \"width\", tw + 32 + #icons * 46)\n  UI.setValue(\"kbCaptionHead\", head or \"\")\n  for i = 1, 4 do\n    local k = icons:sub(i, i)\n    if k ~= \"\" then\n      UI.setAttribute(\"kbIcon\" .. i, \"image\", \"icon\" .. k)\n      UI.setAttribute(\"kbIcon\" .. i, \"active\", \"true\")\n    else\n      UI.setAttribute(\"kbIcon\" .. i, \"active\", \"false\")\n    end\n  end\n  UI.setAttribute(\"kbCaption\", \"active\", \"true\")\nend\nfunction OPS.caption(d) caption(d.head, d.icons) end\nfunction OPS.nocaption(d) UI.setAttribute(\"kbCaption\", \"active\", \"false\") end\n\nfunction OPS.banner(d)\n  if not d.text then UI.setAttribute(\"kbBanner\", \"active\", \"false\") return end\n  UI.setValue(\"kbBannerText\", d.text)\n  UI.setAttribute(\"kbBanner\", \"active\", \"true\")\nend\n\nfunction OPS.score(d)\n  if not d.lines then UI.setAttribute(\"kbScore\", \"active\", \"false\") return end\n  UI.setAttribute(\"kbScore\", \"active\", \"true\")\n  for i = 1, #L.colors do\n    local ln = d.lines[i]\n    UI.setValue(\"kbScore\" .. i, ln and ln.text or \"\")\n    if ln and ln.hex then UI.setAttribute(\"kbScore\" .. i, \"color\", ln.hex) end\n  end\nend\n\n-- The 10-minute timer (§10). It never pauses in the game. In a real game (START GAME) it follows the\n-- clock, so it can't drift; the director only speeds it up for the \"a few minutes later\" part of the\n-- video (rate = game seconds per real second).\nTIMER = {left = L.game_secs, rate = 1, token = 0, play = false, ends = nil}\nlocal function wall()\n  local ok, t = pcall(function() return os.time() end)\n  if ok and type(t) == \"number\" then return t end\nend\nlocal function showTime()\n  local s = math.max(0, math.floor(TIMER.left + 0.5))\n  UI.setValue(\"kbTimerText\", string.format(\"%d:%02d\", math.floor(s / 60), s % 60))\n  UI.setAttribute(\"kbTimerText\", \"color\", s <= 60 and \"#FF6A5A\" or \"#F5ECD7\")\nend\nlocal function timeUp()\n  OPS.banner({text = \"TIME'S UP!\"})\n  broadcastToAll(\"Time's up! Only the POINTS box counts: defeated monsters and secured treasure.\", GOLDEN)\nend\nlocal function tick(token)\n  if token ~= TIMER.token then return end\n  if TIMER.ends then TIMER.left = TIMER.ends - wall() else TIMER.left = TIMER.left - 1 end\n  if TIMER.left <= 0 then\n    TIMER.left = 0\n    showTime()\n    if TIMER.play then timeUp() end\n    return\n  end\n  showTime()\n  Wait.time(function() tick(token) end, TIMER.ends and 0.25 or 1 / TIMER.rate)\nend\nfunction OPS.timer(d)\n  UI.setAttribute(\"kbTimer\", \"active\", d.hide and \"false\" or \"true\")\n  TIMER.token = TIMER.token + 1\n  if d.left then TIMER.left = d.left end\n  TIMER.rate = d.rate or 1\n  TIMER.play = d.play or false\n  TIMER.ends = nil\n  if TIMER.play and wall() then TIMER.ends = wall() + TIMER.left end\n  showTime()\n  if d.run then\n    local token = TIMER.token\n    Wait.time(function() tick(token) end, TIMER.ends and 0.25 or 1 / TIMER.rate)\n  end\nend\n\n-- ------------------------------------------------------------------ camera\n-- Always from the south (yaw 0), so every mat and card reads upright.\nfunction viewFor(d)\n  local v = d.view\n  if v == \"table\" then return {position = {x = 0, y = 0, z = 0}, pitch = 68, yaw = 0, distance = 54} end\n  if v == \"play\" then return {position = {x = 0, y = 0, z = -4.0}, pitch = 62, yaw = 0, distance = 40} end\n  if v == \"dungeon\" then return {position = {x = 0, y = 0, z = 1.5}, pitch = 70, yaw = 0, distance = 30} end\n  if v == \"mats\" then return {position = {x = 0, y = 0, z = -9.0}, pitch = 60, yaw = 0, distance = 36} end\n  if v == \"chart\" then return {position = {x = -16.5, y = 0, z = -0.2}, pitch = 66, yaw = 0, distance = 16} end\n  if v == \"supply\" then return {position = {x = 4, y = 0, z = 7}, pitch = 64, yaw = 0, distance = 34} end\n  if v == \"title\" then return {position = {x = 0, y = 0, z = 15.8}, pitch = 70, yaw = 0, distance = 20} end\n  if v == \"mat\" then\n    return {position = {x = L.mat_x[d.color], y = 0, z = L.mat_z - 0.8}, pitch = 62, yaw = 0, distance = d.distance or 15}\n  end\n  if v == \"cell\" then\n    local p = cellPos(d.cell)\n    -- With a colour: the room and that player's mat (where the dice are) in one shot. The view frames\n    -- both (half-way put the far-left mat's dice off screen, seen 2026-10-19) and aims a little low,\n    -- because the part's name covers the bottom of the screen.\n    if d.color then\n      local mx, mz, hw, hd = L.mat_x[d.color], L.mat_z, L.mat_size[1] / 2 + 0.5, L.mat_size[2] / 2 + 0.1\n      local x0, x1 = math.min(mx - hw, p.x - 2.2), math.max(mx + hw, p.x + 2.2)\n      local z0, z1 = mz - hd, p.z + 2.2\n      local dist = math.max(d.distance or 0, (x1 - x0) / 1.2, (z1 - z0) * 1.1)\n      return {position = {x = (x0 + x1) / 2, y = 0, z = (z0 + z1) / 2 - 1.8}, pitch = 62, yaw = 0, distance = dist}\n    end\n    return {position = {x = p.x, y = 0, z = p.z - 0.8}, pitch = 64, yaw = 0, distance = d.distance or 16}\n  end\nend\nfunction OPS.camera(d)\n  local v = viewFor(d)\n  if not v then return end\n  for _, pl in ipairs(Player.getPlayers()) do\n    if pl.host then pcall(function() pl.lookAt(v) end) end\n  end\nend\n\n-- ------------------------------------------------------------------ setup (§3)\nfunction OPS.deal(d)\n  -- Each player takes their 4 dice (§3 step 1): from the middle of the table onto their mat.\n  local k = 0\n  for _, color in ipairs(d.colors or L.colors) do\n    for i = 1, 4 do\n      local die = dieOf(color, i)\n      if die then\n        k = k + 1\n        local px = L.die_px[i]\n        local p = matPos(color, px[1], px[2])\n        -- Face first, then the move: setRotationValue after setPositionSmooth cancels the move\n        -- (seen live, 2026-10-19: the dice stayed in the supply).\n        Wait.time(function()\n          die.setRotationValue(i)\n          die.setPositionSmooth({x = p.x, y = DIE_Y, z = p.z}, false, true)\n          glow(die, color, 2)\n        end, k * 0.06)\n      end\n    end\n  end\nend\n\nfunction OPS.pawns(d)\n  -- Characters go into the Safe Room (§12: it is everyone's starting room).\n  for _, color in ipairs(d.colors or L.colors) do\n    local pawn = pawnOf(color)\n    if pawn then\n      local c, off = cellPos({0, 0}), PAWN_OFF[color]\n      pawn.setPositionSmooth({x = c.x + off[1], y = 1.6, z = c.z + off[2]}, false, false)\n      glow(pawn, color, 3)\n    end\n  end\nend\n\nfunction OPS.shuffle(d)\n  -- §3 step 3: the room deck is shuffled (the tutorial still finds its rooms by their notes).\n  local deck = mainDeck(\"room\")\n  if deck and deck.type == \"Deck\" then deck.shuffle() glow(deck, d.color, 2) end\nend\n\nfunction OPS.button(d)\n  for _, id in ipairs({\"kbStart\", \"kbReset\"}) do UI.setAttribute(id, \"active\", d.show and \"true\" or \"false\") end\nend\n\nfunction OPS.spot(d)\n  -- One player's character and mat glow: \"watch this player\".\n  glow(pawnOf(d.color), d.color, d.secs or 3)\n  glow(byNote(\"mat\", d.color), d.color, d.secs or 3)\nend\n\nfunction OPS.glowtag(d)\n  for _, o in ipairs(getObjectsWithTag(d.tag)) do glow(o, d.color, d.secs or 3) end\nend\n\n-- ------------------------------------------------------------------ dice (§4, §5)\n-- d.color, d.dice = which dice (1-4), d.values = the faces they land on (1-2 Movement, 3-4 Attack,\n-- 5-6 Magic). The dice jump, tumble and land on the face; kept dice stay where they are.\nlocal function rollOne(color, i, value, delay)\n  local die = dieOf(color, i)\n  if not die then return end\n  local px = L.die_px[i]\n  local p = matPos(color, px[1], px[2])\n  Wait.time(function()\n    die.setPositionSmooth({x = p.x, y = DIE_Y + 2.2, z = p.z}, false, true)\n    die.setRotationSmooth({x = math.random(0, 359), y = math.random(0, 359), z = math.random(0, 359)}, false, true)\n  end, delay)\n  Wait.time(function()\n    die.setRotationSmooth({x = math.random(0, 359), y = math.random(0, 359), z = math.random(0, 359)}, false, true)\n  end, delay + 0.25)\n  Wait.time(function()\n    die.setRotationValue(value)\n    die.setPositionSmooth({x = p.x, y = DIE_Y, z = p.z}, false, true)\n  end, delay + 0.55)\nend\nfunction OPS.roll(d)\n  for k, i in ipairs(d.dice) do rollOne(d.color, i, d.values[k], (k - 1) * 0.04) end\nend\nfunction OPS.keep(d)\n  -- The dice that already show what the player needs glow in their colour.\n  for _, i in ipairs(d.dice) do glow(dieOf(d.color, i), d.color, d.secs or 3) end\nend\n\n-- ------------------------------------------------------------------ the dungeon (§6, §12)\n-- A card the director put somewhere stays there while it films.\nlocal function settle(card, pos, scale, color)\n  card.setScale({x = scale, y = 1, z = scale})\n  if STAGED then card.setLock(true) end\n  card.setPositionSmooth(pos, false, true)\n  glow(card, color, 3)\nend\n\nfunction OPS.reveal(d)\n  -- The room card of this cell comes off the room deck, turns over and lands next to the room it was\n  -- revealed from, passages lined up (build.py drew them that way).\n  local p = cellPos(d.cell)\n  takeCard(d.cell[1] .. \",\" .. d.cell[2], {x = p.x, y = 2.6, z = p.z}, function(card)\n    Wait.time(function() settle(card, {x = p.x, y = CARD_Y, z = p.z}, L.deck_s.room, d.color) end, 0.4)\n  end)\n  if d.token then\n    Wait.time(function() OPS.token({id = d.token, cell = d.cell, color = d.color}) end, 1.4)\n  end\nend\n\nfunction OPS.token(d)\n  local p = cellPos(d.cell)\n  takeCard(d.id, {x = p.x, y = 2.4, z = p.z}, function(card)\n    Wait.time(function() settle(card, {x = p.x, y = CARD_ON_CARD, z = p.z}, L.deck_s.monster, d.color) end, 0.4)\n  end)\nend\n\nfunction OPS.move(d)\n  local pawn = pawnOf(d.color)\n  if not pawn then return end\n  local path = d.path or {d.cell}\n  for k, c in ipairs(path) do\n    Wait.time(function()\n      local p, off = cellPos(c), PAWN_OFF[d.color]\n      pawn.setPositionSmooth({x = p.x + off[1], y = 1.6, z = p.z + off[2]}, false, true)\n      glow(pawn, d.color, 2)\n    end, (k - 1) * (d.t or 0.45))\n  end\nend\n\n-- What lies on each mat: CARRIED treasure (not secured yet, §12) and POINTS (defeated monsters and\n-- secured treasure; only POINTS count at the end).\nCARRY, POINTS = {}, {}\nlocal function clearMats()\n  CARRY, POINTS = {}, {}\n  for _, c in ipairs(L.colors) do CARRY[c], POINTS[c] = {}, {} end\nend\nlocal function toMat(id, color, spots, n, delay)\n  local px = spots[math.min(n, #spots)]\n  local p = matPos(color, px[1], px[2])\n  Wait.time(function()\n    takeCard(id, {x = p.x, y = 2.2, z = p.z}, function(card)\n      Wait.time(function() settle(card, {x = p.x, y = CARD_ON_MAT, z = p.z}, L.mat_tok_s, color) end, 0.4)\n    end)\n  end, delay)\nend\n\nfunction OPS.take(d)\n  -- A defeated monster goes onto POINTS; a collected treasure onto CARRIED until it is secured.\n  if d.id:sub(1, 2) == \"t-\" then\n    table.insert(CARRY[d.color], d.id)\n    toMat(d.id, d.color, L.carry_px, #CARRY[d.color], 0)\n  else\n    table.insert(POINTS[d.color], d.id)\n    toMat(d.id, d.color, L.points_px, #POINTS[d.color], 0)\n  end\nend\n\nfunction OPS.secure(d)\n  -- §12: back in the Safe Room, everything CARRIED moves to POINTS, no dice.\n  for k, id in ipairs(CARRY[d.color]) do\n    table.insert(POINTS[d.color], id)\n    toMat(id, d.color, L.points_px, #POINTS[d.color], (k - 1) * 0.25)\n  end\n  CARRY[d.color] = {}\nend\n\nfunction OPS.loot(d)\n  -- Draw the Loot card with this ID (§9: special treasure) onto the mat's Loot box, face up.\n  local p = matPos(d.color, L.loot_px[1], L.loot_px[2])\n  takeCard(d.id, {x = p.x, y = 1.4, z = p.z}, function(card)\n    card.addTag(\"loot\")\n    Wait.time(function() settle(card, {x = p.x, y = CARD_ON_MAT, z = p.z}, L.deck_s.loot, d.color) end, 0.4)\n  end)\nend\n\nfunction OPS.glowloot(d)\n  for _, o in ipairs(getObjectsWithTag(\"loot\")) do if o.type == \"Card\" then glow(o, d.color, d.secs or 3) end end\nend\n\n-- ------------------------------------------------------------------ reset\n-- Every object's starting place is remembered at load; RESET TABLE (or the director) puts it back.\nHOME = {}\nfunction onLoad()\n  local assets = {}\n  for k, u in pairs(L.icons) do table.insert(assets, {name = \"icon\" .. k, url = u}) end\n  UI.setCustomAssets(assets)\n  for _, o in ipairs(getObjects()) do\n    HOME[o.getGUID()] = {pos = o.getPosition(), rot = o.getRotation(), scale = o.getScale(), lock = o.getLock()}\n  end\n  for kind, tag in pairs(L.decks) do\n    for _, o in ipairs(getObjectsWithTag(tag)) do if o.type == \"Deck\" then DECK[kind] = o.getGUID() end end\n  end\n  clearMats()\n  for _, id in ipairs({\"kbCaption\", \"kbScore\", \"kbBanner\"}) do UI.setAttribute(id, \"active\", \"false\") end\nend\n\nlocal function isMovable(o)\n  for _, t in ipairs(MOVABLE) do if o.hasTag(t) then return true end end\n  return false\nend\n\nfunction OPS.reset(d)\n  -- d.stage: the director films, so dice and characters stay locked and only its scripts move them.\n  STAGED = d.stage == true\n  gatherCards()\n  Wait.time(gatherCards, 1.2)    -- the last card of a small deck that was taken apart\n  for _, o in ipairs(getObjects()) do\n    local h = HOME[o.getGUID()]\n    if h and o.type ~= \"Card\" then\n      -- A die or a pawn is locked on the way home, so it doesn't tumble, then gets its own state back.\n      -- Nothing else is locked: a locked deck takes no cards back (seen live, 2026-10-25).\n      if isMovable(o) then\n        local lock = h.lock == true or STAGED\n        o.setLock(true)\n        Wait.time(function() if alive(o) then o.setLock(lock) end end, 1.2)\n      end\n      o.setPositionSmooth(h.pos, false, true)\n      o.setRotationSmooth(h.rot, false, true)\n      o.setScale(h.scale)\n    end\n  end\n  -- Decks back home, face down, even ones that were made again from returning cards.\n  Wait.time(function()\n    for kind, _ in pairs(L.decks) do\n      local deck = mainDeck(kind)\n      if deck then\n        deck.setPositionSmooth(deckHome(kind), false, true)\n        deck.setRotationSmooth({x = 0, y = 180, z = 180}, false, true)\n        deck.setScale({x = L.deck_s[kind], y = 1, z = L.deck_s[kind]})\n      end\n    end\n  end, 1.6)\n  clearMats()\n  TIMER.token = TIMER.token + 1\n  TIMER.left, TIMER.play, TIMER.ends = L.game_secs, false, nil\n  showTime()\n  for _, id in ipairs({\"kbCaption\", \"kbScore\", \"kbBanner\", \"kbTimer\"}) do UI.setAttribute(id, \"active\", \"false\") end\nend\nfunction resetGame(player) OPS.reset({}) end\n\n-- ------------------------------------------------------------------ START GAME\n-- The colours at a mat that someone sits at; nobody at a mat colour (one person trying it out) =\n-- every colour.\nlocal function seatedColors()\n  local out = {}\n  for _, pl in ipairs(Player.getPlayers()) do\n    if L.mat_x[pl.color] then table.insert(out, pl.color) end\n  end\n  if #out == 0 then return L.colors end\n  return out\nend\n\nlocal starting = false\nfunction startGame(player)\n  if starting then return end\n  starting = true\n  OPS.reset({})\n  Wait.time(function()\n    -- §3: the rooms, the token piles and the Loot Deck are shuffled.\n    for _, kind in ipairs({\"room\", \"monster\", \"treasure\", \"loot\"}) do\n      local deck = mainDeck(kind)\n      if deck and deck.type == \"Deck\" then deck.shuffle() end\n    end\n    local who = seatedColors()\n    OPS.deal({colors = who})\n    OPS.pawns({colors = who})\n    OPS.timer({left = L.game_secs, run = true, play = true})\n    OPS.banner({text = \"GO!\"})\n    Wait.time(function()\n      if TIMER.play and TIMER.left > 0 then OPS.banner({}) end\n      starting = false\n    end, 2.5)\n  end, 2.4)\nend\n\n-- ------------------------------------------------------------------ the director's commands\nlocal function reply(kind, text) sendExternalMessage({kind = kind, text = text}) end\nfunction OPS.hello(d) reply(\"hello\", KB_VERSION) end\n\nfunction onExternalMessage(d)\n  if type(d) ~= \"table\" then return end\n  -- One JSON string per command: TTS hands nested lists of a custom message to Lua as C# objects\n  -- (seen live on v0.1), so the director sends {json = \"...\"}.\n  if d.json then d = JSON.decode(d.json) end\n  local f = OPS[d.op]\n  if not f then reply(\"error\", \"unknown command \" .. tostring(d.op)) return end\n  local function run()\n    local ok, err = pcall(f, d)\n    if not ok then reply(\"error\", tostring(d.op) .. \": \" .. tostring(err)) end\n  end\n  -- d.delay: wait before doing it, so one beat can be \"the dice land, then the room is revealed\".\n  if type(d.delay) == \"number\" and d.delay > 0 then Wait.time(run, d.delay) else run() end\nend\n",
  "LuaScriptState": "",
  "XmlUI": "<Panel id=\"kbTimer\" active=\"false\" rectAlignment=\"UpperRight\" offsetXY=\"-24 -78\" width=\"300\" height=\"104\" color=\"#000000C8\">\n  <Text id=\"kbTimerLabel\" rectAlignment=\"UpperCenter\" offsetXY=\"0 -4\" height=\"26\" fontSize=\"19\" color=\"#D4AF4B\" alignment=\"MiddleCenter\">TIME LEFT</Text>\n  <Text id=\"kbTimerText\" rectAlignment=\"LowerCenter\" offsetXY=\"0 2\" height=\"76\" fontSize=\"62\" color=\"#F5ECD7\" alignment=\"MiddleCenter\">10:00</Text>\n</Panel>\n<Panel id=\"kbCaption\" active=\"false\" rectAlignment=\"LowerCenter\" offsetXY=\"0 22\" width=\"400\" height=\"56\" color=\"#000000DC\">\n  <HorizontalLayout childAlignment=\"MiddleCenter\" childForceExpandWidth=\"false\" childForceExpandHeight=\"false\" spacing=\"8\" padding=\"16 16 6 6\">\n    <Text id=\"kbCaptionHead\" preferredWidth=\"300\" preferredHeight=\"44\" fontSize=\"29\" fontStyle=\"Bold\" color=\"#D4AF4B\" alignment=\"MiddleCenter\" horizontalOverflow=\"Overflow\" verticalOverflow=\"Overflow\"></Text>\n    <Image id=\"kbIcon1\" active=\"false\" preferredWidth=\"38\" preferredHeight=\"38\"></Image>\n    <Image id=\"kbIcon2\" active=\"false\" preferredWidth=\"38\" preferredHeight=\"38\"></Image>\n    <Image id=\"kbIcon3\" active=\"false\" preferredWidth=\"38\" preferredHeight=\"38\"></Image>\n    <Image id=\"kbIcon4\" active=\"false\" preferredWidth=\"38\" preferredHeight=\"38\"></Image>\n  </HorizontalLayout>\n</Panel>\n<Panel id=\"kbScore\" active=\"false\" rectAlignment=\"UpperCenter\" offsetXY=\"0 -96\" width=\"660\" height=\"290\" color=\"#000000E6\">\n  <VerticalLayout padding=\"24 24 14 14\" spacing=\"6\">\n    <Text id=\"kbScore1\" fontSize=\"34\" fontStyle=\"Bold\" color=\"#F5ECD7\" alignment=\"MiddleLeft\"></Text>\n    <Text id=\"kbScore2\" fontSize=\"34\" fontStyle=\"Bold\" color=\"#F5ECD7\" alignment=\"MiddleLeft\"></Text>\n    <Text id=\"kbScore3\" fontSize=\"34\" fontStyle=\"Bold\" color=\"#F5ECD7\" alignment=\"MiddleLeft\"></Text>\n    <Text id=\"kbScore4\" fontSize=\"34\" fontStyle=\"Bold\" color=\"#F5ECD7\" alignment=\"MiddleLeft\"></Text>\n    <Text id=\"kbScore5\" fontSize=\"34\" fontStyle=\"Bold\" color=\"#F5ECD7\" alignment=\"MiddleLeft\"></Text>\n  </VerticalLayout>\n</Panel>\n<Panel id=\"kbBanner\" active=\"false\" rectAlignment=\"MiddleCenter\" offsetXY=\"0 120\" width=\"1000\" height=\"150\" color=\"#000000D2\">\n  <Text id=\"kbBannerText\" fontSize=\"72\" color=\"#D4AF4B\" alignment=\"MiddleCenter\"></Text>\n</Panel>\n<Button id=\"kbStart\" rectAlignment=\"UpperLeft\" offsetXY=\"8 -410\" width=\"150\" height=\"34\" fontSize=\"15\" color=\"#5C2C7A\" textColor=\"#F5ECD7\" onClick=\"startGame\">START GAME</Button>\n<Button id=\"kbReset\" rectAlignment=\"UpperLeft\" offsetXY=\"8 -450\" width=\"150\" height=\"34\" fontSize=\"15\" color=\"#3C2819\" textColor=\"#F5ECD7\" onClick=\"resetGame\">RESET TABLE</Button>\n",
  "SnapPoints": [],
@@ -145,1212 +145,22 @@
    ]
   },
   {
-   "GUID": "d00004",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 1.1,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare0",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/9858892220478890941/CF5BD885B20174742C7C1736E1A7170D9F7E0CBB/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00005",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 1.225,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/9846949821669086373/7B228228F2D97DACC19A787B0BDDEE1260E47986/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00006",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 1.35,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare2",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17490509371814262544/EE9BFA0D1DFD282123BF2448A0F74825D2CFF1AD/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00007",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 1.475,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare3",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17458936443526363697/A47D95A3879A518428045039E6F296E1871D1627/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00008",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 1.6,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare4",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10869912414138254817/19510BEEB02D4F6BAE591183195A8F24404BABE5/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00009",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 1.725,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare5",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/12713103311538068728/92F83173C88F400F5FF6DEA9BF43DC185E7C42B4/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d0000a",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 1.85,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare6",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17461969487618490844/E9816F9F7EA46439535E42B7B954B3A66A4D38A6/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d0000b",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 1.975,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare7",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10932134459331075458/96F04AC0102851CC9F413333AC1A3EBCF927DD0A/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d0000c",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 2.1,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare8",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17513740560105526048/42D5E79E14D265512A55FD17BEFFD9F35D923D4E/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d0000d",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 2.225,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare9",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15046843807112451545/EA9F470A6C80B5FA4C4D19026F3E9F41DB685F2E/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d0000e",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 2.35,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare10",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15525864622811056270/46A96095CB3362AF9D45E4A7315171B17BAEB075/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d0000f",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 2.475,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare11",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/16052520137437261261/8FDB5DF4A5F6D99A8C39017AB5A53E86D7F1C0A7/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00010",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 2.6,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "spare12",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/14154182221799599558/130EA4F4CFA3C8BAB7ABAAAF4F5D1490C4325750/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00011",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 2.725,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "-2,-1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15046843807112451545/EA9F470A6C80B5FA4C4D19026F3E9F41DB685F2E/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00012",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 2.85,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "1,2",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/16636683963914499038/C15A4E109FFCFAE952C14EF601A11F5E2586059E/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00013",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 2.975,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "-2,-2",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10530369989781687478/409F2134446BDBBBB3516BDE5AE852D19181B5F9/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00014",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 3.1,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "-2,1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10530369989781687478/409F2134446BDBBBB3516BDE5AE852D19181B5F9/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00015",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 3.225,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "-1,2",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/9846949821669086373/7B228228F2D97DACC19A787B0BDDEE1260E47986/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00016",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 3.35,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "2,1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/14516073425760204307/7A665EF8FB222DC2AD6CD2BC588D052A001FF3DB/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00017",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 3.475,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "-2,0",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15296639170640007753/070296B78024E547906CACBB6E8A7929B497425E/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00018",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 3.6,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "2,0",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/9846949821669086373/7B228228F2D97DACC19A787B0BDDEE1260E47986/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d00019",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 3.725,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "0,2",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10038606544678338759/D27AC2D9ACB51C6C00C1D3D38B68B54A9E2E8321/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d0001a",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 3.85,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "0,1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15296639170640007753/070296B78024E547906CACBB6E8A7929B497425E/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d0001b",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 3.975,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "1,0",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10038606544678338759/D27AC2D9ACB51C6C00C1D3D38B68B54A9E2E8321/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d0001c",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 4.1,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "-1,0",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/10038606544678338759/D27AC2D9ACB51C6C00C1D3D38B68B54A9E2E8321/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d0001d",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 4.225,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "-1,-2",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15296639170640007753/070296B78024E547906CACBB6E8A7929B497425E/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d0001e",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 4.35,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "0,-2",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17590043328423286148/EDAD858E99DE2C1F57CEEFAED1F421330A32D01E/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
-   "GUID": "d0001f",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -15.5,
-    "posY": 4.475,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 1.8,
-    "scaleY": 1.0,
-    "scaleZ": 1.8
-   },
-   "Nickname": "Room",
-   "Description": "",
-   "GMNotes": "0,-1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17461969487618490844/E9816F9F7EA46439535E42B7B954B3A66A4D38A6/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 0,
-     "Thickness": 0.12,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "room"
-   ]
-  },
-  {
    "GUID": "d00020",
-   "Name": "Custom_Tile",
+   "Name": "Deck",
    "Transform": {
-    "posX": 13.5,
-    "posY": 1.1,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Monster token",
-   "Description": "",
-   "GMNotes": "m-weak-1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/14616847569944269177/60C7E5AF21F57A57B8BF9F575005B80AB6770D01/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "monster"
-   ]
-  },
-  {
-   "GUID": "d00021",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 13.5,
+    "posX": -15.5,
     "posY": 1.3,
-    "posZ": 10.0,
+    "posZ": 8.0,
     "rotX": 0.0,
     "rotY": 180.0,
     "rotZ": 180.0,
-    "scaleX": 0.7,
+    "scaleX": 1.1765,
     "scaleY": 1.0,
-    "scaleZ": 0.7
+    "scaleZ": 1.1765
    },
-   "Nickname": "Monster token",
+   "Nickname": "Rooms",
    "Description": "",
-   "GMNotes": "m-weak-2",
+   "GMNotes": "",
    "Locked": false,
    "Grid": false,
    "Snap": false,
@@ -1359,362 +169,1594 @@
    "LuaScript": "",
    "LuaScriptState": "",
    "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/14616847569944269177/60C7E5AF21F57A57B8BF9F575005B80AB6770D01/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
+   "DeckIDs": [
+    200,
+    201,
+    202,
+    203,
+    204,
+    205,
+    206,
+    207,
+    208,
+    209,
+    210,
+    211,
+    212,
+    213,
+    214,
+    215,
+    216,
+    217,
+    218,
+    219,
+    220,
+    221,
+    222,
+    223,
+    224,
+    225,
+    226,
+    227
+   ],
+   "CustomDeck": {
+    "2": {
+     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+     "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+     "NumWidth": 7,
+     "NumHeight": 4,
+     "BackIsHidden": true,
+     "UniqueBack": false,
+     "Type": 1
     }
    },
-   "Tags": [
-    "token",
-    "monster"
-   ]
-  },
-  {
-   "GUID": "d00022",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 13.5,
-    "posY": 1.5,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Monster token",
-   "Description": "",
-   "GMNotes": "m-weak-3",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/14616847569944269177/60C7E5AF21F57A57B8BF9F575005B80AB6770D01/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
+   "ContainedObjects": [
+    {
+     "GUID": "d00004",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Empty room",
+     "Description": "Nothing to fight or take.",
+     "GMNotes": "0,-1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 200,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00005",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Monster room",
+     "Description": "Turn a monster token face up on it.",
+     "GMNotes": "0,-2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 201,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00006",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Treasure room",
+     "Description": "Turn a treasure token face up on it.",
+     "GMNotes": "-1,-2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 202,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00007",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Monster room",
+     "Description": "Turn a monster token face up on it.",
+     "GMNotes": "-1,0",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 203,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00008",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Monster room",
+     "Description": "Turn a monster token face up on it.",
+     "GMNotes": "1,0",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 204,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00009",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Treasure room",
+     "Description": "Turn a treasure token face up on it.",
+     "GMNotes": "0,1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 205,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0000a",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Monster room",
+     "Description": "Turn a monster token face up on it.",
+     "GMNotes": "0,2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 206,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0000b",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Treasure room",
+     "Description": "Turn a treasure token face up on it.",
+     "GMNotes": "2,0",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 207,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0000c",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Treasure room",
+     "Description": "Turn a treasure token face up on it.",
+     "GMNotes": "-2,0",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 208,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0000d",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Monster room",
+     "Description": "Turn a monster token face up on it.",
+     "GMNotes": "2,1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 209,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0000e",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Treasure room",
+     "Description": "Turn a treasure token face up on it.",
+     "GMNotes": "-1,2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 210,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0000f",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Monster room",
+     "Description": "Turn a monster token face up on it.",
+     "GMNotes": "-2,1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 211,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00010",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Monster room",
+     "Description": "Turn a monster token face up on it.",
+     "GMNotes": "-2,-2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 212,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00011",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Treasure room",
+     "Description": "Turn a treasure token face up on it.",
+     "GMNotes": "1,2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 213,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00012",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Treasure room",
+     "Description": "Turn a treasure token face up on it.",
+     "GMNotes": "-2,-1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 214,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00013",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Spike Pit",
+     "Description": "Trap. When you walk in: lose 1 unsecured treasure (you choose which). It is out of the game.",
+     "GMNotes": "spare0",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 215,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00014",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Treasure room",
+     "Description": "Turn a treasure token face up on it.",
+     "GMNotes": "spare1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 216,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00015",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Collapsing Passage",
+     "Description": "Trap. When you walk out of this room, it caves in: put rubble on it. Nobody can walk in again.",
+     "GMNotes": "spare2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 217,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00016",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Empty room",
+     "Description": "Nothing to fight or take.",
+     "GMNotes": "spare3",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 218,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00017",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Pressure Plate",
+     "Description": "Trap. When you walk in: put your dice down and count to 10 out loud, then go on.",
+     "GMNotes": "spare4",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 219,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00018",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Empty room",
+     "Description": "Nothing to fight or take.",
+     "GMNotes": "spare5",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 220,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00019",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Empty room",
+     "Description": "Nothing to fight or take.",
+     "GMNotes": "spare6",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 221,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0001a",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Spike Pit",
+     "Description": "Trap. When you walk in: lose 1 unsecured treasure (you choose which). It is out of the game.",
+     "GMNotes": "spare7",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 222,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0001b",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Pressure Plate",
+     "Description": "Trap. When you walk in: put your dice down and count to 10 out loud, then go on.",
+     "GMNotes": "spare8",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 223,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0001c",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Treasure room",
+     "Description": "Turn a treasure token face up on it.",
+     "GMNotes": "spare9",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 224,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0001d",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Empty room",
+     "Description": "Nothing to fight or take.",
+     "GMNotes": "spare10",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 225,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0001e",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Collapsing Passage",
+     "Description": "Trap. When you walk out of this room, it caves in: put rubble on it. Nobody can walk in again.",
+     "GMNotes": "spare11",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 226,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0001f",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 1.1765,
+      "scaleY": 1.0,
+      "scaleZ": 1.1765
+     },
+     "Nickname": "Empty room",
+     "Description": "Nothing to fight or take.",
+     "GMNotes": "spare12",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 227,
+     "CustomDeck": {
+      "2": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
+       "NumWidth": 7,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 1
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
     }
-   },
+   ],
+   "SidewaysCard": false,
+   "HideWhenFaceDown": true,
    "Tags": [
-    "token",
-    "monster"
-   ]
-  },
-  {
-   "GUID": "d00023",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 13.5,
-    "posY": 1.7000000000000002,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Monster token",
-   "Description": "",
-   "GMNotes": "m-weak-4",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/14616847569944269177/60C7E5AF21F57A57B8BF9F575005B80AB6770D01/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "monster"
-   ]
-  },
-  {
-   "GUID": "d00024",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 13.5,
-    "posY": 1.9000000000000001,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Monster token",
-   "Description": "",
-   "GMNotes": "m-medium-1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17356075591333272029/0CA76302371AC275AB5F46BCBA7244ECB115E7F4/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "monster"
-   ]
-  },
-  {
-   "GUID": "d00025",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 13.5,
-    "posY": 2.1,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Monster token",
-   "Description": "",
-   "GMNotes": "m-medium-2",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17356075591333272029/0CA76302371AC275AB5F46BCBA7244ECB115E7F4/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "monster"
-   ]
-  },
-  {
-   "GUID": "d00026",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 13.5,
-    "posY": 2.3000000000000003,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Monster token",
-   "Description": "",
-   "GMNotes": "m-medium-3",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17356075591333272029/0CA76302371AC275AB5F46BCBA7244ECB115E7F4/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "monster"
-   ]
-  },
-  {
-   "GUID": "d00027",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 13.5,
-    "posY": 2.5,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Monster token",
-   "Description": "",
-   "GMNotes": "m-strong-1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/13169326221914930537/4FEA473818E34133BCD214A117DC1C95F34FF967/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "monster"
-   ]
-  },
-  {
-   "GUID": "d00028",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 13.5,
-    "posY": 2.7,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Monster token",
-   "Description": "",
-   "GMNotes": "m-strong-2",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/13169326221914930537/4FEA473818E34133BCD214A117DC1C95F34FF967/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "monster"
-   ]
-  },
-  {
-   "GUID": "d00029",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 17.5,
-    "posY": 1.1,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Treasure token",
-   "Description": "",
-   "GMNotes": "t-common-1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17128600982849101205/308D18DEA588E85E6954874C1D615FE9EA54DF37/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "treasure"
+    "roomdeck"
    ]
   },
   {
    "GUID": "d0002a",
-   "Name": "Custom_Tile",
+   "Name": "Deck",
+   "Transform": {
+    "posX": 13.5,
+    "posY": 1.3,
+    "posZ": 10.0,
+    "rotX": 0.0,
+    "rotY": 180.0,
+    "rotZ": 180.0,
+    "scaleX": 0.4575,
+    "scaleY": 1.0,
+    "scaleZ": 0.4575
+   },
+   "Nickname": "Monster tokens",
+   "Description": "",
+   "GMNotes": "",
+   "Locked": false,
+   "Grid": false,
+   "Snap": false,
+   "Tooltip": false,
+   "Hands": false,
+   "LuaScript": "",
+   "LuaScriptState": "",
+   "XmlUI": "",
+   "DeckIDs": [
+    300,
+    301,
+    300,
+    300,
+    301,
+    301,
+    300,
+    302,
+    302
+   ],
+   "CustomDeck": {
+    "3": {
+     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+     "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
+     "NumWidth": 3,
+     "NumHeight": 1,
+     "BackIsHidden": true,
+     "UniqueBack": false,
+     "Type": 4
+    }
+   },
+   "ContainedObjects": [
+    {
+     "GUID": "d00023",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Weak monster",
+     "Description": "Needs 2 Attack. 1 point.",
+     "GMNotes": "m-weak-3",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 300,
+     "CustomDeck": {
+      "3": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00027",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Medium monster",
+     "Description": "Needs 3 Attack. 2 points.",
+     "GMNotes": "m-medium-3",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 301,
+     "CustomDeck": {
+      "3": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00021",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Weak monster",
+     "Description": "Needs 2 Attack. 1 point.",
+     "GMNotes": "m-weak-1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 300,
+     "CustomDeck": {
+      "3": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00022",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Weak monster",
+     "Description": "Needs 2 Attack. 1 point.",
+     "GMNotes": "m-weak-2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 300,
+     "CustomDeck": {
+      "3": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00026",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Medium monster",
+     "Description": "Needs 3 Attack. 2 points.",
+     "GMNotes": "m-medium-2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 301,
+     "CustomDeck": {
+      "3": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00025",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Medium monster",
+     "Description": "Needs 3 Attack. 2 points.",
+     "GMNotes": "m-medium-1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 301,
+     "CustomDeck": {
+      "3": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00024",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Weak monster",
+     "Description": "Needs 2 Attack. 1 point.",
+     "GMNotes": "m-weak-4",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 300,
+     "CustomDeck": {
+      "3": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00029",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Strong monster",
+     "Description": "Needs 4 Attack. 4 points.",
+     "GMNotes": "m-strong-2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 302,
+     "CustomDeck": {
+      "3": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00028",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Strong monster",
+     "Description": "Needs 4 Attack. 4 points.",
+     "GMNotes": "m-strong-1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 302,
+     "CustomDeck": {
+      "3": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    }
+   ],
+   "SidewaysCard": false,
+   "HideWhenFaceDown": true,
+   "Tags": [
+    "mondeck",
+    "token"
+   ]
+  },
+  {
+   "GUID": "d00037",
+   "Name": "Deck",
    "Transform": {
     "posX": 17.5,
     "posY": 1.3,
@@ -1722,13 +1764,13 @@
     "rotX": 0.0,
     "rotY": 180.0,
     "rotZ": 180.0,
-    "scaleX": 0.7,
+    "scaleX": 0.4575,
     "scaleY": 1.0,
-    "scaleZ": 0.7
+    "scaleZ": 0.4575
    },
-   "Nickname": "Treasure token",
+   "Nickname": "Treasure tokens",
    "Description": "",
-   "GMNotes": "t-common-2",
+   "GMNotes": "",
    "Locked": false,
    "Grid": false,
    "Snap": false,
@@ -1737,527 +1779,650 @@
    "LuaScript": "",
    "LuaScriptState": "",
    "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17128600982849101205/308D18DEA588E85E6954874C1D615FE9EA54DF37/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
+   "DeckIDs": [
+    400,
+    401,
+    400,
+    402,
+    402,
+    401,
+    400,
+    401,
+    402,
+    402,
+    402,
+    402
+   ],
+   "CustomDeck": {
+    "4": {
+     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+     "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+     "NumWidth": 3,
+     "NumHeight": 1,
+     "BackIsHidden": true,
+     "UniqueBack": false,
+     "Type": 4
     }
    },
+   "ContainedObjects": [
+    {
+     "GUID": "d0002d",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Common treasure",
+     "Description": "Needs 2 Magic. 1 point. Counts once secured in the Safe Room.",
+     "GMNotes": "t-common-3",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 400,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00030",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Rare treasure",
+     "Description": "Needs 2 Magic. 3 points. Counts once secured in the Safe Room.",
+     "GMNotes": "t-rare-3",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 401,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0002b",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Common treasure",
+     "Description": "Needs 2 Magic. 1 point. Counts once secured in the Safe Room.",
+     "GMNotes": "t-common-1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 400,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00031",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Special treasure",
+     "Description": "Needs 2 Magic. 1 point and a Loot card. Counts once secured in the Safe Room.",
+     "GMNotes": "t-special-1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 402,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00035",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Special treasure",
+     "Description": "Needs 2 Magic. 1 point and a Loot card. Counts once secured in the Safe Room.",
+     "GMNotes": "t-special-5",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 402,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0002f",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Rare treasure",
+     "Description": "Needs 2 Magic. 3 points. Counts once secured in the Safe Room.",
+     "GMNotes": "t-rare-2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 401,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0002c",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Common treasure",
+     "Description": "Needs 2 Magic. 1 point. Counts once secured in the Safe Room.",
+     "GMNotes": "t-common-2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 400,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0002e",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Rare treasure",
+     "Description": "Needs 2 Magic. 3 points. Counts once secured in the Safe Room.",
+     "GMNotes": "t-rare-1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 401,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00034",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Special treasure",
+     "Description": "Needs 2 Magic. 1 point and a Loot card. Counts once secured in the Safe Room.",
+     "GMNotes": "t-special-4",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 402,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00036",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Special treasure",
+     "Description": "Needs 2 Magic. 1 point and a Loot card. Counts once secured in the Safe Room.",
+     "GMNotes": "t-special-6",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 402,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00033",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Special treasure",
+     "Description": "Needs 2 Magic. 1 point and a Loot card. Counts once secured in the Safe Room.",
+     "GMNotes": "t-special-3",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 402,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00032",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Special treasure",
+     "Description": "Needs 2 Magic. 1 point and a Loot card. Counts once secured in the Safe Room.",
+     "GMNotes": "t-special-2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 402,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    }
+   ],
+   "SidewaysCard": false,
+   "HideWhenFaceDown": true,
    "Tags": [
-    "token",
-    "treasure"
+    "tredeck",
+    "token"
    ]
   },
   {
-   "GUID": "d0002b",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 17.5,
-    "posY": 1.5,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Treasure token",
-   "Description": "",
-   "GMNotes": "t-common-3",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17128600982849101205/308D18DEA588E85E6954874C1D615FE9EA54DF37/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "treasure"
-   ]
-  },
-  {
-   "GUID": "d0002c",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 17.5,
-    "posY": 1.7000000000000002,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Treasure token",
-   "Description": "",
-   "GMNotes": "t-rare-1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/14692634199457042145/69F488CC92F44776FB3CBE5FD1DF317E0576DD74/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "treasure"
-   ]
-  },
-  {
-   "GUID": "d0002d",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 17.5,
-    "posY": 1.9000000000000001,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Treasure token",
-   "Description": "",
-   "GMNotes": "t-rare-2",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/14692634199457042145/69F488CC92F44776FB3CBE5FD1DF317E0576DD74/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "treasure"
-   ]
-  },
-  {
-   "GUID": "d0002e",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 17.5,
-    "posY": 2.1,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Treasure token",
-   "Description": "",
-   "GMNotes": "t-rare-3",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/14692634199457042145/69F488CC92F44776FB3CBE5FD1DF317E0576DD74/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "treasure"
-   ]
-  },
-  {
-   "GUID": "d0002f",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 17.5,
-    "posY": 2.3000000000000003,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Treasure token",
-   "Description": "",
-   "GMNotes": "t-special-1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15861105972111560787/2B661946379DA018CEC1D69D03A576CBCDC65533/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "treasure"
-   ]
-  },
-  {
-   "GUID": "d00030",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 17.5,
-    "posY": 2.5,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Treasure token",
-   "Description": "",
-   "GMNotes": "t-special-2",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15861105972111560787/2B661946379DA018CEC1D69D03A576CBCDC65533/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "treasure"
-   ]
-  },
-  {
-   "GUID": "d00031",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 17.5,
-    "posY": 2.7,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Treasure token",
-   "Description": "",
-   "GMNotes": "t-special-3",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15861105972111560787/2B661946379DA018CEC1D69D03A576CBCDC65533/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "treasure"
-   ]
-  },
-  {
-   "GUID": "d00032",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 17.5,
-    "posY": 2.9000000000000004,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Treasure token",
-   "Description": "",
-   "GMNotes": "t-special-4",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15861105972111560787/2B661946379DA018CEC1D69D03A576CBCDC65533/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "treasure"
-   ]
-  },
-  {
-   "GUID": "d00033",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 17.5,
-    "posY": 3.1,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Treasure token",
-   "Description": "",
-   "GMNotes": "t-special-5",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15861105972111560787/2B661946379DA018CEC1D69D03A576CBCDC65533/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "treasure"
-   ]
-  },
-  {
-   "GUID": "d00034",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": 17.5,
-    "posY": 3.3000000000000003,
-    "posZ": 10.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 180.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Treasure token",
-   "Description": "",
-   "GMNotes": "t-special-6",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": false,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/15861105972111560787/2B661946379DA018CEC1D69D03A576CBCDC65533/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "token",
-    "treasure"
-   ]
-  },
-  {
-   "GUID": "d00035",
-   "Name": "Custom_Tile",
-   "Transform": {
-    "posX": -19.9,
-    "posY": 1.1,
-    "posZ": 8.0,
-    "rotX": 0.0,
-    "rotY": 180.0,
-    "rotZ": 0.0,
-    "scaleX": 0.7,
-    "scaleY": 1.0,
-    "scaleZ": 0.7
-   },
-   "Nickname": "Rubble",
-   "Description": "Put it on a Collapsing Passage room after its visitor walks out: nobody can walk in again.",
-   "GMNotes": "rubble-1",
-   "Locked": false,
-   "Grid": false,
-   "Snap": false,
-   "Tooltip": true,
-   "Hands": false,
-   "LuaScript": "",
-   "LuaScriptState": "",
-   "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17955548579881616781/8EA6D8BD6C0967752A9B61906173CD1100A2AE9A/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/17955548579881616781/8EA6D8BD6C0967752A9B61906173CD1100A2AE9A/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
-    }
-   },
-   "Tags": [
-    "rubble"
-   ]
-  },
-  {
-   "GUID": "d00036",
-   "Name": "Custom_Tile",
+   "GUID": "d0003a",
+   "Name": "Deck",
    "Transform": {
     "posX": -19.9,
     "posY": 1.3,
     "posZ": 8.0,
     "rotX": 0.0,
     "rotY": 180.0,
-    "rotZ": 0.0,
-    "scaleX": 0.7,
+    "rotZ": 180.0,
+    "scaleX": 0.4575,
     "scaleY": 1.0,
-    "scaleZ": 0.7
+    "scaleZ": 0.4575
    },
    "Nickname": "Rubble",
-   "Description": "Put it on a Collapsing Passage room after its visitor walks out: nobody can walk in again.",
-   "GMNotes": "rubble-2",
+   "Description": "",
+   "GMNotes": "",
    "Locked": false,
    "Grid": false,
    "Snap": false,
-   "Tooltip": true,
+   "Tooltip": false,
    "Hands": false,
    "LuaScript": "",
    "LuaScriptState": "",
    "XmlUI": "",
-   "CustomImage": {
-    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/17955548579881616781/8EA6D8BD6C0967752A9B61906173CD1100A2AE9A/",
-    "ImageSecondaryURL": "https://steamusercontent-a.akamaihd.net/ugc/17955548579881616781/8EA6D8BD6C0967752A9B61906173CD1100A2AE9A/",
-    "ImageScalar": 1.0,
-    "WidthScale": 0.0,
-    "CustomTile": {
-     "Type": 2,
-     "Thickness": 0.16,
-     "Stackable": false,
-     "Stretch": false
+   "DeckIDs": [
+    500,
+    500
+   ],
+   "CustomDeck": {
+    "5": {
+     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/rubble-sheet.3ce480da38.png",
+     "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17955548579881616781/8EA6D8BD6C0967752A9B61906173CD1100A2AE9A/",
+     "NumWidth": 2,
+     "NumHeight": 1,
+     "BackIsHidden": true,
+     "UniqueBack": false,
+     "Type": 4
     }
    },
+   "ContainedObjects": [
+    {
+     "GUID": "d00038",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Rubble",
+     "Description": "Put it on a Collapsing Passage room after its visitor walks out: nobody can walk in again.",
+     "GMNotes": "rubble-1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 500,
+     "CustomDeck": {
+      "5": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/rubble-sheet.3ce480da38.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17955548579881616781/8EA6D8BD6C0967752A9B61906173CD1100A2AE9A/",
+       "NumWidth": 2,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": false
+    },
+    {
+     "GUID": "d00039",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Rubble",
+     "Description": "Put it on a Collapsing Passage room after its visitor walks out: nobody can walk in again.",
+     "GMNotes": "rubble-2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 500,
+     "CustomDeck": {
+      "5": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/rubble-sheet.3ce480da38.png",
+       "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17955548579881616781/8EA6D8BD6C0967752A9B61906173CD1100A2AE9A/",
+       "NumWidth": 2,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": false
+    }
+   ],
+   "SidewaysCard": false,
+   "HideWhenFaceDown": true,
    "Tags": [
-    "rubble"
+    "rubbledeck"
    ]
   },
   {
-   "GUID": "d00049",
+   "GUID": "d0004d",
    "Name": "Deck",
    "Transform": {
     "posX": 21.5,
@@ -2314,7 +2479,7 @@
    },
    "ContainedObjects": [
     {
-     "GUID": "d0003f",
+     "GUID": "d00043",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2354,7 +2519,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d0003a",
+     "GUID": "d0003e",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2394,7 +2559,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d0003d",
+     "GUID": "d00041",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2434,7 +2599,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d0003c",
+     "GUID": "d00040",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2474,7 +2639,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00046",
+     "GUID": "d0004a",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2514,7 +2679,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00047",
+     "GUID": "d0004b",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2554,7 +2719,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00039",
+     "GUID": "d0003d",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2594,7 +2759,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00043",
+     "GUID": "d00047",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2634,7 +2799,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00037",
+     "GUID": "d0003b",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2674,7 +2839,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00038",
+     "GUID": "d0003c",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2714,7 +2879,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00044",
+     "GUID": "d00048",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2754,7 +2919,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00041",
+     "GUID": "d00045",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2794,7 +2959,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00048",
+     "GUID": "d0004c",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2834,7 +2999,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00040",
+     "GUID": "d00044",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2874,7 +3039,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00045",
+     "GUID": "d00049",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2914,7 +3079,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00042",
+     "GUID": "d00046",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2954,7 +3119,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d0003b",
+     "GUID": "d0003f",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2994,7 +3159,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d0003e",
+     "GUID": "d00042",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3041,7 +3206,7 @@
    ]
   },
   {
-   "GUID": "d0004a",
+   "GUID": "d0004e",
    "Name": "Custom_Tile",
    "Transform": {
     "posX": -22.0,
@@ -3082,7 +3247,7 @@
    ]
   },
   {
-   "GUID": "d0004b",
+   "GUID": "d0004f",
    "Name": "PlayerPawn",
    "Transform": {
     "posX": -25.6,
@@ -3116,7 +3281,7 @@
    ]
   },
   {
-   "GUID": "d0004c",
+   "GUID": "d00050",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 11.4,
@@ -3159,7 +3324,7 @@
    ]
   },
   {
-   "GUID": "d0004d",
+   "GUID": "d00051",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 12.9,
@@ -3202,7 +3367,7 @@
    ]
   },
   {
-   "GUID": "d0004e",
+   "GUID": "d00052",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 14.4,
@@ -3245,7 +3410,7 @@
    ]
   },
   {
-   "GUID": "d0004f",
+   "GUID": "d00053",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 15.9,
@@ -3288,7 +3453,7 @@
    ]
   },
   {
-   "GUID": "d00050",
+   "GUID": "d00054",
    "Name": "Custom_Tile",
    "Transform": {
     "posX": -11.0,
@@ -3329,7 +3494,7 @@
    ]
   },
   {
-   "GUID": "d00051",
+   "GUID": "d00055",
    "Name": "PlayerPawn",
    "Transform": {
     "posX": -14.6,
@@ -3363,7 +3528,7 @@
    ]
   },
   {
-   "GUID": "d00052",
+   "GUID": "d00056",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 17.4,
@@ -3406,7 +3571,7 @@
    ]
   },
   {
-   "GUID": "d00053",
+   "GUID": "d00057",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 11.4,
@@ -3449,7 +3614,7 @@
    ]
   },
   {
-   "GUID": "d00054",
+   "GUID": "d00058",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 12.9,
@@ -3492,7 +3657,7 @@
    ]
   },
   {
-   "GUID": "d00055",
+   "GUID": "d00059",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 14.4,
@@ -3535,7 +3700,7 @@
    ]
   },
   {
-   "GUID": "d00056",
+   "GUID": "d0005a",
    "Name": "Custom_Tile",
    "Transform": {
     "posX": 0.0,
@@ -3576,7 +3741,7 @@
    ]
   },
   {
-   "GUID": "d00057",
+   "GUID": "d0005b",
    "Name": "PlayerPawn",
    "Transform": {
     "posX": -3.6,
@@ -3610,7 +3775,7 @@
    ]
   },
   {
-   "GUID": "d00058",
+   "GUID": "d0005c",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 15.9,
@@ -3653,7 +3818,7 @@
    ]
   },
   {
-   "GUID": "d00059",
+   "GUID": "d0005d",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 17.4,
@@ -3696,7 +3861,7 @@
    ]
   },
   {
-   "GUID": "d0005a",
+   "GUID": "d0005e",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 11.4,
@@ -3739,7 +3904,7 @@
    ]
   },
   {
-   "GUID": "d0005b",
+   "GUID": "d0005f",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 12.9,
@@ -3782,7 +3947,7 @@
    ]
   },
   {
-   "GUID": "d0005c",
+   "GUID": "d00060",
    "Name": "Custom_Tile",
    "Transform": {
     "posX": 11.0,
@@ -3823,7 +3988,7 @@
    ]
   },
   {
-   "GUID": "d0005d",
+   "GUID": "d00061",
    "Name": "PlayerPawn",
    "Transform": {
     "posX": 7.4,
@@ -3857,7 +4022,7 @@
    ]
   },
   {
-   "GUID": "d0005e",
+   "GUID": "d00062",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 14.4,
@@ -3900,7 +4065,7 @@
    ]
   },
   {
-   "GUID": "d0005f",
+   "GUID": "d00063",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 15.9,
@@ -3943,7 +4108,7 @@
    ]
   },
   {
-   "GUID": "d00060",
+   "GUID": "d00064",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 17.4,
@@ -3986,7 +4151,7 @@
    ]
   },
   {
-   "GUID": "d00061",
+   "GUID": "d00065",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 11.4,
@@ -4029,7 +4194,7 @@
    ]
   },
   {
-   "GUID": "d00062",
+   "GUID": "d00066",
    "Name": "Custom_Tile",
    "Transform": {
     "posX": 22.0,
@@ -4070,7 +4235,7 @@
    ]
   },
   {
-   "GUID": "d00063",
+   "GUID": "d00067",
    "Name": "PlayerPawn",
    "Transform": {
     "posX": 18.4,
@@ -4104,7 +4269,7 @@
    ]
   },
   {
-   "GUID": "d00064",
+   "GUID": "d00068",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 12.9,
@@ -4147,7 +4312,7 @@
    ]
   },
   {
-   "GUID": "d00065",
+   "GUID": "d00069",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 14.4,
@@ -4190,7 +4355,7 @@
    ]
   },
   {
-   "GUID": "d00066",
+   "GUID": "d0006a",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 15.9,
@@ -4233,7 +4398,7 @@
    ]
   },
   {
-   "GUID": "d00067",
+   "GUID": "d0006b",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 17.4,

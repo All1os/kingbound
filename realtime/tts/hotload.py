@@ -1,8 +1,11 @@
 """Puts a freshly built save on the table of a running TTS, without the Save & Load menu.
 
-Clears the table, spawns every object of output/KINGBOUND-realtime.json, then sends the Global
-script and UI through the External Editor API's "Save & Play" (messageID 1), which reloads the game so
-onLoad remembers the new starting places. Needs TTS open with any game loaded.
+First sends the Global script and UI through the External Editor API's "Save & Play" (messageID 1).
+That reloads whatever save file TTS has open, so the objects come next: the table is cleared and every
+object of output/KINGBOUND-realtime.json is spawned, then the script's onLoad runs again so it
+remembers the new starting places and decks. (Spawning first and reloading last only worked while the
+open file was the build itself: after a save made in TTS, the reload brought that save's objects back,
+seen 2026-10-25.) Needs TTS open with any game loaded.
 Run: python3 hotload.py
 """
 import json
@@ -38,11 +41,13 @@ def main():
            "for _, j in ipairs(list) do spawnObjectJSON({json = j}) end\n"
            "print('spawned ' .. #list)")
     tts = TTS()
-    send_raw({"messageID": 3, "guid": "-1", "script": lua})
-    time.sleep(4.0)
     send_raw({"messageID": 1, "scriptStates": [{"name": "Global", "guid": "-1",
                                                 "script": save["LuaScript"], "ui": save["XmlUI"]}]})
     time.sleep(6.0)
+    send_raw({"messageID": 3, "guid": "-1", "script": lua})
+    time.sleep(4.0)
+    send_raw({"messageID": 3, "guid": "-1", "script": "onLoad()"})
+    time.sleep(1.0)
     version = tts.hello()
     print("table reloaded, save version:", version, "| errors:", tts.errors or "none")
 

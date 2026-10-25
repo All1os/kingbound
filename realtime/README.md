@@ -12,20 +12,21 @@ The update of 2026-10-25 answers the teacher's feedback with three changes, all 
 | `plan.py` | The dungeon the tutorial builds: which room goes where, in which order, with which token |
 | `tutorial.py` | Plays the 3:52 tutorial video in TTS for the presentation; `--record FILE.mov` records the screen, `--cues FILE.md` writes what to say, `--dry-run` prints the timeline. It still teaches the rules from before the update (no Safe Room, traps or Prank Cards yet) |
 | `tutorial-cues.md` | What to say over the video, second by second |
-| `photos.py` | Photos of every element for the slides: `python3 photos.py OUTDIR` (or only some shots: `... OUTDIR 01 05`) |
+| `photos.py` | Photos of every element for the slides: `python3 photos.py OUTDIR` (or only some shots: `... OUTDIR 01 05`). It still stages rooms and tokens as loose tiles, from before they became decks |
 
 Run: `python3 tts/build.py`, load `KINGBOUND-realtime` in TTS (Games → Save & Load → prototipler) or run `python3 tts/hotload.py` with any game open.
 
 ## Playing it in Tabletop Simulator
 
-Sit at Red, Yellow, Green, Blue or Purple and press START GAME (top left, under TTS's toolbar). It shuffles the room stack, the token piles and the Loot Deck, puts 4 dice on each seated player's mat and every character in the Safe Room, and starts the 10-minute timer. If nobody sits at a mat colour (one person trying it out), all five sets go out. From then on everything is done by hand: roll your dice, take the top room, flip tokens, draw Loot. When the timer reaches 0:00 the screen says so; count the POINTS box of your mat. RESET TABLE puts every piece back.
+Sit at Red, Yellow, Green, Blue or Purple and press START GAME (top left, under TTS's toolbar). It shuffles the room deck, the two token decks and the Loot Deck, puts 4 dice on each seated player's mat and every character in the Safe Room, and starts the 10-minute timer. If nobody sits at a mat colour (one person trying it out), all five sets go out. From then on everything is done by hand: roll your dice, take the top card of the room deck and flip it (F), draw a token the same way, draw Loot. When the timer reaches 0:00 the screen says so; count the POINTS box of your mat. RESET TABLE puts every piece back.
 
 ## Choices where the design document is open
 
 | Topic | Prototype choice |
 |---|---|
 | Dice | 4 per player (a strong monster needs 4 Attack). Faces: 2 Movement, 2 Attack, 2 Magic. §2.3 also names "special-effect" symbols but never says what they do, so the dice have none |
-| Room tiles | 28 in the stack: 6 empty, 7 monster, 9 treasure and 6 trap rooms, plus the Safe Room. Each tile has passages; a revealed room is placed so its passages connect |
+| Room tiles | A deck of 28 square cards: 6 empty, 7 monster, 9 treasure and 6 trap rooms. The Safe Room is a tile in the middle. Each room has passages; a revealed room is placed so its passages connect |
+| Decks | Rooms, monster tokens, treasure tokens and rubble are decks of cards, not piles of loose tiles (Yavuz asked, 2026-10-25). Tokens and rubble are round cards. A round token and a square room never join into one deck, so a token can lie on its room |
 | Safe Room (§12) | The start room in the middle, with the crown from the update's picture. The picture on p. 7 shows eight exits; the tile has four, like every room |
 | Securing treasure (§12) | A collected treasure goes to the mat's CARRIED box. Standing in the Safe Room, a player moves everything CARRIED to POINTS, with no dice. Defeated monsters go straight to POINTS: §12 asks only for treasure to be secured. Only POINTS count at the end |
 | Traps (§13) | Two of each trap. A trap goes off every time a character walks into its room; revealing the room doesn't set it off. Trap rooms always have at least two passages, so they sit on routes |
