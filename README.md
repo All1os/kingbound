@@ -44,4 +44,4 @@ When the timer reaches 0:00, everyone stops and counts their POINTS box. If two 
 
 ## Versions
 
-See the [changelog](CHANGELOG.md). Version 0.1 was an earlier, turn-based design of Kingbound; its rules are in `Kingbound-GDD.pdf`.
+See the [changelog](CHANGELOG.md). Version 0.1 was an earlier, turn-based design of Kingbound. It is in the [turn-based](turn-based) folder, and its rules are in [Kingbound-GDD.pdf](turn-based/Kingbound-GDD.pdf).

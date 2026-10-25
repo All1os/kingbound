@@ -15,4 +15,4 @@ The finished game: a real-time dungeon race for 3 to 5 players in Tabletop Simul
 
 ## v0.1 (2026-10-13)
 
-An earlier, turn-based design for 4 players. They move around a 7×7 board, fight monsters with Action cards, collect Loot and level up, and the first to win the King's Trial at the Castle wins the game. Its rules are in `Kingbound-GDD.pdf`.
+An earlier, turn-based design for 4 players. They move around a 7×7 board, fight monsters with Action cards, collect Loot and level up, and the first to win the King's Trial at the Castle wins the game. It is in the `turn-based` folder; its rules are in `turn-based/Kingbound-GDD.pdf`.
