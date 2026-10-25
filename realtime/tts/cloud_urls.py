@@ -1,0 +1,71 @@
+"""Writes cloud_urls.json after TTS has put the images on the Steam Cloud.
+
+  python3 cloud_urls.py SAVED.json
+
+Before it: build, load the save in TTS, Modding > Cloud Manager > Upload All, then save the game
+(SAVED.json is that save, in TTS's Saves folder). The saved game is compared with output/KINGBOUND-realtime.json
+piece by piece: wherever the build had a local image and the saved game has an http URL, that image is
+now on the Steam Cloud. The table's script also uses three icons that no piece shows; Upload All
+doesn't see them, so they are taken from this public repository, pinned to the commit given in --icons.
+build.py then writes these URLs instead of local paths (for files whose sha1 still matches).
+"""
+import argparse
+import hashlib
+import json
+import re
+from pathlib import Path
+
+ROOT = Path(__file__).parent
+OUT = ROOT / "output"
+ASSETS = Path.home() / "Library/Tabletop Simulator/Mods/kingbound-realtime"
+REPO_RAW = "https://raw.githubusercontent.com/All1os/kingbound/{commit}/realtime/tts/output/{fn}"
+
+
+def strings(o, path=()):
+    """Every string in a save object, with the path to it."""
+    if isinstance(o, dict):
+        for k, v in o.items():
+            yield from strings(v, path + (k,))
+    elif isinstance(o, list):
+        for i, v in enumerate(o):
+            yield from strings(v, path + (i,))
+    elif isinstance(o, str):
+        yield path, o
+
+
+def key(o):
+    # GUIDs can change when TTS spawns a piece, so pieces are matched by what build.py names them.
+    return (o["Name"], o.get("Nickname", ""), o.get("GMNotes", ""))
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("saved", help="the game TTS saved after Upload All")
+    ap.add_argument("--icons", metavar="COMMIT", help="commit of this repository that holds output/icon-*.png")
+    a = ap.parse_args()
+    built = json.loads((OUT / "KINGBOUND-realtime.json").read_text())
+    saved = json.loads(Path(a.saved).expanduser().read_text())
+    by_key = {key(o): o for o in saved["ObjectStates"]}
+    cloud_of = {}
+    for o in built["ObjectStates"]:
+        s = by_key.get(key(o))
+        if not s:
+            continue
+        theirs = dict(strings(s))
+        for p, v in strings(o):
+            if v.startswith(str(ASSETS)) and theirs.get(p, "").startswith("http"):
+                cloud_of[v] = theirs[p]
+    out = {}
+    for local, cloud in sorted(cloud_of.items()):
+        fn = re.sub(r"\.[0-9a-f]{10}\.png$", ".png", Path(local).name)
+        out[fn] = {"url": cloud, "sha1": hashlib.sha1((OUT / fn).read_bytes()).hexdigest()}
+    if a.icons:
+        for fn in ("icon-move.png", "icon-attack.png", "icon-magic.png"):
+            out[fn] = {"url": REPO_RAW.format(commit=a.icons, fn=fn), "sha1": hashlib.sha1((OUT / fn).read_bytes()).hexdigest()}
+    (ROOT / "cloud_urls.json").write_text(json.dumps(out, indent=1) + "\n")
+    missing = sorted(p.name for p in OUT.glob("*.png") if p.name not in out)
+    print(f"{len(out)} images on the cloud; not found in the save: {', '.join(missing) or 'none'}")
+
+
+if __name__ == "__main__":
+    main()

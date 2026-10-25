@@ -549,7 +549,20 @@ for png in sorted(OUT.glob("*.png")):
     HASHED[png.name] = name
 
 
-def url(fn): return str(ASSETS / HASHED[fn])
+# Steam Cloud URLs, so the save also opens on other computers (the Steam Workshop item, 2026-10-25).
+# cloud_urls.json maps an output file name to its URL and the sha1 of the file that was uploaded. A file
+# that has changed since falls back to its local path, which only this Mac can open, until it is
+# uploaded again: load the save, Modding > Cloud Manager > Upload All, save, python3 cloud_urls.py SAVE.
+CLOUD = json.loads((ROOT / "cloud_urls.json").read_text()) if (ROOT / "cloud_urls.json").exists() else {}
+LOCAL = set()
+
+
+def url(fn):
+    c = CLOUD.get(fn)
+    if c and c["sha1"] == hashlib.sha1((OUT / fn).read_bytes()).hexdigest():
+        return c["url"]
+    LOCAL.add(fn)
+    return str(ASSETS / HASHED[fn])
 
 
 # ------------------------------------------------------------------ save JSON
@@ -737,4 +750,5 @@ save_json = {
 shutil.copy(OUT / f"{SAVE_NAME}.json", SAVES / f"{SAVE_NAME}.json")
 print(f"{len(objs)} objects, {len(stack)} rooms in the stack ({sum(1 for _, t in SPARE if t)} traps), "
       f"{len(TOKEN_IDS)} tokens, {len(loot_cards)} Loot cards")
+print(f"images: {len(HASHED)}, {len(LOCAL)} of them local only (not on Steam Cloud){': ' + ', '.join(sorted(LOCAL)) if 0 < len(LOCAL) < 8 else ''}")
 print(f"save → {SAVES / (SAVE_NAME + '.json')}")

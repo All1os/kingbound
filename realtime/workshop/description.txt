@@ -1,0 +1,18 @@
+A real-time dungeon race for 3-5 players. Everyone plays at once for 10 minutes: roll your symbol dice, reveal rooms, beat monsters and grab treasure. Treasure only counts once you carry it back to the Safe Room. Most points wins.
+
+A prototype for playtesting.
+
+[h2]How to start[/h2]
+Sit at Red, Yellow, Green, Blue or Purple and press START GAME (top left). It shuffles the rooms, the tokens and the Loot Deck, hands out the dice, puts everyone in the Safe Room and starts the 10-minute timer. RESET TABLE puts everything back.
+
+[h2]Rules[/h2]
+[list]
+[*]Roll your 4 dice whenever you like. Keep the ones you need and reroll the rest, as often as you want.
+[*]2 Movement: reveal a new room next to yours, or move to a connected room.
+[*]Monsters need 2, 3 or 4 Attack (weak, medium, strong). A defeated monster goes to POINTS on your mat.
+[*]Treasure needs 2 Magic and goes to CARRIED. Bring it back to the Safe Room to move it to POINTS, no dice needed.
+[*]Traps go off when you walk in: Spike Pit, Pressure Plate, Collapsing Passage.
+[*]Loot cards help you. Prank cards hit other players, but never someone in the Safe Room.
+[*]When the timer ends, only POINTS count. Tie: most monsters defeated wins.
+[/list]
+The action chart on the table shows what every action needs.

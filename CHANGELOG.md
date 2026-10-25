@@ -17,6 +17,7 @@ The team's answer to the teacher's feedback (§12-§14) is in `realtime/` (save 
 - Face-down rooms and tokens are called just "Room", "Monster token" or "Treasure token", so hovering over them gives nothing away. Loot cards and the Safe Room show their rule on hover.
 - The timer of a real game follows the clock, so it can't drift.
 - The action chart has a new row, "Secure treasure: in the Safe Room, no dice", and says that only POINTS count.
+- Steam Workshop: `realtime/workshop/` has the thumbnail (the dungeon around the Safe Room, with Beep from Kenshi standing beside it), the description and the steps for updating the item. `build.py` writes Steam Cloud URLs from `tts/cloud_urls.json` instead of local paths, so the save opens on other computers; `tts/cloud_urls.py` fills that file after TTS's Cloud Manager has uploaded the images.
 - Not updated yet: the tutorial video and `tutorial-cues.md` still teach the rules from before the update.
 - Checked in a running TTS: every piece is on the table (28 rooms and the Safe Room, 21 tokens, 2 rubble, 18 Loot cards, 20 dice, 5 characters, 5 mats) and no image is left loading. START GAME, TIME'S UP and RESET TABLE work, and so do the tutorial's steps that put tokens on a mat, secure treasure and draw Loot. Two bugs were found and fixed: RESET TABLE left dice and characters locked, and it didn't take back Loot cards that had been stacked into a small deck of their own.
 
