@@ -4,6 +4,24 @@ All notable changes to the Kingbound prototype. Each version is also a GitHub re
 
 ## Unreleased
 
+### Real-time Kingbound: the design document's update of 2026-10-25
+
+The team's answer to the teacher's feedback (§12-§14) is in `realtime/` (save version 0.3-realtime). Choices where the document is open are in `realtime/README.md`.
+
+- Safe Room (§12): the start room in the middle is the Safe Room, with the crown from the document's picture. Each mat has a CARRIED box for treasure that is not secured yet and a POINTS box. A player standing in the Safe Room moves their CARRIED treasure to POINTS, with no dice. Only POINTS count at the end. Defeated monsters go straight to POINTS.
+- Trap Tiles (§13): 6 trap rooms in the stack, two each of Spike Pit, Pressure Plate and Collapsing Passage, with the rule printed on the tile. A trap goes off every time someone walks in. "Losing a turn" became "stop and count to 10". A Collapsing Passage room caves in after its visitor leaves and gets one of the 2 new rubble tokens.
+- Prank Cards (§14): Sticky Fingers, Wrong Turn, Monster Magnet and Trap Surprise, two of each, join the Loot Deck (18 cards instead of 10). Play any time, but not on a player in the Safe Room.
+- The feedback in the counts: 7 monster rooms instead of 11 and 9 monster tokens instead of 13 ("reduce fighting"); 6 special treasures instead of 3, so more Loot comes out ("not enough loot cards"). Common treasures went from 6 to 3.
+- A fifth seat, Purple (Yusuf), for 3-5 players (§1).
+- The save can now be played, not only filmed. START GAME shuffles the room stack, the token piles and the Loot Deck, gives 4 dice to every seated player (all five sets if nobody sits at a mat colour), puts the characters in the Safe Room and starts the 10-minute timer. At 0:00 the screen shows TIME'S UP. RESET TABLE puts everything back, Loot cards included. Rooms, tokens, dice, characters and rubble are no longer locked; the tutorial locks them while it films.
+- Face-down rooms and tokens are called just "Room", "Monster token" or "Treasure token", so hovering over them gives nothing away. Loot cards and the Safe Room show their rule on hover.
+- The timer of a real game follows the clock, so it can't drift.
+- The action chart has a new row, "Secure treasure: in the Safe Room, no dice", and says that only POINTS count.
+- Not updated yet: the tutorial video and `tutorial-cues.md` still teach the rules from before the update.
+- Checked in a running TTS: every piece is on the table (28 rooms and the Safe Room, 21 tokens, 2 rubble, 18 Loot cards, 20 dice, 5 characters, 5 mats) and no image is left loading. START GAME, TIME'S UP and RESET TABLE work, and so do the tutorial's steps that put tokens on a mat, secure treasure and draw Loot. Two bugs were found and fixed: RESET TABLE left dice and characters locked, and it didn't take back Loot cards that had been stacked into a small deck of their own.
+
+### Earlier changes since v0.1
+
 - Real-time Kingbound in `realtime/`: the team's final design (2026-10-18, Escape: The Curse of the Temple as reference) as a Tabletop Simulator prototype. Room tiles with passages, 4 symbol dice per player, monster and treasure tokens, a Loot Deck, player mats, an action chart and an on-screen 10-minute timer. Where the design document is open (dice faces, counts, points, Loot cards), the choices are listed in `realtime/README.md`.
 - `realtime/tutorial.py` plays a 3:52 tutorial for the presentation: the goal, setup, one player practising without the timer, bigger monsters and Loot, then a real game with everyone at once and the scoring. On screen there is only a one- or two-word name for each part with the dice symbols it costs; `tutorial-cues.md` has what to say over it. `--record` records the screen.
 - `realtime/photos.py` takes a photo of every element for the slides.

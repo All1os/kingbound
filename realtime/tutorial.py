@@ -169,7 +169,7 @@ def act(color, kind, *args):
 
 
 # --- 1. what the game is: the goal first, so every rule after it has a reason
-step(2.0, {"op": "reset"}, {"op": "button", "show": False}, {"op": "nocaption"}, {"op": "timer", "hide": True})
+step(2.0, {"op": "reset", "stage": True}, {"op": "button", "show": False}, {"op": "nocaption"}, {"op": "timer", "hide": True})
 step(4.5, cam("title"), cap("KINGBOUND", "This is Kingbound: a dungeon race for 3 to 5 players."))
 step(5.5, cam("mats"), {"op": "timer", "left": 600}, {"op": "glowtag", "tag": "mat", "secs": 5},
      cap("GOAL", "The goal: have the most points when the 10-minute timer runs out."))
@@ -250,7 +250,7 @@ step(4.0, keep("Green", 1), {"op": "glowloot", "color": "Green", "secs": 4}, tak
      cap("USE LOOT", "...and the sword is the second. Defeated.", "AA"))
 
 # --- 5. the real game: everyone at once, the timer running (kumite)
-step(3.0, {"op": "reset"}, cam("table"), cap("REAL GAME", "Now a real game, from the start."))
+step(3.0, {"op": "reset", "stage": True}, cam("table"), cap("REAL GAME", "Now a real game, from the start."))
 step(3.5, {"op": "deal"}, {"op": "pawns"}, {"op": "timer", "left": 600},
      cap("10 MINUTES", "Same setup, and the timer is set to 10 minutes."))
 step(1.5, cam("play"), {"op": "nocaption"}, {"op": "banner", "text": "GO!"}, {"op": "timer", "left": 600, "run": True})
@@ -368,7 +368,7 @@ def main():
     rec = None
     if a.record:
         # The table goes back to its starting places before the camera rolls, so the video opens clean.
-        tts.send({"op": "reset"})
+        tts.send({"op": "reset", "stage": True})
         tts.send({"op": "camera", "view": "title"})
         time.sleep(4.0)
         # -v video, -V seconds, -x no sounds, -k show clicks off; a few seconds of margin at the end.

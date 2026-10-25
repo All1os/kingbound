@@ -1,29 +1,35 @@
 --[[ Kingbound real-time prototype: Global script (build.py fills in the __PLACEHOLDERS__).
 
-The tutorial director (../tutorial.py) decides everything in Python and sends "show this" commands
-through TTS's External Editor API; this script only moves pieces, rolls dice to the faces it is told,
-and draws the caption, the timer and the scores. Nothing here makes a game decision.
+Two jobs. For players: START GAME shuffles the room stack, the token piles and the Loot Deck, hands
+out the dice, puts the characters in the Safe Room and starts the 10-minute timer; RESET TABLE puts
+everything back. Everything else is done by hand, as on a real table.
+For the tutorial video: the director (../tutorial.py) decides everything in Python and sends "show
+this" commands through TTS's External Editor API; this script only moves pieces, rolls dice to the
+faces it is told, and draws the caption, the timer and the scores. Nothing here makes a game decision.
 
 GM Notes: room tiles hold their dungeon cell ("x,z") or "spareN"; tokens their ID (m-weak-1,
-t-rare-2 ...); dice "Color:n"; pawns and mats their colour; Loot cards their ID (L1-L5).
+t-rare-2 ...); rubble "rubble-n"; dice "Color:n"; pawns and mats their colour; Loot cards their ID
+(L1-L5, Prank cards P1-P4).
 ]]
 KB_VERSION = "__VERSION__"
 L = JSON.decode([==[__LAYOUT__]==])
 
-COLORS = {Red = {0.86, 0.1, 0.09}, Yellow = {0.95, 0.85, 0.1}, Green = {0.19, 0.7, 0.17}, Blue = {0.12, 0.53, 1}}
+COLORS = {Red = {0.86, 0.1, 0.09}, Yellow = {0.95, 0.85, 0.1}, Green = {0.19, 0.7, 0.17}, Blue = {0.12, 0.53, 1},
+          Purple = {0.63, 0.13, 0.94}}
 GOLDEN = {1, 0.82, 0.3}
--- Where each pawn stands inside a room, so four can share one.
-PAWN_OFF = {Red = {-0.85, -0.85}, Yellow = {-0.85, 0.85}, Green = {0.85, 0.85}, Blue = {0.85, -0.85}}
--- Mat geometry: the mat is 11.0 x 5.2; its image is 1100 x 520 px (build.py mat_img).
+-- Where each character stands inside a room, so five can share one: a ring around the token in the
+-- middle (a room is 3.6 across, a token 1.4).
+PAWN_OFF = {Green = {0, 1.15}, Yellow = {-1.09, 0.36}, Red = {-0.68, -0.93}, Purple = {0.68, -0.93}, Blue = {1.09, 0.36}}
+-- Mat geometry: a mat is L.mat_size table units; its image is L.mat_px pixels (build.py mat_img).
 local function matPos(color, px, py)
-  return {x = L.mat_x[color] + (px / 1100 - 0.5) * 11.0, y = 1.25, z = L.mat_z + (0.5 - py / 520) * 5.2}
+  return {x = L.mat_x[color] + (px / L.mat_px[1] - 0.5) * L.mat_size[1], y = 1.25,
+          z = L.mat_z + (0.5 - py / L.mat_px[2]) * L.mat_size[2]}
 end
-DIE_PX = {{150, 230}, {320, 230}, {150, 400}, {320, 400}}
 -- Heights measured live (2026-10-19): the felt is at y 0.96; a tile's position is its bottom face when
 -- face up; a mat's top is at 1.08, a room's at 1.10; a die at scale 1.5 is 1.0 high (centre pivot).
 DIE_Y, ROOM_Y, TOKEN_ON_ROOM, TOKEN_ON_MAT = 1.58, 0.98, 1.11, 1.09
-TROPHY_PX = {{730, 225}, {865, 225}, {1000, 225}, {730, 395}, {865, 395}, {1000, 395}}
-TROPHIES = {Red = 0, Yellow = 0, Green = 0, Blue = 0}
+-- The pieces players move (unlocked in the save; the director locks them while it films).
+MOVABLE = {"room", "token", "rubble", "die", "pawn"}
 OPS = {}
 
 -- ------------------------------------------------------------------ finding things
@@ -79,37 +85,54 @@ end
 function OPS.score(d)
   if not d.lines then UI.setAttribute("kbScore", "active", "false") return end
   UI.setAttribute("kbScore", "active", "true")
-  for i = 1, 4 do
+  for i = 1, #L.colors do
     local ln = d.lines[i]
     UI.setValue("kbScore" .. i, ln and ln.text or "")
     if ln and ln.hex then UI.setAttribute("kbScore" .. i, "color", ln.hex) end
   end
 end
 
--- The 10-minute timer (§10). It never pauses in the game; the director only speeds it up for the
--- "a few minutes later" part of the video (rate = game seconds per real second).
-TIMER = {left = 600, rate = 1, token = 0}
+-- The 10-minute timer (§10). It never pauses in the game. In a real game (START GAME) it follows the
+-- clock, so it can't drift; the director only speeds it up for the "a few minutes later" part of the
+-- video (rate = game seconds per real second).
+TIMER = {left = L.game_secs, rate = 1, token = 0, play = false, ends = nil}
+local function wall()
+  local ok, t = pcall(function() return os.time() end)
+  if ok and type(t) == "number" then return t end
+end
 local function showTime()
   local s = math.max(0, math.floor(TIMER.left + 0.5))
   UI.setValue("kbTimerText", string.format("%d:%02d", math.floor(s / 60), s % 60))
   UI.setAttribute("kbTimerText", "color", s <= 60 and "#FF6A5A" or "#F5ECD7")
 end
+local function timeUp()
+  OPS.banner({text = "TIME'S UP!"})
+  broadcastToAll("Time's up! Only the POINTS box counts: defeated monsters and secured treasure.", GOLDEN)
+end
 local function tick(token)
   if token ~= TIMER.token then return end
-  TIMER.left = TIMER.left - 1
+  if TIMER.ends then TIMER.left = TIMER.ends - wall() else TIMER.left = TIMER.left - 1 end
+  if TIMER.left <= 0 then
+    TIMER.left = 0
+    showTime()
+    if TIMER.play then timeUp() end
+    return
+  end
   showTime()
-  if TIMER.left <= 0 then return end
-  Wait.time(function() tick(token) end, 1 / TIMER.rate)
+  Wait.time(function() tick(token) end, TIMER.ends and 0.25 or 1 / TIMER.rate)
 end
 function OPS.timer(d)
   UI.setAttribute("kbTimer", "active", d.hide and "false" or "true")
   TIMER.token = TIMER.token + 1
   if d.left then TIMER.left = d.left end
   TIMER.rate = d.rate or 1
+  TIMER.play = d.play or false
+  TIMER.ends = nil
+  if TIMER.play and wall() then TIMER.ends = wall() + TIMER.left end
   showTime()
   if d.run then
     local token = TIMER.token
-    Wait.time(function() tick(token) end, 1 / TIMER.rate)
+    Wait.time(function() tick(token) end, TIMER.ends and 0.25 or 1 / TIMER.rate)
   end
 end
 
@@ -120,8 +143,8 @@ function viewFor(d)
   if v == "table" then return {position = {x = 0, y = 0, z = 0}, pitch = 68, yaw = 0, distance = 54} end
   if v == "play" then return {position = {x = 0, y = 0, z = -4.0}, pitch = 62, yaw = 0, distance = 40} end
   if v == "dungeon" then return {position = {x = 0, y = 0, z = 1.5}, pitch = 70, yaw = 0, distance = 30} end
-  if v == "mats" then return {position = {x = 0, y = 0, z = -9.0}, pitch = 60, yaw = 0, distance = 34} end
-  if v == "chart" then return {position = {x = -16.5, y = 0, z = -0.2}, pitch = 66, yaw = 0, distance = 15} end
+  if v == "mats" then return {position = {x = 0, y = 0, z = -9.0}, pitch = 60, yaw = 0, distance = 36} end
+  if v == "chart" then return {position = {x = -16.5, y = 0, z = -0.2}, pitch = 66, yaw = 0, distance = 16} end
   if v == "supply" then return {position = {x = 4, y = 0, z = 7}, pitch = 64, yaw = 0, distance = 34} end
   if v == "title" then return {position = {x = 0, y = 0, z = 15.8}, pitch = 70, yaw = 0, distance = 20} end
   if v == "mat" then
@@ -133,9 +156,9 @@ function viewFor(d)
     -- both (half-way put the far-left mat's dice off screen, seen 2026-10-19) and aims a little low,
     -- because the part's name covers the bottom of the screen.
     if d.color then
-      local mx, mz = L.mat_x[d.color], L.mat_z
-      local x0, x1 = math.min(mx - 5.5, p.x - 2.2), math.max(mx + 5.5, p.x + 2.2)
-      local z0, z1 = mz - 2.6, p.z + 2.2
+      local mx, mz, hw, hd = L.mat_x[d.color], L.mat_z, L.mat_size[1] / 2 + 0.5, L.mat_size[2] / 2 + 0.1
+      local x0, x1 = math.min(mx - hw, p.x - 2.2), math.max(mx + hw, p.x + 2.2)
+      local z0, z1 = mz - hd, p.z + 2.2
       local dist = math.max(d.distance or 0, (x1 - x0) / 1.2, (z1 - z0) * 1.1)
       return {position = {x = (x0 + x1) / 2, y = 0, z = (z0 + z1) / 2 - 1.8}, pitch = 62, yaw = 0, distance = dist}
     end
@@ -154,12 +177,13 @@ end
 function OPS.deal(d)
   -- Each player takes their 4 dice (§3 step 1): from the middle of the table onto their mat.
   local k = 0
-  for color, _ in pairs(L.mat_x) do
+  for _, color in ipairs(d.colors or L.colors) do
     for i = 1, 4 do
       local die = dieOf(color, i)
       if die then
         k = k + 1
-        local p = matPos(color, DIE_PX[i][1], DIE_PX[i][2])
+        local px = L.die_px[i]
+        local p = matPos(color, px[1], px[2])
         -- Face first, then the move: setRotationValue after setPositionSmooth cancels the move
         -- (seen live, 2026-10-19: the dice stayed in the supply).
         Wait.time(function()
@@ -173,8 +197,8 @@ function OPS.deal(d)
 end
 
 function OPS.pawns(d)
-  -- Characters go on the start room (§6), or back to their place beside the mat.
-  for color, _ in pairs(L.mat_x) do
+  -- Characters go into the Safe Room (§12: it is everyone's starting room).
+  for _, color in ipairs(d.colors or L.colors) do
     local pawn = pawnOf(color)
     if pawn then
       local c, off = cellPos({0, 0}), PAWN_OFF[color]
@@ -198,7 +222,9 @@ function OPS.shuffle(d)
   end
 end
 
-function OPS.button(d) UI.setAttribute("kbReset", "active", d.show and "true" or "false") end
+function OPS.button(d)
+  for _, id in ipairs({"kbStart", "kbReset"}) do UI.setAttribute(id, "active", d.show and "true" or "false") end
+end
 
 function OPS.spot(d)
   -- One player's character and mat glow: "watch this player".
@@ -216,7 +242,8 @@ end
 local function rollOne(color, i, value, delay)
   local die = dieOf(color, i)
   if not die then return end
-  local p = matPos(color, DIE_PX[i][1], DIE_PX[i][2])
+  local px = L.die_px[i]
+  local p = matPos(color, px[1], px[2])
   Wait.time(function()
     die.setPositionSmooth({x = p.x, y = DIE_Y + 2.2, z = p.z}, false, true)
     die.setRotationSmooth({x = math.random(0, 359), y = math.random(0, 359), z = math.random(0, 359)}, false, true)
@@ -237,7 +264,7 @@ function OPS.keep(d)
   for _, i in ipairs(d.dice) do glow(dieOf(d.color, i), d.color, d.secs or 3) end
 end
 
--- ------------------------------------------------------------------ the dungeon (§6)
+-- ------------------------------------------------------------------ the dungeon (§6, §12)
 function OPS.reveal(d)
   -- The room tile of this cell comes off the stack, turns over and lands next to the room it was
   -- revealed from, passages lined up (build.py drew them that way).
@@ -274,25 +301,53 @@ function OPS.move(d)
   end
 end
 
-function OPS.take(d)
-  -- A defeated monster or a collected treasure goes onto the player's mat: trophies are points (§11).
-  local o = byNote("token", d.id)
-  if not o then return end
-  TROPHIES[d.color] = TROPHIES[d.color] + 1
-  local spot = TROPHY_PX[math.min(TROPHIES[d.color], #TROPHY_PX)]
-  local p = matPos(d.color, spot[1], spot[2])
-  o.setPositionSmooth({x = o.getPosition().x, y = 3.0, z = o.getPosition().z}, false, true)
+-- What lies on each mat: CARRIED treasure (not secured yet, §12) and POINTS (defeated monsters and
+-- secured treasure; only POINTS count at the end).
+CARRY, POINTS = {}, {}
+local function clearMats()
+  CARRY, POINTS = {}, {}
+  for _, c in ipairs(L.colors) do CARRY[c], POINTS[c] = {}, {} end
+end
+local function toMat(o, color, spots, n, delay)
+  local px = spots[math.min(n, #spots)]
+  local p = matPos(color, px[1], px[2])
   Wait.time(function()
     o.setPositionSmooth({x = p.x, y = TOKEN_ON_MAT, z = p.z}, false, true)
-    o.setScale({x = 0.6, y = 1, z = 0.6})
-    glow(o, d.color, 3)
-  end, 0.4)
+    o.setScale({x = 0.5, y = 1, z = 0.5})
+    glow(o, color, 3)
+  end, delay)
+end
+
+function OPS.take(d)
+  -- A defeated monster goes onto POINTS; a collected treasure onto CARRIED until it is secured.
+  local o = byNote("token", d.id)
+  if not o then return end
+  o.setPositionSmooth({x = o.getPosition().x, y = 3.0, z = o.getPosition().z}, false, true)
+  if d.id:sub(1, 2) == "t-" then
+    table.insert(CARRY[d.color], d.id)
+    toMat(o, d.color, L.carry_px, #CARRY[d.color], 0.4)
+  else
+    table.insert(POINTS[d.color], d.id)
+    toMat(o, d.color, L.points_px, #POINTS[d.color], 0.4)
+  end
+end
+
+function OPS.secure(d)
+  -- §12: back in the Safe Room, everything CARRIED moves to POINTS, no dice.
+  for k, id in ipairs(CARRY[d.color]) do
+    local o = byNote("token", id)
+    if o then
+      table.insert(POINTS[d.color], id)
+      toMat(o, d.color, L.points_px, #POINTS[d.color], (k - 1) * 0.25)
+    end
+  end
+  CARRY[d.color] = {}
 end
 
 function OPS.loot(d)
   -- Draw the Loot card with this ID (§9: special treasure) onto the mat's Loot box, face up.
   local deck = getObjectsWithTag("lootdeck")[1]
-  local p = matPos(d.color, 550, 300)
+  local p = matPos(d.color, L.loot_px[1], L.loot_px[2])
   if deck and not deck.isDestroyed() then
     for _, c in ipairs(deck.getObjects()) do
       if c.gm_notes == d.id then
@@ -320,34 +375,124 @@ function onLoad()
   for k, u in pairs(L.icons) do table.insert(assets, {name = "icon" .. k, url = u}) end
   UI.setCustomAssets(assets)
   for _, o in ipairs(getObjects()) do
-    HOME[o.getGUID()] = {pos = o.getPosition(), rot = o.getRotation(), scale = o.getScale()}
+    HOME[o.getGUID()] = {pos = o.getPosition(), rot = o.getRotation(), scale = o.getScale(), lock = o.getLock()}
   end
+  clearMats()
   for _, id in ipairs({"kbCaption", "kbScore", "kbBanner"}) do UI.setAttribute(id, "active", "false") end
 end
 
+local function isMovable(o)
+  for _, t in ipairs(MOVABLE) do if o.hasTag(t) then return true end end
+  return false
+end
+-- Piles (the room stack, the token piles, rubble) are put in place locked, so no piece knocks another
+-- over on the way, and let go half a second later: a stack of loose tiles stays a neat stack.
+local function isPile(o)
+  return (o.hasTag("room") and notes(o) ~= "0,0") or o.hasTag("token") or o.hasTag("rubble")
+end
+local function place(objs, slots, stay_locked)
+  for k, o in ipairs(objs) do
+    local s = slots[k]
+    o.setLock(true)
+    o.setPosition(s.pos)
+    o.setRotation(s.rot)
+    o.setScale(s.scale)
+  end
+  if not stay_locked then
+    Wait.time(function() for _, o in ipairs(objs) do if alive(o) then o.setLock(false) end end end, 0.5)
+  end
+end
+
 function OPS.reset(d)
+  -- d.stage: the director films, so every piece stays locked and only its scripts move them.
   local deck = getObjectsWithTag("lootdeck")[1]
+  local piles, slots = {}, {}
   for _, o in ipairs(getObjects()) do
-    if o.type == "Card" and deck and o ~= deck then
+    -- Loot cards back into the deck; two cards dropped on each other have become a small deck of
+    -- their own (seen live, 2026-10-25), so those go back too.
+    local loose = o.type == "Card" or (o.type == "Deck" and not o.hasTag("lootdeck"))
+    if loose and deck and o ~= deck then
       o.setLock(false)
       o.removeTag("loot")
       deck.putObject(o)
     else
       local h = HOME[o.getGUID()]
-      if h then
+      if h and isPile(o) then
+        table.insert(piles, o)
+        table.insert(slots, h)
+      elseif h then
+        -- A die or a pawn is locked on the way home, so it doesn't tumble, then gets its own state
+        -- back. Nothing else is locked: a locked Loot Deck takes no cards back (seen live, 2026-10-25).
+        if isMovable(o) then
+          local lock = h.lock == true or d.stage == true
+          o.setLock(true)
+          Wait.time(function() if alive(o) then o.setLock(lock) end end, 1.2)
+        end
         o.setPositionSmooth(h.pos, false, true)
         o.setRotationSmooth(h.rot, false, true)
         o.setScale(h.scale)
       end
     end
   end
-  TROPHIES = {Red = 0, Yellow = 0, Green = 0, Blue = 0}
+  place(piles, slots, d.stage)
+  clearMats()
   TIMER.token = TIMER.token + 1
-  TIMER.left = 600
+  TIMER.left, TIMER.play, TIMER.ends = L.game_secs, false, nil
   showTime()
   for _, id in ipairs({"kbCaption", "kbScore", "kbBanner", "kbTimer"}) do UI.setAttribute(id, "active", "false") end
 end
 function resetGame(player) OPS.reset({}) end
+
+-- ------------------------------------------------------------------ START GAME
+-- The colours at a mat that someone sits at; nobody at a mat colour (one person trying it out) =
+-- every colour.
+local function seatedColors()
+  local out = {}
+  for _, pl in ipairs(Player.getPlayers()) do
+    if L.mat_x[pl.color] then table.insert(out, pl.color) end
+  end
+  if #out == 0 then return L.colors end
+  return out
+end
+
+local function shufflePile(objs)
+  -- The pieces swap their starting places (§3 step 3: shuffle the room tiles).
+  local slots = {}
+  for _, o in ipairs(objs) do table.insert(slots, HOME[o.getGUID()]) end
+  table.sort(slots, function(a, b) return a.pos.y < b.pos.y end)
+  for i = #objs, 2, -1 do
+    local j = math.random(i)
+    objs[i], objs[j] = objs[j], objs[i]
+  end
+  place(objs, slots, false)
+end
+
+local starting = false
+function startGame(player)
+  if starting then return end
+  starting = true
+  OPS.reset({})
+  Wait.time(function()
+    local rooms = {}
+    for _, o in ipairs(getObjectsWithTag("room")) do
+      if notes(o) ~= "0,0" and HOME[o.getGUID()] then table.insert(rooms, o) end
+    end
+    shufflePile(rooms)
+    shufflePile(getObjectsWithTag("monster"))
+    shufflePile(getObjectsWithTag("treasure"))
+    local deck = getObjectsWithTag("lootdeck")[1]
+    if deck then deck.shuffle() end
+    local who = seatedColors()
+    OPS.deal({colors = who})
+    OPS.pawns({colors = who})
+    OPS.timer({left = L.game_secs, run = true, play = true})
+    OPS.banner({text = "GO!"})
+    Wait.time(function()
+      if TIMER.play and TIMER.left > 0 then OPS.banner({}) end
+      starting = false
+    end, 2.5)
+  end, 1.4)
+end
 
 -- ------------------------------------------------------------------ the director's commands
 local function reply(kind, text) sendExternalMessage({kind = kind, text = text}) end
