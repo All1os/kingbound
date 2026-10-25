@@ -170,5 +170,21 @@
  "tre-special.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/15861105972111560787/2B661946379DA018CEC1D69D03A576CBCDC65533/",
   "sha1": "2b661946379da018cec1d69d03a576cbcdc65533"
+ },
+ "mon-sheet.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/18236869284338647360/D69AE4C94F3111A4F6B2692086D688D02A040BCC/",
+  "sha1": "d69ae4c94f3111a4f6b2692086d688d02a040bcc"
+ },
+ "room-sheet.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
+  "sha1": "e9393a49052f5d5fbb977fb867a12f1da3b75258"
+ },
+ "rubble-sheet.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/10436246248400854084/3CE480DA3848465A6FDC88ED7198D4A597E198B8/",
+  "sha1": "3ce480da3848465a6fdc88ed7198d4a597e198b8"
+ },
+ "tre-sheet.png": {
+  "url": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
+  "sha1": "ca7f76b126f1e8ba160b024d71ac1b4a9eed21f1"
  }
 }

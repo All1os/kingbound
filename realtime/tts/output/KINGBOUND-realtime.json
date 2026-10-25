@@ -1,7 +1,7 @@
 {
  "SaveName": "KINGBOUND-realtime",
- "EpochTime": 1792959926,
- "Date": "10/25/2026 11:25:26 PM",
+ "EpochTime": 1792963455,
+ "Date": "10/26/2026 12:24:15 AM",
  "VersionNumber": "v14.2.2",
  "GameMode": "Kingbound real-time prototype",
  "Tags": [],
@@ -201,7 +201,7 @@
    ],
    "CustomDeck": {
     "2": {
-     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+     "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
      "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
      "NumWidth": 7,
      "NumHeight": 4,
@@ -239,7 +239,7 @@
      "CardID": 200,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -279,7 +279,7 @@
      "CardID": 201,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -319,7 +319,7 @@
      "CardID": 202,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -359,7 +359,7 @@
      "CardID": 203,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -399,7 +399,7 @@
      "CardID": 204,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -439,7 +439,7 @@
      "CardID": 205,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -479,7 +479,7 @@
      "CardID": 206,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -519,7 +519,7 @@
      "CardID": 207,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -559,7 +559,7 @@
      "CardID": 208,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -599,7 +599,7 @@
      "CardID": 209,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -639,7 +639,7 @@
      "CardID": 210,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -679,7 +679,7 @@
      "CardID": 211,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -719,7 +719,7 @@
      "CardID": 212,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -759,7 +759,7 @@
      "CardID": 213,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -799,7 +799,7 @@
      "CardID": 214,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -839,7 +839,7 @@
      "CardID": 215,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -879,7 +879,7 @@
      "CardID": 216,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -919,7 +919,7 @@
      "CardID": 217,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -959,7 +959,7 @@
      "CardID": 218,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -999,7 +999,7 @@
      "CardID": 219,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -1039,7 +1039,7 @@
      "CardID": 220,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -1079,7 +1079,7 @@
      "CardID": 221,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -1119,7 +1119,7 @@
      "CardID": 222,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -1159,7 +1159,7 @@
      "CardID": 223,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -1199,7 +1199,7 @@
      "CardID": 224,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -1239,7 +1239,7 @@
      "CardID": 225,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -1279,7 +1279,7 @@
      "CardID": 226,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -1319,7 +1319,7 @@
      "CardID": 227,
      "CustomDeck": {
       "2": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/room-sheet.e9393a4905.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/9240048724890612070/E9393A49052F5D5FBB977FB867A12F1DA3B75258/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
        "NumWidth": 7,
        "NumHeight": 4,
@@ -1376,7 +1376,7 @@
    ],
    "CustomDeck": {
     "3": {
-     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+     "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/18236869284338647360/D69AE4C94F3111A4F6B2692086D688D02A040BCC/",
      "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
      "NumWidth": 3,
      "NumHeight": 1,
@@ -1414,7 +1414,7 @@
      "CardID": 300,
      "CustomDeck": {
       "3": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/18236869284338647360/D69AE4C94F3111A4F6B2692086D688D02A040BCC/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1454,7 +1454,7 @@
      "CardID": 301,
      "CustomDeck": {
       "3": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/18236869284338647360/D69AE4C94F3111A4F6B2692086D688D02A040BCC/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1494,7 +1494,7 @@
      "CardID": 300,
      "CustomDeck": {
       "3": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/18236869284338647360/D69AE4C94F3111A4F6B2692086D688D02A040BCC/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1534,7 +1534,7 @@
      "CardID": 300,
      "CustomDeck": {
       "3": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/18236869284338647360/D69AE4C94F3111A4F6B2692086D688D02A040BCC/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1574,7 +1574,7 @@
      "CardID": 301,
      "CustomDeck": {
       "3": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/18236869284338647360/D69AE4C94F3111A4F6B2692086D688D02A040BCC/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1614,7 +1614,7 @@
      "CardID": 301,
      "CustomDeck": {
       "3": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/18236869284338647360/D69AE4C94F3111A4F6B2692086D688D02A040BCC/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1654,7 +1654,7 @@
      "CardID": 300,
      "CustomDeck": {
       "3": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/18236869284338647360/D69AE4C94F3111A4F6B2692086D688D02A040BCC/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1694,7 +1694,7 @@
      "CardID": 302,
      "CustomDeck": {
       "3": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/18236869284338647360/D69AE4C94F3111A4F6B2692086D688D02A040BCC/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1734,7 +1734,7 @@
      "CardID": 302,
      "CustomDeck": {
       "3": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mon-sheet.d69ae4c94f.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/18236869284338647360/D69AE4C94F3111A4F6B2692086D688D02A040BCC/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1795,7 +1795,7 @@
    ],
    "CustomDeck": {
     "4": {
-     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+     "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
      "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
      "NumWidth": 3,
      "NumHeight": 1,
@@ -1833,7 +1833,7 @@
      "CardID": 400,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1873,7 +1873,7 @@
      "CardID": 401,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1913,7 +1913,7 @@
      "CardID": 400,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1953,7 +1953,7 @@
      "CardID": 402,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1993,7 +1993,7 @@
      "CardID": 402,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -2033,7 +2033,7 @@
      "CardID": 401,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -2073,7 +2073,7 @@
      "CardID": 400,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -2113,7 +2113,7 @@
      "CardID": 401,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -2153,7 +2153,7 @@
      "CardID": 402,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -2193,7 +2193,7 @@
      "CardID": 402,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -2233,7 +2233,7 @@
      "CardID": 402,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -2273,7 +2273,7 @@
      "CardID": 402,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.ca7f76b126.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -2324,7 +2324,7 @@
    ],
    "CustomDeck": {
     "5": {
-     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/rubble-sheet.3ce480da38.png",
+     "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/10436246248400854084/3CE480DA3848465A6FDC88ED7198D4A597E198B8/",
      "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17955548579881616781/8EA6D8BD6C0967752A9B61906173CD1100A2AE9A/",
      "NumWidth": 2,
      "NumHeight": 1,
@@ -2362,7 +2362,7 @@
      "CardID": 500,
      "CustomDeck": {
       "5": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/rubble-sheet.3ce480da38.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/10436246248400854084/3CE480DA3848465A6FDC88ED7198D4A597E198B8/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17955548579881616781/8EA6D8BD6C0967752A9B61906173CD1100A2AE9A/",
        "NumWidth": 2,
        "NumHeight": 1,
@@ -2402,7 +2402,7 @@
      "CardID": 500,
      "CustomDeck": {
       "5": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/rubble-sheet.3ce480da38.png",
+       "FaceURL": "https://steamusercontent-a.akamaihd.net/ugc/10436246248400854084/3CE480DA3848465A6FDC88ED7198D4A597E198B8/",
        "BackURL": "https://steamusercontent-a.akamaihd.net/ugc/17955548579881616781/8EA6D8BD6C0967752A9B61906173CD1100A2AE9A/",
        "NumWidth": 2,
        "NumHeight": 1,
