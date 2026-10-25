@@ -20,11 +20,16 @@ GOLDEN = {1, 0.82, 0.3}
 -- Where each character stands inside a room, so five can share one: a ring around the token in the
 -- middle (a room is 3.6 across, a token 1.4).
 PAWN_OFF = {Green = {0, 1.15}, Yellow = {-1.09, 0.36}, Red = {-0.68, -0.93}, Purple = {0.68, -0.93}, Blue = {1.09, 0.36}}
--- Mat geometry: a mat is L.mat_size table units; its image is L.mat_px pixels (build.py mat_img).
+-- Mat geometry: a mat is L.mat_size table units; its image is L.mat_px pixels (build.py mat_img). Each
+-- mat lies on its player's side of the table, turned to face them (L.mats: x, z, Y rotation), so a
+-- point of the image turns with it (same sums as build.py mat_world).
 local function matPos(color, px, py)
-  return {x = L.mat_x[color] + (px / L.mat_px[1] - 0.5) * L.mat_size[1], y = 1.25,
-          z = L.mat_z + (0.5 - py / L.mat_px[2]) * L.mat_size[2]}
+  local m = L.mats[color]
+  local u, v = (px / L.mat_px[1] - 0.5) * L.mat_size[1], (py / L.mat_px[2] - 0.5) * L.mat_size[2]
+  local t = math.rad(m[3])
+  return {x = m[1] - u * math.cos(t) + v * math.sin(t), y = 1.25, z = m[2] + u * math.sin(t) + v * math.cos(t)}
 end
+local function matRot(color) return {x = 0, y = L.mats[color][3], z = 0} end
 -- Heights measured live: the felt is at y 0.96, a mat's top at 1.08, a die at scale 1.5 is 1.0 high
 -- (centre pivot) (2026-10-19); a card lies at 0.974 on the felt, at 1.001 on another card and is 0.027
 -- thick (2026-10-25).
@@ -251,12 +256,13 @@ function viewFor(d)
   if v == "table" then return {position = {x = 0, y = 0, z = 0}, pitch = 68, yaw = 0, distance = 54} end
   if v == "play" then return {position = {x = 0, y = 0, z = -4.0}, pitch = 62, yaw = 0, distance = 40} end
   if v == "dungeon" then return {position = {x = 0, y = 0, z = 1.5}, pitch = 70, yaw = 0, distance = 30} end
-  if v == "mats" then return {position = {x = 0, y = 0, z = -9.0}, pitch = 60, yaw = 0, distance = 36} end
+  if v == "mats" then return {position = {x = 0, y = 0, z = 0}, pitch = 75, yaw = 0, distance = 60} end
   if v == "chart" then return {position = {x = -16.5, y = 0, z = -0.2}, pitch = 66, yaw = 0, distance = 16} end
   if v == "supply" then return {position = {x = 4, y = 0, z = 7}, pitch = 64, yaw = 0, distance = 34} end
   if v == "title" then return {position = {x = 0, y = 0, z = 15.8}, pitch = 70, yaw = 0, distance = 20} end
   if v == "mat" then
-    return {position = {x = L.mat_x[d.color], y = 0, z = L.mat_z - 0.8}, pitch = 62, yaw = 0, distance = d.distance or 15}
+    local m = L.mats[d.color]
+    return {position = {x = m[1], y = 0, z = m[2]}, pitch = 62, yaw = (m[3] + 180) % 360, distance = d.distance or 15}
   end
   if v == "cell" then
     local p = cellPos(d.cell)
@@ -264,9 +270,11 @@ function viewFor(d)
     -- both (half-way put the far-left mat's dice off screen, seen 2026-10-19) and aims a little low,
     -- because the part's name covers the bottom of the screen.
     if d.color then
-      local mx, mz, hw, hd = L.mat_x[d.color], L.mat_z, L.mat_size[1] / 2 + 0.5, L.mat_size[2] / 2 + 0.1
+      local mx, mz = L.mats[d.color][1], L.mats[d.color][2]
+      local hw = math.max(L.mat_size[1], L.mat_size[2]) / 2 + 0.5
+      local hd = hw
       local x0, x1 = math.min(mx - hw, p.x - 2.2), math.max(mx + hw, p.x + 2.2)
-      local z0, z1 = mz - hd, p.z + 2.2
+      local z0, z1 = math.min(mz - hd, p.z - 2.2), math.max(mz + hd, p.z + 2.2)
       local dist = math.max(d.distance or 0, (x1 - x0) / 1.2, (z1 - z0) * 1.1)
       return {position = {x = (x0 + x1) / 2, y = 0, z = (z0 + z1) / 2 - 1.8}, pitch = 62, yaw = 0, distance = dist}
     end
@@ -366,10 +374,11 @@ end
 
 -- ------------------------------------------------------------------ the dungeon (§6, §12)
 -- A card the director put somewhere stays there while it films.
-local function settle(card, pos, scale, color)
+local function settle(card, pos, scale, color, rot)
   card.setScale({x = scale, y = 1, z = scale})
   if STAGED then card.setLock(true) end
   card.setPositionSmooth(pos, false, true)
+  if rot then card.setRotationSmooth(rot, false, true) end
   glow(card, color, 3)
 end
 
@@ -417,7 +426,7 @@ local function toMat(id, color, spots, n, delay)
   local p = matPos(color, px[1], px[2])
   Wait.time(function()
     takeCard(id, {x = p.x, y = 2.2, z = p.z}, function(card)
-      Wait.time(function() settle(card, {x = p.x, y = CARD_ON_MAT, z = p.z}, L.mat_tok_s, color) end, 0.4)
+      Wait.time(function() settle(card, {x = p.x, y = CARD_ON_MAT, z = p.z}, L.mat_tok_s, color, matRot(color)) end, 0.4)
     end)
   end, delay)
 end
@@ -447,7 +456,7 @@ function OPS.loot(d)
   local p = matPos(d.color, L.loot_px[1], L.loot_px[2])
   takeCard(d.id, {x = p.x, y = 1.4, z = p.z}, function(card)
     card.addTag("loot")
-    Wait.time(function() settle(card, {x = p.x, y = CARD_ON_MAT, z = p.z}, L.deck_s.loot, d.color) end, 0.4)
+    Wait.time(function() settle(card, {x = p.x, y = CARD_ON_MAT, z = p.z}, L.deck_s.loot, d.color, matRot(d.color)) end, 0.4)
   end)
 end
 
@@ -522,7 +531,7 @@ function resetGame(player) OPS.reset({}) end
 local function seatedColors()
   local out = {}
   for _, pl in ipairs(Player.getPlayers()) do
-    if L.mat_x[pl.color] then table.insert(out, pl.color) end
+    if L.mats[pl.color] then table.insert(out, pl.color) end
   end
   if #out == 0 then return L.colors end
   return out

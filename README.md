@@ -12,7 +12,7 @@ You can also download `KINGBOUND-realtime.json` from the [latest release](https:
 
 ## Starting a game
 
-Sit at Red, Yellow, Green, Blue or Purple and press START GAME at the top left of the screen. It shuffles the decks, gives everyone 4 dice, puts all the characters in the Safe Room and starts the 10-minute timer. RESET TABLE puts everything back where it was.
+Sit at Red, Yellow, Green, Blue or Purple. Each player's mat lies on their own side of the table: Red in the south, Yellow in the west, Green in the north, Blue in the east, and Purple next to Red for a fifth player. The top of the mat shows what each action needs. Press START GAME at the top left of the screen. It shuffles the decks, gives everyone 4 dice, puts all the characters in the Safe Room and starts the 10-minute timer. RESET TABLE puts everything back where it was.
 
 ## How to play
 

@@ -15,7 +15,7 @@ import hashlib, json, math, random, shutil, time
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 
-VERSION = "1.0"   # Yavuz, 2026-10-26: "son versiyonu v1 olarak yap çünkü oyun tamamlandı"
+VERSION = "1.1"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table
 ROOT = Path(__file__).parent
 OUT = ROOT / "output"
 ASSETS = Path.home() / "Library/Tabletop Simulator/Mods/kingbound-realtime"
@@ -398,17 +398,22 @@ def loot_sheet():
     return rows
 
 
-# ------------------------------------------------------------------ player mats and the action chart
+# ------------------------------------------------------------------ player mats
 # Four boxes: dice, Loot, CARRIED (treasure not secured yet, §12) and POINTS (defeated monsters and
-# secured treasure: only this box counts at the end). Pixel spots for the pieces the tutorial places.
-MAT_W, MAT_H = 1100, 560
+# secured treasure: only this box counts at the end). Above them, what each action needs (§5): the
+# players sit on four sides of the table, so each reads the actions on their own mat instead of one
+# chart. Pixel spots for the pieces the tutorial places.
+MAT_W, MAT_H = 1100, 680
+BOX_Y = (180, 660)
 MAT_BOX = {"dice": (30, 320, "DICE", ""), "loot": (335, 545, "LOOT", ""),
            "carry": (560, 805, "CARRIED", "treasure, not secured"),
            "points": (820, 1070, "POINTS", "monsters, secured treasure")}
-DIE_PX = [(105, 255), (245, 255), (105, 435), (245, 435)]
-LOOT_PX = (440, 330)
-CARRY_PX = [(622, 245), (743, 245), (622, 358), (743, 358), (622, 471), (743, 471)]
-POINTS_PX = [(884, 245), (1006, 245), (884, 358), (1006, 358), (884, 471), (1006, 471)]
+MAT_ACTIONS = [("MOVE / OPEN", "move", 2), ("WEAK", "attack", 2), ("MEDIUM", "attack", 3), ("STRONG", "attack", 4),
+               ("TREASURE", "magic", 2), ("SECURE", None, 0)]
+DIE_PX = [(105, 375), (245, 375), (105, 555), (245, 555)]
+LOOT_PX = (440, 450)
+CARRY_PX = [(622, 365), (743, 365), (622, 478), (743, 478), (622, 591), (743, 591)]
+POINTS_PX = [(884, 365), (1006, 365), (884, 478), (1006, 478), (884, 591), (1006, 591)]
 
 
 def mat_img(color):
@@ -418,38 +423,24 @@ def mat_img(color):
     d.rectangle((0, 0, MAT_W, 78), fill=PIX[color])
     light = color in ("Yellow",)
     d.text((MAT_W / 2, 40), color.upper(), font=f(BLACK, 46), fill=INK if light else CREAM, anchor="mm")
+    slot = (MAT_W - 60) / len(MAT_ACTIONS)
+    for i, (name, kind, n) in enumerate(MAT_ACTIONS):
+        cx = 30 + slot * (i + 0.5)
+        d.text((cx, 106), name, font=f(BOLD, 21), fill=INK, anchor="mm")
+        if kind:
+            sym_row(d, kind, n, cx, 143, 14)
+        else:
+            crown(d, cx - 52, 141, 13, GOLD)
+            d.text((cx - 32, 143), "in the Safe Room", font=f(REG, 17), fill=INK, anchor="lm")
+        if i:
+            d.line((30 + slot * i, 92, 30 + slot * i, 162), fill=(200, 184, 150), width=2)
     for key, (x0, x1, head, sub) in MAT_BOX.items():
         fill = {"carry": (242, 220, 196), "points": (226, 230, 196)}.get(key)
-        d.rounded_rectangle((x0, 100, x1, 540), 16, fill=fill, outline=(150, 130, 100), width=4)
-        d.text(((x0 + x1) / 2, 128), head, font=f(BOLD, 28), fill=(120, 100, 70), anchor="mm")
+        d.rounded_rectangle((x0, BOX_Y[0], x1, BOX_Y[1]), 16, fill=fill, outline=(150, 130, 100), width=4)
+        d.text(((x0 + x1) / 2, BOX_Y[0] + 28), head, font=f(BOLD, 28), fill=(120, 100, 70), anchor="mm")
         if sub:
-            d.text(((x0 + x1) / 2, 160), sub, font=fit(d, sub, REG, 20, x1 - x0 - 16), fill=(120, 100, 70), anchor="mm")
+            d.text(((x0 + x1) / 2, BOX_Y[0] + 60), sub, font=fit(d, sub, REG, 20, x1 - x0 - 16), fill=(120, 100, 70), anchor="mm")
     return save(im, f"mat-{color.lower()}.png")
-
-
-def chart_img():
-    """§5's table on the table: what each action needs, and securing treasure (§12)."""
-    w, h = 900, 900
-    im = Image.new("RGB", (w, h), PAPER)
-    d = ImageDraw.Draw(im)
-    d.rectangle((0, 0, w - 1, h - 1), outline=GOLD, width=14)
-    d.text((w / 2, 52), "ACTIONS", font=f(BLACK, 54), fill=INK, anchor="mm")
-    rows = [("Move to a room", "move", 2), ("Reveal a new room", "move", 2), ("Weak monster", "attack", 2),
-            ("Medium monster", "attack", 3), ("Strong monster", "attack", 4), ("Collect treasure", "magic", 2),
-            ("Secure treasure", None, 0)]
-    y = 128
-    for name, k, n in rows:
-        d.text((40, y), name, font=f(BOLD, 36), fill=INK, anchor="lm")
-        if k:
-            sym_row(d, k, n, 690, y, 32)
-        else:
-            crown(d, 488, y - 2, 24, GOLD)
-            d.text((524, y), "in the Safe Room, no dice", font=fit(d, "in the Safe Room, no dice", REG, 30, 340), fill=INK, anchor="lm")
-        d.line((30, y + 46, w - 30, y + 46), fill=(200, 184, 150), width=2)
-        y += 92
-    d.text((w / 2, h - 108), "Not there yet? Reroll any dice, as often as you want.", font=f(REG, 27), fill=INK, anchor="mm")
-    d.text((w / 2, h - 62), "Only POINTS count at the end: monsters and secured treasure.", font=f(BOLD, 26), fill=INK, anchor="mm")
-    return save(im, "chart.png")
 
 
 def title_img():
@@ -470,7 +461,6 @@ ROOM_BACK = room_back()
 LOOT_ROWS = loot_sheet()
 for c in COLORS:
     mat_img(c)
-chart_img()
 title_img()
 RUBBLE = rubble_img()
 TOKEN_IMG = {}
@@ -624,23 +614,37 @@ def tile(fn, transform, nick, back=None, circle=False, thick=0.12, desc="", **kw
                                                                "Stackable": False, "Stretch": stretch}}, **kw)
 
 
-# Table layout (table units). The camera looks from the south (bottom of the screen), so everything
-# faces south and every player's mat sits in one row along the bottom edge, readable on video.
-# Table_RPG's felt ends near x = ±28 and z = ±18.3 (measured on SHOWDOWN and v0.1): five 10-wide mats fit.
+# Table layout (table units). The players sit around the table, each mat on its own side, facing the
+# player who sits there (Yavuz, 2026-10-26: "her oyuncunun kartı tek kişiye dönük, 4 kişi oynamak üzere
+# yeniden düzenle"; before, all five mats lay along the south edge for the video). TTS seats Red on
+# the south side of Table_RPG, Yellow west, Green north and Blue east (measured on The Limit); Purple,
+# for a fifth player, lies next to Red. rot is the mat's Y rotation: 180 reads from the south, 0 from
+# the north, 270 from the west, 90 from the east. The felt ends near x = ±28.3 and z = ±18.3.
 GRID = 3.7            # room spacing; rooms are 3.6 wide
-DUNGEON = (0.0, 3.0)  # the Safe Room
+DUNGEON = (0.0, 0.0)  # the Safe Room, in the middle of the table
 ROOM_S = 1.8
-STACK = (-15.5, 8.0)  # face-down room stack
-RUBBLE_POS = (-19.9, 8.0)
-MON_PILE, TRE_PILE = (13.5, 10.0), (17.5, 10.0)
-LOOT_POS = (21.5, 10.0)
-CHART_POS = (-16.5, 0.5)
-TITLE_POS = (0.0, 17.0)
-MAT_Z = -12.0
-MAT_X = {"Red": -22.0, "Yellow": -11.0, "Green": 0.0, "Blue": 11.0, "Purple": 22.0}
 MAT_SIZE = (10.0, round(10.0 * MAT_H / MAT_W, 4))        # width, depth in table units
 MAT_S = MAT_SIZE[1] / 2                                    # Stretch on: depth = 2 x scale
-PAWN_HOME = {c: (MAT_X[c] - 3.6, MAT_Z + 3.4) for c in COLORS}   # just above the mat, clear of its dice box
+EDGE_Z, EDGE_X = round(18.2 - MAT_SIZE[1] / 2, 3), round(28.2 - MAT_SIZE[1] / 2, 3)   # mats against the felt's edge
+MATS = {"Red": (7.5, -EDGE_Z, 180), "Purple": (-7.5, -EDGE_Z, 180), "Green": (0.0, EDGE_Z, 0),
+        "Yellow": (-EDGE_X, 0.0, 270), "Blue": (EDGE_X, 0.0, 90)}
+
+
+def mat_world(color, px, py):
+    """A point of a mat's image (pixels) on the table. The image's right and down turn with the mat."""
+    cx, cz, rot = MATS[color]
+    u, v = (px / MAT_W - 0.5) * MAT_SIZE[0], (py / MAT_H - 0.5) * MAT_SIZE[1]
+    t = math.radians(rot)
+    return round(cx - u * math.cos(t) + v * math.sin(t), 3), round(cz + u * math.sin(t) + v * math.cos(t), 3)
+
+
+# The shared decks wait in the corners, clear of the mats and of the dungeon growing from the middle.
+STACK = (-13.5, 15.2)  # face-down room deck
+RUBBLE_POS = (-18.0, 15.6)
+MON_PILE, TRE_PILE = (11.5, 15.6), (14.6, 15.6)
+LOOT_POS = (18.6, 15.2)
+TITLE_POS = (-20.5, -15.4)
+PAWN_HOME = {c: mat_world(c, 70, -110) for c in COLORS}   # just inside the mat's top edge, towards the middle
 # Cards (measured live, 2026-10-25): a card cut from a square cell is 3.06 across at scale 1 and 0.027
 # thick; it lies at y 0.974 on the felt and at 1.001 on another card. Cards of different shapes (a
 # square room, a round token) never join into one deck, so a token can lie on a room card.
@@ -648,8 +652,6 @@ CARD_W = 3.06
 ROOM_CARD_S = round(3.6 / CARD_W, 4)     # a room: 3.6 across, on the 3.7 grid
 TOKEN_CARD_S = round(1.4 / CARD_W, 4)    # a token in a room's middle leaves space for five characters
 MAT_TOKEN_S = round(1.0 / CARD_W, 4)     # a token on a mat box (the tutorial)
-# The 20 dice wait in the supply until setup hands each player 4 (the tutorial's "deal" step).
-DICE_SUPPLY = [(round(11.4 + (k % 5) * 1.5, 2), round(2.2 + (k // 5) * 1.5, 2)) for k in range(4 * len(COLORS))]
 
 
 def cell_pos(c): return (round(DUNGEON[0] + c[0] * GRID, 3), round(DUNGEON[1] + c[1] * GRID, 3))
@@ -657,8 +659,7 @@ def cell_pos(c): return (round(DUNGEON[0] + c[0] * GRID, 3), round(DUNGEON[1] + 
 
 # Pieces players move are unlocked; the director locks them while it films (OPS.reset with stage).
 objs = []
-objs.append(tile("title.png", tr(*TITLE_POS, s=2.0, y=1.02), "Kingbound", thick=0.05, Tags=["title"]))
-objs.append(tile("chart.png", tr(*CHART_POS, s=3.9, y=1.02), "Actions (§5, §12)", thick=0.05, Tags=["chart"]))
+objs.append(tile("title.png", tr(*TITLE_POS, s=1.1, y=1.02), "Kingbound", thick=0.05, Tags=["title"]))
 objs.append(tile(ROOM_IMG[(0, 0)], tr(*cell_pos((0, 0)), s=ROOM_S, y=0.98), "Safe Room", back=ROOM_BACK,
                  desc="Start here. Bring your CARRIED treasure back here to secure it: move it to POINTS, no dice.",
                  Tooltip=True, Tags=["room", "saferoom"], GMNotes="0,0"))
@@ -737,13 +738,13 @@ objs.append(deck("Loot Deck", LOOT_POS, LOOT_KEY, LOOT_DECK, loot_cards, "lootde
 # Player mats, pawns (character tokens, §2.2) and 4 dice each (§2.3).
 DICE_IMG = url("dice.png")
 for c in COLORS:
-    mx = MAT_X[c]
-    objs.append(tile(f"mat-{c.lower()}.png", tr(mx, MAT_Z, s=MAT_S, y=1.02), f"{c} mat", thick=0.06,
+    mx, mz, rot = MATS[c]
+    objs.append(tile(f"mat-{c.lower()}.png", tr(mx, mz, rot_y=rot, s=MAT_S, y=1.02), f"{c} mat", thick=0.06,
                      Tags=["mat"], GMNotes=c))
     objs.append(base("PlayerPawn", tr(*PAWN_HOME[c], 0.0, s=1.1, y=1.6), f"{c} character", Locked=False,
                      ColorDiffuse={"r": RGB[c][0], "g": RGB[c][1], "b": RGB[c][2]}, Tags=["pawn"], GMNotes=c))
     for i in range(4):
-        objs.append(base("Custom_Dice", tr(*DICE_SUPPLY[COLORS.index(c) * 4 + i], 0.0, s=1.5, y=1.46), f"{c} die {i + 1}",
+        objs.append(base("Custom_Dice", tr(*mat_world(c, *DIE_PX[i]), rot, s=1.5, y=1.46), f"{c} die {i + 1}",
                          Locked=False, ColorDiffuse={"r": 1.0, "g": 1.0, "b": 1.0},
                          CustomImage={"ImageURL": DICE_IMG, "ImageSecondaryURL": "", "ImageScalar": 1.0,
                                       "WidthScale": 0.0, "CustomDice": {"Type": 1}},
@@ -762,7 +763,7 @@ LAYOUT = {"icons": {"M": url("icon-move.png"), "A": url("icon-attack.png"), "G":
           "deck_pos": {"room": STACK, "monster": MON_PILE, "treasure": TRE_PILE, "rubble": RUBBLE_POS, "loot": LOOT_POS},
           "deck_s": {"room": ROOM_CARD_S, "monster": TOKEN_CARD_S, "treasure": TOKEN_CARD_S, "rubble": TOKEN_CARD_S, "loot": 0.75},
           "mat_tok_s": MAT_TOKEN_S,
-          "colors": COLORS, "mat_z": MAT_Z, "mat_x": MAT_X, "mat_size": MAT_SIZE, "mat_px": (MAT_W, MAT_H),
+          "colors": COLORS, "mats": MATS, "mat_size": MAT_SIZE, "mat_px": (MAT_W, MAT_H),
           "die_px": DIE_PX, "loot_px": LOOT_PX, "carry_px": CARRY_PX, "points_px": POINTS_PX,
           "pawn_home": PAWN_HOME, "faces": DIE_FACES, "game_secs": 600,
           "points": {**{f"m-{k}": v[1] for k, v in MONSTERS.items()}, **{f"t-{k}": v[0] for k, v in TREASURES.items()}}}

@@ -1,5 +1,11 @@
 # Changelog
 
+## v1.1 (2026-10-26)
+
+- Every player's mat lies on their own side of the table and faces them: Red in the south, Yellow in the west, Green in the north, Blue in the east, Purple next to Red. The dungeon grows from the middle of the table.
+- Each mat shows what each action needs, so the shared action chart is gone.
+- Each player's dice start on their mat.
+
 ## v1.0 (2026-10-26)
 
 The finished game: a real-time dungeon race for 3 to 5 players in Tabletop Simulator, 10 minutes long.
