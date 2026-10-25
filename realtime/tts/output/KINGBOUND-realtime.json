@@ -1,7 +1,7 @@
 {
  "SaveName": "KINGBOUND-realtime",
- "EpochTime": 1792965368,
- "Date": "10/26/2026 12:56:08 AM",
+ "EpochTime": 1792965409,
+ "Date": "10/26/2026 12:56:49 AM",
  "VersionNumber": "v14.2.2",
  "GameMode": "Kingbound",
  "Tags": [],
@@ -46,7 +46,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/title.5f80afb7b1.png",
+    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/title.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3190,7 +3190,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-red.3b910b5667.png",
+    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-red.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3437,7 +3437,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-yellow.3f1dfdc10f.png",
+    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-yellow.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3684,7 +3684,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-green.e8a4e05173.png",
+    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-green.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3931,7 +3931,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-blue.1069b3beb3.png",
+    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-blue.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -4178,7 +4178,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-purple.4daf45597f.png",
+    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-purple.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,

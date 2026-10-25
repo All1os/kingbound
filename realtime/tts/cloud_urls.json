@@ -1,24 +1,4 @@
 {
- "mat-blue.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/10795587603105060893/C8D07E357B8E4FD3D06496FBE078FC67AF27EEA5/",
-  "sha1": "c8d07e357b8e4fd3d06496fbe078fc67af27eea5"
- },
- "mat-green.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/17583267102987203309/A99683BB58261ECB24EDEB51FAC7D54C152B2A1D/",
-  "sha1": "a99683bb58261ecb24edeb51fac7d54c152b2a1d"
- },
- "mat-purple.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/9245668513045073575/3AD058265DF6EC06E4E7FF79C33D78699C3CDC18/",
-  "sha1": "3ad058265df6ec06e4e7ff79c33d78699c3cdc18"
- },
- "mat-red.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/11011292902371579170/15E095DEA87DFD8DCD09617FF05BAC8A2A5F06AA/",
-  "sha1": "15e095dea87dfd8dcd09617ff05bac8a2a5f06aa"
- },
- "mat-yellow.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/15083542332630577410/46133851BE8F5775166B0F4A07EAFD0F60CC28F3/",
-  "sha1": "46133851be8f5775166b0f4a07eafd0f60cc28f3"
- },
  "icon-move.png": {
   "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-move.png",
   "sha1": "0c7f94d2cbd63a9e5c15c95d7c81fd6b2de67629"
@@ -30,10 +10,6 @@
  "icon-magic.png": {
   "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-magic.png",
   "sha1": "14c6d48eecfc0f321557e58c519a21ada1a94700"
- },
- "chart.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/15880866809270505020/07E24CD8882F6B2CAB7AFCBF4A5196265E83088B/",
-  "sha1": "07e24cd8882f6b2cab7afcbf4a5196265e83088b"
  },
  "dice.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/13977810175204459767/358A846AC6969FDB9571FF767753E6AF821847B4/",
@@ -151,10 +127,6 @@
   "url": "https://steamusercontent-a.akamaihd.net/ugc/17955548579881616781/8EA6D8BD6C0967752A9B61906173CD1100A2AE9A/",
   "sha1": "8ea6d8bd6c0967752a9b61906173cd1100a2ae9a"
  },
- "title.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/13150897305889550319/92E0254AF1947F6A5990E444B2D826352A67DFB8/",
-  "sha1": "92e0254af1947f6a5990e444b2d826352a67dfb8"
- },
  "tre-back.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
   "sha1": "b0fba9553d584933739fbf116eebe1a778afbbc6"
@@ -186,5 +158,29 @@
  "tre-sheet.png": {
   "url": "https://steamusercontent-a.akamaihd.net/ugc/12675372194134376651/CA7F76B126F1E8BA160B024D71AC1B4A9EED21F1/",
   "sha1": "ca7f76b126f1e8ba160b024d71ac1b4a9eed21f1"
+ },
+ "mat-blue.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-blue.png",
+  "sha1": "1069b3beb3b9013db291612a6bc38ae3900cc5f5"
+ },
+ "mat-green.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-green.png",
+  "sha1": "e8a4e051736c632f9978aefb5e35805242ba2a45"
+ },
+ "mat-purple.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-purple.png",
+  "sha1": "4daf45597fe53f9ff51f79d6d5d25ae67ee0da4e"
+ },
+ "mat-red.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-red.png",
+  "sha1": "3b910b56677c0c9efb2d1e40a2b9d1cf3248f4c3"
+ },
+ "mat-yellow.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-yellow.png",
+  "sha1": "3f1dfdc10feb36fe1be6067d1bdc8cad2bacfe49"
+ },
+ "title.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/title.png",
+  "sha1": "5f80afb7b117d41d05239baa1c3b998e0e6712c6"
  }
 }
