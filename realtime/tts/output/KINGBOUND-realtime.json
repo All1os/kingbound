@@ -1,7 +1,7 @@
 {
  "SaveName": "KINGBOUND-realtime",
- "EpochTime": 1792965409,
- "Date": "10/26/2026 12:56:49 AM",
+ "EpochTime": 1792966285,
+ "Date": "10/26/2026 01:11:25 AM",
  "VersionNumber": "v14.2.2",
  "GameMode": "Kingbound",
  "Tags": [],
@@ -46,7 +46,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/title.png",
+    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/12560499910130474667/5F80AFB7B117D41D05239BAA1C3B998E0E6712C6/",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3190,7 +3190,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-red.png",
+    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/12468889598646997519/3B910B56677C0C9EFB2D1E40A2B9D1CF3248F4C3/",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3437,7 +3437,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-yellow.png",
+    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/13078365279045818181/3F1DFDC10FEB36FE1BE6067D1BDC8CAD2BACFE49/",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3684,7 +3684,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-green.png",
+    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/13924971329434391433/E8A4E051736C632F9978AEFB5E35805242BA2A45/",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3931,7 +3931,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-blue.png",
+    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/16250804062149598698/1069B3BEB3B9013DB291612A6BC38AE3900CC5F5/",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -4178,7 +4178,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/ff758b599faf8a4a3bf564780b43e91d4f598455/realtime/tts/output/mat-purple.png",
+    "ImageURL": "https://steamusercontent-a.akamaihd.net/ugc/11312347833097100106/4DAF45597FE53F9FF51F79D6D5D25AE67EE0DA4E/",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,

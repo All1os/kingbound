@@ -64,8 +64,10 @@ def main():
             continue
         theirs = dict(strings(s))
         for p, v in strings(o):
-            if v.startswith(str(ASSETS)) and theirs.get(p, "").startswith("http"):
-                cloud_of[v] = theirs[p]
+            t = theirs.get(p, "")
+            # A local image, or one served from this repository, that is on the Steam Cloud now.
+            if t.startswith("http") and t != v and (v.startswith(str(ASSETS)) or "githubusercontent" in v):
+                cloud_of[v] = t
     # Start from what is already on the cloud: an image whose file hasn't changed keeps its URL (the build
     # wrote that URL, so the comparison above only finds the images that were local; 2026-10-25 a rerun
     # without this kept only the new ones).
@@ -73,7 +75,7 @@ def main():
     out = {fn: c for fn, c in old.items()
            if (OUT / fn).exists() and hashlib.sha1((OUT / fn).read_bytes()).hexdigest() == c["sha1"]}
     for local, cloud in sorted(cloud_of.items()):
-        fn = re.sub(r"\.[0-9a-f]{10}\.png$", ".png", Path(local).name)
+        fn = re.sub(r"\.[0-9a-f]{10}\.png$", ".png", Path(local).name) if local.startswith(str(ASSETS)) else local.rsplit("/", 1)[1]
         out[fn] = {"url": cloud, "sha1": hashlib.sha1((OUT / fn).read_bytes()).hexdigest()}
     if a.icons:
         for fn in ("icon-move.png", "icon-attack.png", "icon-magic.png"):
