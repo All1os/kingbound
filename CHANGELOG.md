@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Every mat is a seat: in an online game each player picks Red, Yellow, Green, Blue or Purple and sits at their own mat.
+- ROLL DICE at the top left rolls all 4 of your dice at once.
+
 ## v1.1 (2026-10-26)
 
 - Every player's mat lies on their own side of the table and faces them: Red in the south, Yellow in the west, Green in the north, Blue in the east, Purple next to Red. The dungeon grows from the middle of the table.

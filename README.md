@@ -12,11 +12,11 @@ You can also download `KINGBOUND-realtime.json` from the [latest release](https:
 
 ## Starting a game
 
-Sit at Red, Yellow, Green, Blue or Purple. Each player's mat lies on their own side of the table: Red in the south, Yellow in the west, Green in the north, Blue in the east, and Purple next to Red for a fifth player. The top of the mat shows what each action needs. Press START GAME at the top left of the screen. It shuffles the decks, gives everyone 4 dice, puts all the characters in the Safe Room and starts the 10-minute timer. RESET TABLE puts everything back where it was.
+Sit at Red, Yellow, Green, Blue or Purple: pick the colour when you join, or later by clicking your name at the top right and choosing Change Color. Each player's mat lies on their own side of the table: Red in the south, Yellow in the west, Green in the north, Blue in the east, and Purple next to Red for a fifth player. The top of the mat shows what each action needs. Press START GAME at the top left of the screen. It shuffles the decks, gives everyone 4 dice, puts all the characters in the Safe Room and starts the 10-minute timer. RESET TABLE puts everything back where it was.
 
 ## How to play
 
-Each die shows Movement (green), Attack (red) or Magic (blue). Roll whenever you want, keep the dice you need and reroll the rest as often as you like. When you have the symbols for an action, do it.
+Each die shows Movement (green), Attack (red) or Magic (blue). Roll whenever you want: ROLL DICE at the top left rolls all 4 of your dice at once. Keep the dice you need and reroll the rest as often as you like; to roll a single die, point at it and press R. When you have the symbols for an action, do it.
 
 | Action | Dice |
 |---|---|

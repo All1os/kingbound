@@ -15,7 +15,8 @@ import hashlib, json, math, random, shutil, time
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-VERSION = "1.1"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table
+VERSION = "1.2"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table,
+                  # v1.2: a seat (hand zone) at every mat for online games, and ROLL DICE
 ROOT = Path(__file__).parent
 OUT = ROOT / "output"
 ASSETS = Path.home() / "Library/Tabletop Simulator/Mods/kingbound-realtime"
@@ -668,6 +669,17 @@ def mat_world(color, px, py):
     return round(cx - u * math.cos(t) + v * math.sin(t), 3), round(cz + u * math.sin(t) + v * math.cos(t), 3)
 
 
+# A hand zone at every mat, just off the table's edge behind it and turned to the middle. A hand zone is
+# what makes a colour a seat in TTS (it also sets where that player sits): v1.1 had none, so online nobody
+# could pick a mat's colour (Yavuz, 2026-10-26: "colorlar teamlar yok ... yapamıyoruz online olarak").
+# Table_RPG's own hands lie at z = ±21 and x = ±31, 11.8 x 9.2 x 4.9 (The Limit, SHOWDOWN).
+def hand_of(color):
+    x, z, rot = MATS[color]
+    if rot in (0, 180):   # a mat on the south or north edge
+        return x, math.copysign(21.0, z), (rot + 180) % 360
+    return math.copysign(31.0, x), z, (rot + 180) % 360
+
+
 # The shared decks wait in the corners, clear of the mats and of the dungeon growing from the middle.
 STACK = (-13.5, 15.2)  # face-down room deck
 RUBBLE_POS = (-18.0, 15.6)
@@ -771,6 +783,9 @@ for c in COLORS:
     mx, mz, rot = MATS[c]
     objs.append(tile(f"mat-{c.lower()}.png", tr(mx, mz, rot_y=rot, s=MAT_S, y=1.02), f"{c} mat", thick=0.06,
                      Tags=["mat"], GMNotes=c))
+    hx, hz, hrot = hand_of(c)
+    objs.append(base("HandTrigger", {"posX": hx, "posY": 4.8, "posZ": hz, "rotX": 0.0, "rotY": hrot, "rotZ": 0.0,
+                                     "scaleX": 11.8, "scaleY": 9.2, "scaleZ": 4.9}, FogColor=c))
     objs.append(base("PlayerPawn", tr(*PAWN_HOME[c], 0.0, s=1.1, y=1.6), f"{c} character", Locked=False,
                      ColorDiffuse={"r": RGB[c][0], "g": RGB[c][1], "b": RGB[c][2]}, Tags=["pawn"], GMNotes=c))
     for i in range(4):
@@ -822,9 +837,12 @@ XML = (
     '<Panel id="kbBanner" active="false" rectAlignment="MiddleCenter" offsetXY="0 120" width="1000" height="150" color="#000000D2">\n'
     '  <Text id="kbBannerText" fontSize="72" color="#D4AF4B" alignment="MiddleCenter"></Text>\n'
     '</Panel>\n'
-    # Two buttons under TTS's own toolbar at the top left (Yavuz, 2026-10-13: few buttons, and not over the toolbar).
+    # The buttons under TTS's own toolbar at the top left (Yavuz, 2026-10-13: few buttons, and not over the toolbar).
     '<Button id="kbStart" rectAlignment="UpperLeft" offsetXY="8 -410" width="150" height="34" fontSize="15" color="#5C2C7A" textColor="#F5ECD7" onClick="startGame">START GAME</Button>\n'
     '<Button id="kbReset" rectAlignment="UpperLeft" offsetXY="8 -450" width="150" height="34" fontSize="15" color="#3C2819" textColor="#F5ECD7" onClick="resetGame">RESET TABLE</Button>\n'
+    # ROLL DICE rolls the clicking player's own 4 dice (Yavuz, 2026-10-26: "4 zarın birden rollanması lazım").
+    # Pressed all game long, so it is bigger, gold, and kept apart from the two buttons that clear the table.
+    '<Button id="kbRoll" rectAlignment="UpperLeft" offsetXY="8 -520" width="150" height="48" fontSize="19" fontStyle="Bold" color="#D4AF4B" textColor="#1E1915" onClick="rollDice">ROLL DICE</Button>\n'
 )
 
 now = time.localtime()
@@ -833,7 +851,7 @@ save_json = {
     "VersionNumber": "v14.2.2", "GameMode": "Kingbound", "Tags": [], "Gravity": 0.5,
     "PlayArea": 0.5, "Table": "Table_RPG", "Sky": "Sky_Regal",
     "Note": "",
-    "Hands": {"Enable": False, "DisableUnused": False, "Hiding": 0},
+    "Hands": {"Enable": True, "DisableUnused": False, "Hiding": 0},
     "LuaScript": LUA, "LuaScriptState": "", "XmlUI": XML, "SnapPoints": [], "ObjectStates": objs,
 }
 (OUT / f"{SAVE_NAME}.json").write_text(json.dumps(save_json, indent=1, ensure_ascii=False))

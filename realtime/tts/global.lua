@@ -2,7 +2,8 @@
 
 Two jobs. For players: START GAME shuffles the decks (rooms, monster and treasure tokens, Loot), hands
 out the dice, puts the characters in the Safe Room and starts the 10-minute timer; RESET TABLE puts
-everything back. Everything else is done by hand, as on a real table.
+everything back; ROLL DICE rolls all four of the clicking player's dice. Everything else is done by
+hand, as on a real table.
 For the tutorial video: the director (../tutorial.py) decides everything in Python and sends "show
 this" commands through TTS's External Editor API; this script only moves pieces, rolls dice to the
 faces it is told, and draws the caption, the timer and the scores. Nothing here makes a game decision.
@@ -331,7 +332,7 @@ function OPS.shuffle(d)
 end
 
 function OPS.button(d)
-  for _, id in ipairs({"kbStart", "kbReset"}) do UI.setAttribute(id, "active", d.show and "true" or "false") end
+  for _, id in ipairs({"kbStart", "kbReset", "kbRoll"}) do UI.setAttribute(id, "active", d.show and "true" or "false") end
 end
 
 function OPS.spot(d)
@@ -370,6 +371,35 @@ end
 function OPS.keep(d)
   -- The dice that already show what the player needs glow in their colour.
   for _, i in ipairs(d.dice) do glow(dieOf(d.color, i), d.color, d.secs or 3) end
+end
+
+-- ROLL DICE: all four of the clicking player's dice at once (Yavuz, 2026-10-26: "4 zarın birden
+-- rollanması lazım"). The tutorial's jump with a random face: each die lands back on its own spot of
+-- the mat, so the dice never wander off it in a 10-minute game, and it is locked until it has landed
+-- so it can't tumble onto another face. To keep some dice, the others are still rolled by hand (R).
+ROLLING = {}
+function rollDice(player)
+  local color = player.color
+  if not L.mats[color] then
+    broadcastToColor("Sit at Red, Yellow, Green, Blue or Purple to roll your dice.", color, GOLDEN)
+    return
+  end
+  if ROLLING[color] then return end   -- a second click while the dice are in the air
+  ROLLING[color] = true
+  for i = 1, 4 do
+    local die = dieOf(color, i)
+    if die then
+      die.setLock(true)
+      rollOne(color, i, math.random(1, 6), (i - 1) * 0.04)
+    end
+  end
+  Wait.time(function()
+    for i = 1, 4 do
+      local die = dieOf(color, i)
+      if alive(die) then die.setLock(STAGED) end
+    end
+    ROLLING[color] = nil
+  end, 1.2)
 end
 
 -- ------------------------------------------------------------------ the dungeon (§6, §12)
@@ -479,6 +509,9 @@ function onLoad()
   end
   clearMats()
   for _, id in ipairs({"kbCaption", "kbScore", "kbBanner"}) do UI.setAttribute(id, "active", "false") end
+  -- ROLL DICE's faces come from math.random: seeded from the clock, so two games never roll alike.
+  local t = wall()
+  if t then math.randomseed(t) end
 end
 
 local function isMovable(o)
