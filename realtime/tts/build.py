@@ -818,7 +818,7 @@ XML = (
     + "\n".join(f'    <Image id="kbIcon{i}" active="false" preferredWidth="38" preferredHeight="38"></Image>' for i in range(1, 5))
     + '\n  </HorizontalLayout>\n</Panel>\n'
     # Scores at the end, top centre over the dungeon (the camera is on the mats then).
-    f'<Panel id="kbScore" active="false" rectAlignment="UpperCenter" offsetXY="0 -96" width="820" height="{40 + 50 * len(COLORS)}" color="#000000E6">\n'
+    f'<Panel id="kbScore" active="false" rectAlignment="UpperCenter" offsetXY="0 -96" width="820" height="{48 + 58 * len(COLORS)}" color="#000000E6">\n'
     '  <VerticalLayout padding="24 24 14 14" spacing="6">\n'
     + "\n".join(f'    <Text id="kbScore{i}" fontSize="30" fontStyle="Bold" color="#ECF0F2" alignment="MiddleLeft"></Text>' for i in range(1, len(COLORS) + 1))
     + '\n  </VerticalLayout>\n</Panel>\n'

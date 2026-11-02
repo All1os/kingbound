@@ -236,6 +236,8 @@ local function seated()
 end
 local function timeUp()
   OPS.banner({text = "TIME'S UP!"})
+  -- The banner lies over the results' list, so it goes after a moment (seen live 2026-11-03).
+  Wait.time(function() if TIMER.left <= 0 then OPS.banner({}) end end, 4)
   local lines = {}
   for _, color in ipairs(seated()) do
     local p = pawnOf(color)
@@ -518,7 +520,7 @@ local function showHP(o)
   o.setName(m.name .. " · " .. left .. "/" .. m.hp .. " HP")
   o.setDescription(L.mon_desc[k])
 end
-local function hit(color, o, n)
+function monsterHit(color, o, n)   -- global so the tests can call it
   local k = monKind(o)
   if not k or not alive(o) then return end
   local m = L.monsters[k]
@@ -537,14 +539,23 @@ local function addHitMenu(o)
   if o.type ~= "Card" or not monKind(o) then return end
   pcall(function()
     o.clearContextMenu()
-    o.addContextMenuItem("Hit (1 damage)", function(color, _, obj) hit(color, obj, 1) end)
-    o.addContextMenuItem("Undo hit", function(color, _, obj) hit(color, obj, -1) end)
+    o.addContextMenuItem("Hit (1 damage)", function(color, _, obj) monsterHit(color, obj, 1) end)
+    o.addContextMenuItem("Undo hit", function(color, _, obj) monsterHit(color, obj, -1) end)
   end)
   if not o.is_face_down then showHP(o) end
 end
 function onObjectLeaveContainer(container, o)
-  -- A monster token taken from its deck: full HP and the Hit menu (the card only exists once it is out).
-  Wait.frames(function() if alive(o) then addHitMenu(o) end end, 1)
+  -- A monster token taken from its deck: full HP and the Hit menu (the card only exists once it is out). A
+  -- token that was beaten and went back keeps its name and maybe its GUID, so both are cleared here.
+  Wait.frames(function()
+    if not alive(o) then return end
+    local k = monKind(o)
+    if k then
+      DMG[o.getGUID()] = nil
+      o.setName(L.monsters[k].name)
+    end
+    addHitMenu(o)
+  end, 1)
 end
 
 -- ------------------------------------------------------------------ the two rounds (GDD 11-02 §4, §5, §10)
@@ -657,7 +668,10 @@ function onObjectDrop(color, o)
       local a, b = o.getPosition(), r.getPosition()
       if math.abs(a.x - b.x) < L.grid / 2 and math.abs(a.z - b.z) < L.grid / 2 then
         if ROUND ~= 2 then
-          broadcastToColor("Objects are placed in round 2. Keep it until then.", color, GOLDEN)
+          -- To one player if they are seated; broadcastToColor stops the script for an empty colour (seen live 2026-11-03).
+          if not pcall(broadcastToColor, "Objects are placed in round 2. Keep it until then.", color, GOLDEN) then
+            broadcastToAll("Objects are placed in round 2.", GOLDEN)
+          end
           return
         end
         o.setLock(true)

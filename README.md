@@ -2,6 +2,8 @@
 
 NULLWAKE (until v2.0 called Kingbound) is a real-time race for 3 to 5 players, played in Tabletop Simulator. An expedition explores ORPHEON, an abandoned research station: unknown creatures live in its rooms, and valuable discoveries are left behind. There are no turns. For 10 minutes everyone rolls their dice at the same time, opens new sectors, fights creatures and collects treasure. In round 1 you collect points; in round 2 the station starts to collapse and you have to escape. Only the players who escape keep their points.
 
+![A game of NULLWAKE in Tabletop Simulator: round 2, Rockfall has blocked three empty rooms](realtime/workshop/dungeon.jpg)
+
 ## Getting the game
 
 Subscribe to [the game on the Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3827233466). In Tabletop Simulator it is then under Games → Workshop.
