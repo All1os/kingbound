@@ -1,154 +1,86 @@
 {
- "icon-move.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-move.png",
-  "sha1": "0c7f94d2cbd63a9e5c15c95d7c81fd6b2de67629"
- },
- "icon-attack.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-attack.png",
-  "sha1": "a651c8a9b1650ffc75cf4fdf03d2d56f144db10f"
- },
- "icon-magic.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-magic.png",
-  "sha1": "14c6d48eecfc0f321557e58c519a21ada1a94700"
- },
  "dice.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/13977810175204459767/358A846AC6969FDB9571FF767753E6AF821847B4/",
-  "sha1": "358a846ac6969fdb9571ff767753e6af821847b4"
- },
- "mon-back.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/17274222887244498455/9D39BA7E81870B9B9F9B75ADCD842F2AFA1D300B/",
-  "sha1": "9d39ba7e81870b9b9f9b75adcd842f2afa1d300b"
- },
- "mon-medium.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/17356075591333272029/0CA76302371AC275AB5F46BCBA7244ECB115E7F4/",
-  "sha1": "0ca76302371ac275ab5f46bcba7244ecb115e7f4"
- },
- "mon-strong.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/13169326221914930537/4FEA473818E34133BCD214A117DC1C95F34FF967/",
-  "sha1": "4fea473818e34133bcd214a117dc1c95f34ff967"
- },
- "mon-weak.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/14616847569944269177/60C7E5AF21F57A57B8BF9F575005B80AB6770D01/",
-  "sha1": "60c7e5af21f57a57b8bf9f575005b80ab6770d01"
- },
- "room-back.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/15228657516154978639/8581B4400C52CF5970DC439AE12D115D9197ED75/",
-  "sha1": "8581b4400c52cf5970dc439ae12d115d9197ed75"
- },
- "room-empty-ENS.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/15525864622811056270/46A96095CB3362AF9D45E4A7315171B17BAEB075/",
-  "sha1": "46a96095cb3362af9d45e4a7315171b17baeb075"
- },
- "room-empty-ENSW.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/17461969487618490844/E9816F9F7EA46439535E42B7B954B3A66A4D38A6/",
-  "sha1": "e9816f9f7ea46439535e42b7b954b3a66a4d38a6"
- },
- "room-empty-ESW.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/12713103311538068728/92F83173C88F400F5FF6DEA9BF43DC185E7C42B4/",
-  "sha1": "92f83173c88f400f5ff6dea9bf43dc185e7c42b4"
- },
- "room-empty-NS.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/14154182221799599558/130EA4F4CFA3C8BAB7ABAAAF4F5D1490C4325750/",
-  "sha1": "130ea4f4cfa3c8bab7abaaaf4f5d1490c4325750"
- },
- "room-empty-SW.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/17458936443526363697/A47D95A3879A518428045039E6F296E1871D1627/",
-  "sha1": "a47d95a3879a518428045039e6f296e1871d1627"
- },
- "room-monster-ENSW.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/10038606544678338759/D27AC2D9ACB51C6C00C1D3D38B68B54A9E2E8321/",
-  "sha1": "d27ac2d9acb51c6c00c1d3d38b68b54a9e2e8321"
- },
- "room-monster-ENW.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/17590043328423286148/EDAD858E99DE2C1F57CEEFAED1F421330A32D01E/",
-  "sha1": "edad858e99de2c1f57ceefaed1f421330a32d01e"
- },
- "room-monster-ESW.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/10530369989781687478/409F2134446BDBBBB3516BDE5AE852D19181B5F9/",
-  "sha1": "409f2134446bdbbbb3516bde5ae852d19181b5f9"
- },
- "room-monster-S.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/14516073425760204307/7A665EF8FB222DC2AD6CD2BC588D052A001FF3DB/",
-  "sha1": "7a665ef8fb222dc2ad6cd2bc588d052a001ff3db"
- },
- "room-safe-ENSW.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/11524633314482592381/15D2264DF8B7436E66487F19E5566BA1D8C5C4D1/",
-  "sha1": "15d2264df8b7436e66487f19e5566ba1d8c5c4d1"
- },
- "room-treasure-ENSW.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/15296639170640007753/070296B78024E547906CACBB6E8A7929B497425E/",
-  "sha1": "070296b78024e547906cacbb6e8a7929b497425e"
- },
- "room-treasure-ENW.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/9846949821669086373/7B228228F2D97DACC19A787B0BDDEE1260E47986/",
-  "sha1": "7b228228f2d97dacc19a787b0bddee1260e47986"
- },
- "room-treasure-NW.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/15046843807112451545/EA9F470A6C80B5FA4C4D19026F3E9F41DB685F2E/",
-  "sha1": "ea9f470a6c80b5fa4c4d19026f3e9f41db685f2e"
- },
- "room-treasure-SW.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/16636683963914499038/C15A4E109FFCFAE952C14EF601A11F5E2586059E/",
-  "sha1": "c15a4e109ffcfae952c14ef601a11f5e2586059e"
- },
- "tre-back.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/14767711647463194058/B0FBA9553D584933739FBF116EEBE1A778AFBBC6/",
-  "sha1": "b0fba9553d584933739fbf116eebe1a778afbbc6"
- },
- "mon-sheet.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/18236869284338647360/D69AE4C94F3111A4F6B2692086D688D02A040BCC/",
-  "sha1": "d69ae4c94f3111a4f6b2692086d688d02a040bcc"
- },
- "title.png": {
-  "url": "https://steamusercontent-a.akamaihd.net/ugc/12560499910130474667/5F80AFB7B117D41D05239BAA1C3B998E0E6712C6/",
-  "sha1": "5f80afb7b117d41d05239baa1c3b998e0e6712c6"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/dice.png",
+  "sha1": "9938e35e0eb336934722046e30ae1e2a85192288"
  },
  "event-back.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/de21863/realtime/tts/output/event-back.png",
-  "sha1": "5a8ebe9ad4e67db01b3dd460f565e358ebb1efba"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
+  "sha1": "565bfa3c1ea30973bdec75ec079a1ca49bfa6eb4"
  },
  "event-sheet.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/de21863/realtime/tts/output/event-sheet.png",
-  "sha1": "f1a0382f04396e0e9bb882ad5210c187c8544d30"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-sheet.png",
+  "sha1": "8d54184490093d449bc81ea4e48490c9e878cece"
  },
  "mat-blue.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/de21863/realtime/tts/output/mat-blue.png",
-  "sha1": "53cf78886fcc8cbfb9ec0066002f9111ff11fbc7"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/mat-blue.png",
+  "sha1": "3f89d52ddc48e07d536e79cb84a05fe0a0d04d72"
  },
  "mat-green.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/de21863/realtime/tts/output/mat-green.png",
-  "sha1": "3fb4658f9983659d6682895139611f5d5e140706"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/mat-green.png",
+  "sha1": "01d495614c1d4555a4b7d9d80221c14fc9146ee9"
  },
  "mat-purple.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/de21863/realtime/tts/output/mat-purple.png",
-  "sha1": "d8d7ab11d41a7700710797f397f179c925379be8"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/mat-purple.png",
+  "sha1": "7189fe192b651bed6943d957dc25742eed912833"
  },
  "mat-red.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/de21863/realtime/tts/output/mat-red.png",
-  "sha1": "530e0f097095fe100d59f5f64754726dda240178"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/mat-red.png",
+  "sha1": "134801034f6eae884581e634b1793b12ce0a34fb"
  },
  "mat-yellow.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/de21863/realtime/tts/output/mat-yellow.png",
-  "sha1": "66e8144b4652c6c9bc43fd1b7e37c2054ab8010f"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/mat-yellow.png",
+  "sha1": "9cb23e45467e7d9a41ae4f090e37c73e8a404edb"
  },
- "mon-awakened.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/de21863/realtime/tts/output/mon-awakened.png",
-  "sha1": "9fc17b4d3036f0c33cfdaa91412df0e998301084"
+ "mon-back.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/mon-back.png",
+  "sha1": "61bcc34f9674fb30bab9cb81fe6c9a2a6eb8137d"
+ },
+ "mon-sheet.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/mon-sheet.png",
+  "sha1": "b941b051b65cbe62053c4119f96c7b4091261a10"
+ },
+ "room-back.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/room-back.png",
+  "sha1": "c5b5c6fae7fc13e3a6d2c42cb366d466d1a5662b"
+ },
+ "room-safe-ENSW.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/room-safe-ENSW.png",
+  "sha1": "769fe0dca57d46d64947ec44773cb04f20665122"
  },
  "room-sheet.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/de21863/realtime/tts/output/room-sheet.png",
-  "sha1": "3d75aa557d27f8377577e853050a5c71f6534676"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/room-sheet.png",
+  "sha1": "ce2d552a445a697d8d338484ae099915c01ecad1"
  },
  "rubble-sheet.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/de21863/realtime/tts/output/rubble-sheet.png",
-  "sha1": "2710c741bfeafe527308c345cacb177b354393af"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/rubble-sheet.png",
+  "sha1": "adbe1c71667152396b73e70453483115579fe988"
  },
  "rubble.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/de21863/realtime/tts/output/rubble.png",
-  "sha1": "e87ace7ce056fe3fce7eacdb1bc794b7fc2f7d89"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/rubble.png",
+  "sha1": "7d22c2b4e515f311da2e9284b8301cfa29d6e2ae"
+ },
+ "title.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/title.png",
+  "sha1": "3409123e744ae14d2ec89055145d2556e1346c12"
+ },
+ "tre-back.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
+  "sha1": "650448f2cbbaea0670805327aa44a8b0ff293285"
  },
  "tre-sheet.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/de21863/realtime/tts/output/tre-sheet.png",
-  "sha1": "f34fad82acf8e0ebf846887097b79c08d19f52cd"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
+  "sha1": "7f7682298f97bcdb7114e06a7f3585a3b14f6d4b"
+ },
+ "icon-move.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/icon-move.png",
+  "sha1": "c48ec6ff41ea5f0a2314098c211a23036d8bf34a"
+ },
+ "icon-attack.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/icon-attack.png",
+  "sha1": "9ae3b349c90b86e87ee384d342052327f1a6374e"
+ },
+ "icon-magic.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/icon-magic.png",
+  "sha1": "18e12e9d3b4b670397448177cc588c74137a6467"
  }
 }
