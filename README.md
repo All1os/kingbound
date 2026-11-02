@@ -2,7 +2,7 @@
 
 Kingbound is a real-time dungeon race for 3 to 5 players, played in Tabletop Simulator. There are no turns. For 10 minutes everyone rolls their dice at the same time, opens new rooms, fights monsters and grabs treasure. The game has two rounds: in the first you collect points, in the second an event threatens the dungeon and you have to escape to the Safe Room with what you carry. When the timer runs out, the player with the most points wins.
 
-![A game of Kingbound in Tabletop Simulator](realtime/workshop/table.jpg)
+![A game of Kingbound in Tabletop Simulator: round 2, three rooms closed by the Dungeon Collapse](realtime/workshop/dungeon.jpg)
 
 ## Getting the game
 
@@ -30,8 +30,6 @@ Each die shows Movement (green), Attack (red) or Magic (blue). Roll whenever you
 | Place an object, standing in the special objects room | none |
 
 To open a room, take the top card of the room deck, flip it and lay it next to the room you are in so that the passages connect. If it is a monster room or a treasure room, put the top card of that token deck face up on it. You fight a monster or take a treasure in its own room.
-
-![Rooms, tokens and characters around the Safe Room](realtime/workshop/dungeon.jpg)
 
 A beaten monster goes straight to the POINTS box on your mat. A treasure goes to the CARRIED box first. It counts only after you bring it back to the Safe Room and move it to POINTS.
 
