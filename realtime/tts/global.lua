@@ -1,16 +1,20 @@
 --[[ Kingbound real-time prototype: Global script (build.py fills in the __PLACEHOLDERS__).
 
-Two jobs. For players: START GAME shuffles the decks (rooms, monster and treasure tokens, Loot), hands
-out the dice, puts the characters in the Safe Room and starts the 10-minute timer; RESET TABLE puts
-everything back; ROLL DICE rolls all four of the clicking player's dice. Everything else is done by
-hand, as on a real table.
+Rules: the team's GDD of 2026-11-02 (see build.py's header for where each detail comes from).
+For players: START GAME shuffles the decks (rooms, monster and treasure tokens, events), hands out the dice,
+puts the characters in the Safe Room and starts the 10-minute timer: round 1, then at 5:00 round 2, which
+turns up an event card and does what it says (destruction tokens on rooms, or the awakened monster and its
+chase). RESET TABLE puts everything back; ROLL DICE rolls all four of the clicking player's dice. An object
+dropped on the special objects room is placed there for the player who dropped it. Everything else is done
+by hand, as on a real table.
 For the tutorial video: the director (../tutorial.py) decides everything in Python and sends "show
 this" commands through TTS's External Editor API; this script only moves pieces, rolls dice to the
-faces it is told, and draws the caption, the timer and the scores. Nothing here makes a game decision.
+faces it is told, and draws the caption, the timer and the scores.
 
-Rooms, tokens, rubble and Loot are cards in five decks. A card's GM Notes say what it is: a room its
-dungeon cell ("x,z") or "spareN", a token its ID (m-weak-1, t-rare-2 ...), rubble "rubble-n", Loot its
-ID (L1-L5, Prank cards P1-P4). Dice hold "Color:n"; pawns and mats their colour; the Safe Room tile "0,0".
+Rooms, tokens, destruction tokens and events are cards in five decks. A card's GM Notes say what it is: a
+room its dungeon cell ("x,z"), "spareN" or "special" (the special objects room), a token its ID (m-weak-1,
+t-rare-2, o-1 ...), a destruction token "rubble-n", an event E1-E4. Dice hold "Color:n"; pawns and mats
+their colour; the Safe Room tile "0,0"; the awakened monster is a tile tagged "awake".
 ]]
 KB_VERSION = "__VERSION__"
 L = JSON.decode([==[__LAYOUT__]==])
@@ -58,11 +62,11 @@ end
 -- Which deck a card belongs to, from its GM Notes.
 local function kindOf(n)
   if n == nil or n == "" then return nil end
-  if n:match("^%-?%d+,%-?%d+$") or n:match("^spare") then return "room" end
+  if n:match("^%-?%d+,%-?%d+$") or n:match("^spare") or n == "special" then return "room" end
   if n:sub(1, 2) == "m-" then return "monster" end
-  if n:sub(1, 2) == "t-" then return "treasure" end
+  if n:sub(1, 2) == "t-" or n:sub(1, 2) == "o-" then return "treasure" end
   if n:sub(1, 7) == "rubble-" then return "rubble" end
-  if n:match("^[LP]%d$") then return "loot" end
+  if n:match("^E%d$") then return "event" end
 end
 
 -- Each kind's deck, remembered by GUID. A deck that is down to its last card stops being a deck (TTS
@@ -206,7 +210,7 @@ function OPS.score(d)
   end
 end
 
--- The 10-minute timer (§10). It never pauses in the game. In a real game (START GAME) it follows the
+-- The 10-minute timer (§10); round 2 starts at L.round2_at seconds left. It never pauses in the game. In a real game (START GAME) it follows the
 -- clock, so it can't drift; the director only speeds it up for the "a few minutes later" part of the
 -- video (rate = game seconds per real second).
 TIMER = {left = L.game_secs, rate = 1, token = 0, play = false, ends = nil}
@@ -219,13 +223,19 @@ local function showTime()
   UI.setValue("kbTimerText", string.format("%d:%02d", math.floor(s / 60), s % 60))
   UI.setAttribute("kbTimerText", "color", s <= 60 and "#FF6A5A" or "#F5ECD7")
 end
+ROUND, CHASE = 1, 0
+local round2
 local function timeUp()
+  CHASE = CHASE + 1
   OPS.banner({text = "TIME'S UP!"})
-  broadcastToAll("Time's up! Only the POINTS box counts: defeated monsters and secured treasure.", GOLDEN)
+  broadcastToAll("Time's up! Treasure still CARRIED is lost. Count your POINTS box: defeated monsters and every set of "
+    .. "one common, one rare and one special treasure (" .. L.set_points .. " points), plus " .. L.object_points
+    .. " points for each object you placed.", GOLDEN)
 end
 local function tick(token)
   if token ~= TIMER.token then return end
   if TIMER.ends then TIMER.left = TIMER.ends - wall() else TIMER.left = TIMER.left - 1 end
+  if TIMER.play and ROUND == 1 and TIMER.left <= L.round2_at then round2() end
   if TIMER.left <= 0 then
     TIMER.left = 0
     showTime()
@@ -481,17 +491,159 @@ function OPS.secure(d)
   CARRY[d.color] = {}
 end
 
-function OPS.loot(d)
-  -- Draw the Loot card with this ID (§9: special treasure) onto the mat's Loot box, face up.
-  local p = matPos(d.color, L.loot_px[1], L.loot_px[2])
-  takeCard(d.id, {x = p.x, y = 1.4, z = p.z}, function(card)
-    card.addTag("loot")
-    Wait.time(function() settle(card, {x = p.x, y = CARD_ON_MAT, z = p.z}, L.deck_s.loot, d.color, matRot(d.color)) end, 0.4)
-  end)
+-- ------------------------------------------------------------------ the two rounds (GDD 11-02 §4, §5, §10)
+-- The dungeon as it lies on the table: the Safe Room and every face-up room card on a dungeon cell, minus the
+-- rooms with a destruction token on them.
+local function key(c) return c[1] .. "," .. c[2] end
+local function cellAt(p)
+  local c = {math.floor((p.x - L.dungeon[1]) / L.grid + 0.5), math.floor((p.z - L.dungeon[2]) / L.grid + 0.5)}
+  local q = cellPos(c)
+  if math.abs(p.x - q.x) > L.grid / 2 or math.abs(p.z - q.z) > L.grid / 2 then return nil end
+  return c
+end
+local function openRooms()
+  local open, closed = {["0,0"] = {0, 0}}, {}
+  for _, o in ipairs(getObjects()) do
+    if o.type == "Card" and not o.is_face_down and not isMain(o) then
+      local k, c = kindOf(notes(o)), cellAt(o.getPosition())
+      if c and k == "room" then open[key(c)] = c end
+      if c and k == "rubble" then closed[key(c)] = true end
+    end
+  end
+  for k, _ in pairs(closed) do open[k] = nil end
+  return open
+end
+local function characterCells(open)
+  local out = {}
+  for _, color in ipairs(L.colors) do
+    local p = pawnOf(color)
+    local c = alive(p) and cellAt(p.getPosition())
+    if c and open[key(c)] then out[key(c)] = c end
+  end
+  return out
+end
+-- Open rooms other than the Safe Room with nobody in them, shuffled: where a destruction token or the
+-- awakened monster may go (a character is never shut in or landed on).
+local function emptyRooms()
+  local open = openRooms()
+  local taken, out = characterCells(open), {}
+  for k, c in pairs(open) do if k ~= "0,0" and not taken[k] then table.insert(out, c) end end
+  for i = #out, 2, -1 do local j = math.random(1, i) out[i], out[j] = out[j], out[i] end
+  return out
 end
 
-function OPS.glowloot(d)
-  for _, o in ipairs(getObjectsWithTag("loot")) do if o.type == "Card" then glow(o, d.color, d.secs or 3) end end
+local function closeRooms()
+  local rooms = emptyRooms()
+  for i = 1, math.min(L.close_rooms, #rooms) do
+    local p = cellPos(rooms[i])
+    Wait.time(function()
+      takeCard("rubble-" .. i, {x = p.x, y = 2.6, z = p.z}, function(card)
+        Wait.time(function() settle(card, {x = p.x, y = CARD_ON_CARD + 0.1, z = p.z}, L.deck_s.rubble, nil) end, 0.4)
+      end)
+    end, (i - 1) * 0.6)
+  end
+end
+
+-- The awakened monster's chase: every chase_secs it moves one room along the shortest way through open rooms
+-- to the nearest character outside the Safe Room. Rooms side by side count as joined: the script doesn't
+-- read passages (a room card may lie turned). It stays while someone is in its room, and the chase ends when
+-- it is no longer on the dungeon (beaten: on a mat) or the game ends.
+local DIRS = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
+local function nextStep(open, from, goal)
+  local prev, queue, head = {[key(from)] = false}, {from}, 1
+  while head <= #queue do
+    local c = queue[head]
+    head = head + 1
+    if goal[key(c)] then
+      while prev[key(c)] and key(prev[key(c)]) ~= key(from) do c = prev[key(c)] end
+      return c
+    end
+    for _, dv in ipairs(DIRS) do
+      local n = {c[1] + dv[1], c[2] + dv[2]}
+      local k = key(n)
+      if open[k] and k ~= "0,0" and prev[k] == nil then prev[k] = c table.insert(queue, n) end
+    end
+  end
+end
+local function awake() return getObjectsWithTag("awake")[1] end
+local function chase(token)
+  if token ~= CHASE then return end
+  local m = awake()
+  if not alive(m) then return end
+  local function again() Wait.time(function() chase(token) end, L.chase_secs) end
+  if m.held_by_color then again() return end
+  local open = openRooms()
+  local here = cellAt(m.getPosition())
+  if not here or not open[key(here)] then return end
+  local goal = characterCells(open)
+  goal["0,0"] = nil
+  if goal[key(here)] or next(goal) == nil then again() return end
+  local n = nextStep(open, here, goal)
+  if n then
+    local p = cellPos(n)
+    m.setPositionSmooth({x = p.x, y = 1.4, z = p.z}, false, false)
+    glow(m, nil, 2)
+  end
+  again()
+end
+local function awaken()
+  local rooms, m = emptyRooms(), awake()
+  if #rooms == 0 or not alive(m) then return end
+  local p = cellPos(rooms[1])
+  m.setRotation({x = 0, y = 180, z = 0})
+  m.setPositionSmooth({x = p.x, y = 1.8, z = p.z}, false, false)
+  glow(m, nil, 4)
+  CHASE = CHASE + 1
+  local token = CHASE
+  Wait.time(function() chase(token) end, L.chase_secs)
+end
+
+-- Round 2: the top event card turns up next to the event deck and its event happens.
+round2 = function()
+  ROUND = 2
+  UI.setValue("kbTimerLabel", "ROUND 2 · ESCAPE")
+  local function happen(card)
+    OPS.banner({text = "ROUND 2: ESCAPE!\n" .. card.getName():upper()})
+    broadcastToAll("Round 2: " .. card.getName() .. ". " .. card.getDescription()
+      .. " Get back to the Safe Room: treasure still CARRIED at 0:00 is lost.", GOLDEN)
+    if notes(card) == "E2" then awaken() else closeRooms() end
+    Wait.time(function() if ROUND == 2 and TIMER.left > 0 then OPS.banner({}) end end, 6)
+  end
+  local deck = mainDeck("event")
+  local p = {x = L.event_show[1], y = 1.6, z = L.event_show[2]}
+  if deck and deck.type == "Deck" then
+    deck.takeObject({position = p, rotation = {x = 0, y = 180, z = 0}, smooth = true, callback_function = happen})
+  elseif deck then
+    deck.setPositionSmooth(p, false, true)
+    deck.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)
+    happen(deck)
+  end
+end
+
+-- Special objects (§8): an object dropped on the special objects room is placed. It stays there (locked)
+-- and says whose points it is; when every place is filled, the goal is completed.
+PLACED = {}
+function onObjectDrop(color, o)
+  if not notes(o):match("^o%-%d$") or PLACED[o.getGUID()] then return end
+  for _, r in ipairs(getObjects()) do
+    if r.type == "Card" and notes(r) == "special" and not r.is_face_down then
+      local a, b = o.getPosition(), r.getPosition()
+      if math.abs(a.x - b.x) < L.grid / 2 and math.abs(a.z - b.z) < L.grid / 2 then
+        o.setLock(true)
+        o.setDescription("Placed by " .. color .. ": " .. L.object_points .. " points for " .. color .. ".")
+        PLACED[o.getGUID()] = true
+        glow(o, color, 3)
+        local n = 0
+        for _ in pairs(PLACED) do n = n + 1 end
+        if n >= L.objects then
+          broadcastToAll("Every special object is in its place: the goal is completed.", GOLDEN)
+        else
+          broadcastToAll(color .. " placed " .. o.getName() .. ": " .. L.object_points .. " points.", GOLDEN)
+        end
+      end
+      return
+    end
+  end
 end
 
 -- ------------------------------------------------------------------ reset
@@ -522,6 +674,13 @@ end
 function OPS.reset(d)
   -- d.stage: the director films, so dice and characters stay locked and only its scripts move them.
   STAGED = d.stage == true
+  for g, _ in pairs(PLACED) do
+    local o = getObjectFromGUID(g)
+    if alive(o) then o.setLock(false) o.setDescription(L.object_desc) end
+  end
+  PLACED = {}
+  ROUND, CHASE = 1, CHASE + 1
+  UI.setValue("kbTimerLabel", "TIME LEFT")
   gatherCards()
   Wait.time(gatherCards, 1.2)    -- the last card of a small deck that was taken apart
   for _, o in ipairs(getObjects()) do
@@ -576,8 +735,8 @@ function startGame(player)
   starting = true
   OPS.reset({})
   Wait.time(function()
-    -- §3: the rooms, the token piles and the Loot Deck are shuffled.
-    for _, kind in ipairs({"room", "monster", "treasure", "loot"}) do
+    -- §3: the rooms, the token decks and the event deck are shuffled.
+    for _, kind in ipairs({"room", "monster", "treasure", "event"}) do
       local deck = mainDeck(kind)
       if deck and deck.type == "Deck" then deck.shuffle() end
     end
@@ -585,7 +744,8 @@ function startGame(player)
     OPS.deal({colors = who})
     OPS.pawns({colors = who})
     OPS.timer({left = L.game_secs, run = true, play = true})
-    OPS.banner({text = "GO!"})
+    UI.setValue("kbTimerLabel", "ROUND 1 · COLLECT POINTS")
+    OPS.banner({text = "ROUND 1: COLLECT POINTS"})
     Wait.time(function()
       if TIMER.play and TIMER.left > 0 then OPS.banner({}) end
       starting = false

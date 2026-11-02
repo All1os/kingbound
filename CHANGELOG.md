@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+The team's new design document (2026-11-02):
+
+- Two rounds of 5 minutes: collect points, then escape. Round 2 starts with an event card.
+- Four event cards: Dungeon Collapse, Flood and Magical Chaos close 3 rooms with destruction tokens; The Awakening of the Monster brings a strong monster that chases the nearest player.
+- Treasure gives no points on its own: one common, one rare and one special make a set worth 5 points.
+- A special objects room with three places. The three objects are in the treasure tokens; placing one gives 2 points.
+- The Loot Deck and its Prank cards are gone, and so are the trap rooms.
 - Every mat is a seat: in an online game each player picks Red, Yellow, Green, Blue or Purple and sits at their own mat.
 - ROLL DICE at the top left rolls all 4 of your dice at once.
 
