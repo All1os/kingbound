@@ -8,7 +8,7 @@ this public repository at COMMIT instead (the commit must already be pushed with
 the save opens anywhere until the images go to the Steam Cloud.
 
 Before it: build, load the save in TTS, Modding > Cloud Manager > Upload All, then save the game
-(SAVED.json is that save, in TTS's Saves folder). The saved game is compared with output/KINGBOUND-realtime.json
+(SAVED.json is that save, in TTS's Saves folder). The saved game is compared with output/NULLWAKE.json
 piece by piece: wherever the build had a local image and the saved game has an http URL, that image is
 now on the Steam Cloud. The table's script also uses three icons that no piece shows; Upload All
 doesn't see them, so they are taken from this public repository, pinned to the commit given in --icons.
@@ -49,7 +49,7 @@ def main():
     ap.add_argument("--icons", metavar="COMMIT", help="commit of this repository that holds output/icon-*.png")
     ap.add_argument("--github", metavar="COMMIT", help="give every image still on this Mac its address in the repository")
     a = ap.parse_args()
-    built = json.loads((OUT / "KINGBOUND-realtime.json").read_text())
+    built = json.loads((OUT / "NULLWAKE.json").read_text())
     saved = json.loads(Path(a.saved).expanduser().read_text()) if a.saved else {"ObjectStates": []}
     by_key = {key(o): o for o in saved["ObjectStates"]}
     cloud_of = {}

@@ -1,15 +1,13 @@
-"""Builds the Tabletop Simulator save for the real-time Kingbound.
+"""Builds the Tabletop Simulator save for the real-time game, now called NULLWAKE (was Kingbound).
 
-Rules: the team's GDD of 2026-11-02 (vault: kingbound/realtime/kaynak-Kingbound-realtime-GDD-2026-11-02.pdf).
-What it says is built, and nothing that it doesn't say (Yavuz, 2026-11-02: "yeni gdd de olmayan hiçbir şeyi
-ekleme"). Where it leaves out how something works, the detail comes from the earlier versions: the GDD of
-2026-10-18, its update of 2026-10-25 and Kingbound v1.1 built from them. Four details are in no version;
-for them the simplest value that makes the game run (agreed with Yavuz, 2026-11-02), marked "(no version)".
-
-The GDD of 11-02 against v1.1: two rounds, collect points and escape, with an event card at the start of the
-second; destruction tokens close rooms (its preferred option 2); treasure scores only in combinations of
-different types; a room with special objects; no Loot Deck (the team: "no time to use it"), so no Prank
-Cards either; no trap rooms (§8 lists five room types, none of them a trap).
+Rules: the team's "Game rules and gameplay video script" of 2026-11-03 (vault: kingbound/realtime/
+kaynak-NULLWAKE-rules-2026-11-03.pdf). Names and look: Nastya's narrative document NULLWAKE (vault:
+kaynak-NULLWAKE-narrative.docx). Yavuz, 2026-11-03: "gdd ve narrative ne diyosa o".
+Where the rules document contradicts itself, Yavuz decided: moving one room and opening a room cost 2
+Movement and treasure 2 Magic, "like the old game" (v2.0); the dice keep three symbols (no "special"
+face). Where it leaves a detail open, the simplest value, marked "(open)". Where the narrative document
+disagrees with the rules (its THE NULL event is marked "DEMO?? Concept"; it says treasures alone give no
+points), the rules document wins: it is the newer one and names Nastya's document only for the story.
 The rules for players are in ../../README.md.
 Images are drawn with Pillow and copied into TTS's Mods/ folder (macOS doesn't let TTS read
 ~/Desktop); their names carry a content hash so TTS never shows a stale cached image.
@@ -19,75 +17,74 @@ import hashlib, json, math, random, shutil, time
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-VERSION = "2.0"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table,
+VERSION = "2.1"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table,
                   # v1.2: a seat (hand zone) at every mat for online games, and ROLL DICE,
                   # v2.0: the GDD of 2026-11-02 (two rounds, events, treasure sets, special objects; no Loot, no traps)
+                  # v2.1: NULLWAKE, the rules of 2026-11-03 and the narrative document (names, sci-fi look)
 ROOT = Path(__file__).parent
 OUT = ROOT / "output"
 ASSETS = Path.home() / "Library/Tabletop Simulator/Mods/kingbound-realtime"
 SAVES = Path.home() / "Library/Tabletop Simulator/Saves/prototipler"
-SAVE_NAME = "KINGBOUND-realtime"
+SAVE_NAME = "NULLWAKE"
 DICE_TEMPLATE = Path.home() / "Library/Application Support/Steam/steamapps/common/Tabletop Simulator/Modding/Dice Templates/D6.png"
 for p in (OUT, ASSETS, SAVES):
     p.mkdir(parents=True, exist_ok=True)
 
 FONT = "/System/Library/Fonts/Supplemental/"
 def f(name, size): return ImageFont.truetype(FONT + name, size)
-BLACK, BOLD, REG = "Georgia Bold.ttf", "Arial Bold.ttf", "Arial.ttf"
+# Narrative §5 "industrial sci-fi": DIN, the lettering of signs and machines, for names; Arial for text.
+BLACK, BOLD, REG, COND = "DIN Alternate Bold.ttf", "Arial Bold.ttf", "Arial.ttf", "DIN Condensed Bold.ttf"
 
-# Same palette as the turn-based Kingbound (narrative document): parchment, ink, antique gold.
-PAPER, INK, CREAM, GOLD = (236, 223, 193), (30, 25, 21), (244, 232, 204), (181, 145, 66)
-# The three symbols of §5. Each has its own colour so they read from far away on video.
-SYM_COL = {"move": (44, 120, 70), "attack": (160, 46, 36), "magic": (60, 84, 160)}
+# Narrative §5: "graphite, steel grey, cold blue, and off-white", cold lighting and "localized emergency
+# light sources". PAPER is the off-white of a panel, INK graphite, GOLD (the old name, kept so every
+# drawing reads the same) the cold blue light, EMERG the emergency amber of round 2.
+PAPER, INK, CREAM, GOLD = (222, 227, 230), (24, 28, 34), (236, 240, 242), (92, 176, 222)
+GRAPHITE, STEEL, EMERG = (40, 45, 52), (120, 130, 140), (226, 140, 36)
+# The three symbols (rules §2.1). Each has its own colour so they read from far away on video.
+SYM_COL = {"move": (36, 140, 104), "attack": (190, 52, 44), "magic": (66, 104, 200)}
 SYM_NAME = {"move": "MOVEMENT", "attack": "ATTACK", "magic": "MAGIC"}
-STONE, WALL, FLOOR = (92, 86, 78), (44, 40, 36), (150, 140, 122)
-SAFE_COL, OBJ_COL, EVENT_COL = (92, 44, 122), (38, 112, 120), (110, 34, 30)
-# 3-5 players (§1): five seats. The mats show only the seat colour: the team members' names came off when the
+WALL, FLOOR, PLATE = (30, 34, 40), (108, 117, 126), (90, 98, 108)
+SAFE_COL, OBJ_COL, EVENT_COL = (28, 70, 104), (40, 150, 160), (150, 70, 20)
+# 3-5 players: five seats. The mats show only the seat colour: the team members' names came off when the
 # save went on the Steam Workshop (Yavuz, 2026-10-25: "kartlardan isimleri kaldır").
 COLORS = ["Red", "Yellow", "Green", "Blue", "Purple"]
 RGB = {"Red": (0.856, 0.1, 0.094), "Yellow": (0.905, 0.898, 0.172), "Green": (0.192, 0.701, 0.168),
        "Blue": (0.118, 0.53, 1.0), "Purple": (0.627, 0.125, 0.941)}
 PIX = {"Red": (200, 60, 52), "Yellow": (214, 190, 40), "Green": (64, 160, 60), "Blue": (52, 120, 210), "Purple": (140, 64, 196)}
 
-# ------------------------------------------------------------------ game content (GDD 11-02; open details from v1.1)
-# Dice (§2: "3-4 dice with symbols of movement, attack and magic"): 4, as in v1.1, two faces of each symbol.
+# ------------------------------------------------------------------ game content
+# Dice: 4 (rules §2.3's example), three symbols, two faces of each.
 DIE_FACES = {1: "move", 2: "move", 3: "attack", 4: "attack", 5: "magic", 6: "magic"}
-# Monsters (§7, §9): weak / medium / strong need 2 / 3 / 4 Attack. "Points can be earned for ... defeated
-# monsters" (§10): points and counts from v1.1.
-MONSTERS = {"weak": (2, 1, 4), "medium": (3, 2, 3), "strong": (4, 4, 2)}      # attack, points, count
-# Treasures (§9): three types, taken with 2 Magic (§7); "individual treasures by themselves do not give
-# points", only combinations of different types. The types are v1.1's, three of each (v1.1 had six special
-# ones only to give out more Loot). (no version) A set is one treasure of each type, worth the three v1.1
-# values added up: 1 + 3 + 1 = 5.
-TREASURES = {"common": 3, "rare": 3, "special": 3}   # count
-SET_POINTS = 5
-# Special objects (§2, §8): found while exploring and placed on their places in the room with special
-# objects; when every place is filled, the goal is completed. (no version) One such room with three places,
-# three objects mixed into the treasure tokens (taken with 2 Magic, like treasure), and 2 points for each
-# object a player places.
-OBJECTS = ["I", "II", "III"]
-OBJECT_POINTS = 2
-# Room cards (§8: start, empty, monster, treasure, special objects): v1.1's counts without its six traps.
+# Monsters (rules §5, names narrative §2): HP 1 / 2 / 3, reward 1 / 2 / 3 points. Each Attack deals 1
+# damage and damage stays from one cycle to the next (video script, scene 6: a 3 HP monster takes 2, then
+# 1 in the next cycle). Counts from v2.0.
+MONSTERS = {"weak": ("Scraper", 1, 1, 4), "medium": ("Carrier", 2, 2, 3), "strong": ("Anomaly", 3, 3, 2)}  # name, HP, points, count
+# Treasures (rules §6, names narrative §3): the rules' gold, silver and bronze, renamed in the narrative's
+# order (open): Modules, Archives, Specimens. Taken with 2 Magic like v2.0. Three of each, as v2.0.
+TREASURES = {"module": ("Module", 3), "archive": ("Archive", 3), "specimen": ("Specimen", 3)}   # name, count
+# Rules §6.1 (Amira, 2026-11-03: this table for the presentation). "1 / 2 / 3 golds" are a gold's 3
+# points each; a single silver and bronze have no value in it (open): 1 and 0.
+SINGLE = {"module": 3, "archive": 1, "specimen": 0}
+COMBOS = [("2 Modules + 1 Archive", 5), ("1 Module + 2 Archives", 4), ("3 Archives", 4), ("2 Archives + 1 Specimen", 3),
+          ("1 Archive + 2 Specimens", 2), ("3 Specimens", 2), ("Module + Archive + Specimen", 4)]
+# Special objects (rules §7, narrative §4): one tile, the Integration Chamber, with four slots. Objects are
+# found while exploring (narrative) in the treasure tokens, taken with 2 Magic like v2.0, and placed only in
+# round 2 (rules §7). The special task (rules §9, Amira: "this special tile = special task"): placing an
+# object completes it for the player who places it (open). No points for it: the rules give none.
+OBJECTS = ["I", "II", "III", "IV"]
+# Room cards (narrative §4: safe zone, empty, monster, treasure, special objects): v2.0's counts.
 ROOM_COUNT = {"empty": 6, "monster": 7, "treasure": 9, "special": 1}
-# Rounds (§4, §10): about 10 minutes, round 1 collects points, round 2 is the escape. (no version) Five
-# minutes each. Escaping is getting back to the Safe Room: in v1.1 (the update's §12) treasure counts only
-# once it is secured there, so treasure still CARRIED at 0:00 is lost.
+ROOM_NAME = {"safe": "Safe Zone", "empty": "Unregistered Sector", "monster": "Infested Sector",
+             "treasure": "Recovery Storage", "special": "Integration Chamber"}
+# Rounds (rules §8, §9): 5 minutes each. Escaping (rules §9, §11): at 0:00 a player keeps their points if
+# they are in the Safe Zone and have completed the special task; everyone else loses all their points (open:
+# the rules say "the points earned in the first round" and "uncredited points").
 GAME_SECS, ROUND2_AT = 600, 300
-# Event cards (§5): the GDD's four events, one turned up when round 2 starts. Rooms close with destruction
-# tokens (its preferred option 2); v1.1's rubble token was made for that. (no version) Collapse, Flood and
-# Magical chaos each close 3 random rooms with no character in them. The awakened monster is strong (§5: "a
-# strong monster appears"), 4 Attack and 4 points like v1.1's strong ones; it moves one room towards the
-# nearest character every 30 seconds, and from v1.1's Monster Magnet: whoever is in its room can't leave
-# until they beat it. The Safe Room stays safe (the update's §12): the monster never goes in.
-EVENTS = [("E1", "Dungeon Collapse", "Some rooms are destroyed and become inaccessible.",
-           "3 rooms get a destruction token. Nobody can go in."),
-          ("E2", "The Awakening of the Monster", "A strong monster appears and chases the players.",
-           "Every 30 seconds it moves one room towards the nearest character. You can't leave its room until you beat it."),
-          ("E3", "Flood", "Water fills part of the dungeon and blocks rooms.",
-           "3 rooms get a destruction token. Nobody can go in."),
-          ("E4", "Magical Chaos", "Some passages are closed due to unstable magic.",
-           "3 rooms get a destruction token. Nobody can go in.")]
-CLOSE_ROOMS, CHASE_SECS = 3, 30
+# Event (rules §10): one card for now, Rockfall. Rocks go only into empty rooms: no character, monster,
+# treasure or special object in them. How many is open: 3, as v2.0's events closed.
+EVENTS = [("E1", "Rockfall", "Part of the station collapses and some rooms become inaccessible.",
+           "Rocks fill 3 empty rooms. Nobody can go through them.")]
+CLOSE_ROOMS = 3
 RUBBLE_COUNT = CLOSE_ROOMS + 1   # one spare: taking a deck's last card stops the script (seen live, 2026-10-25)
 
 # ------------------------------------------------------------------ drawing helpers
@@ -167,28 +164,45 @@ def sym_row(d, kind, n, cx, cy, r):
         icon(d, kind, x, cy, r * 0.62)
 
 
-def crown(d, cx, cy, r, fill, outline=INK):
-    """The Safe Room's crown (the update's picture, p. 7)."""
-    pts = [(cx - r, cy + r * 0.45), (cx - r, cy - r * 0.35), (cx - r * 0.5, cy + r * 0.05), (cx, cy - r * 0.7),
-           (cx + r * 0.5, cy + r * 0.05), (cx + r, cy - r * 0.35), (cx + r, cy + r * 0.45)]
-    d.polygon(pts, fill=fill, outline=outline, width=4)
-    d.rectangle((cx - r, cy + r * 0.45, cx + r, cy + r * 0.7), fill=fill, outline=outline, width=4)
-    for x, y in ((cx - r, cy - r * 0.35), (cx, cy - r * 0.7), (cx + r, cy - r * 0.35)):
-        d.ellipse((x - r * 0.12, y - r * 0.12, x + r * 0.12, y + r * 0.12), fill=fill, outline=outline, width=3)
+def safe_mark(d, cx, cy, r, fill, outline=INK):
+    """The Safe Zone's sign: a hexagon with a cross, like a station's shelter sign (replaces v2.0's crown)."""
+    pts = [(cx + r * math.cos(math.radians(30 + 60 * i)), cy + r * math.sin(math.radians(30 + 60 * i))) for i in range(6)]
+    d.polygon(pts, fill=fill, outline=outline, width=max(2, int(r * 0.08)))
+    w, l = r * 0.2, r * 0.58
+    d.rectangle((cx - w, cy - l, cx + w, cy + l), fill=outline)
+    d.rectangle((cx - l, cy - w, cx + l, cy + w), fill=outline)
 
 
 def chest(d, cx, cy, r):
-    d.rounded_rectangle((cx - r, cy - r * 0.64, cx + r, cy + r * 0.64), int(r * 0.14), fill=(120, 70, 30), outline=INK, width=5)
+    """A storage case (Recovery Storage, narrative §4): steel with a cold blue light strip."""
+    d.rounded_rectangle((cx - r, cy - r * 0.64, cx + r, cy + r * 0.64), int(r * 0.12), fill=STEEL, outline=INK, width=5)
     d.rectangle((cx - r, cy - r * 0.27, cx + r, cy - r * 0.13), fill=INK)
-    d.rectangle((cx - r * 0.14, cy - r * 0.34, cx + r * 0.14, cy + r * 0.14), fill=GOLD)
+    d.rectangle((cx - r * 0.5, cy + r * 0.1, cx + r * 0.5, cy + r * 0.22), fill=GOLD)
+
+
+def claw(d, cx, cy, r, fill):
+    """The Infested Sector's mark: three claw scratches."""
+    for k in (-0.45, 0.0, 0.45):
+        x = cx + k * r
+        d.polygon([(x - r * 0.12 - r * 0.25, cy - r * 0.8), (x + r * 0.05 - r * 0.25, cy - r * 0.8),
+                   (x + r * 0.16 + r * 0.25, cy + r * 0.8), (x + r * 0.02 + r * 0.25, cy + r * 0.8)], fill=fill)
 
 
 def rubble(d, cx, cy, r):
-    """Fallen stones, on the destruction token."""
+    """Fallen rock and concrete, on the rock token."""
     for dx, dy, s in ((-0.62, 0.32, 0.34), (0.05, 0.4, 0.4), (0.62, 0.3, 0.32), (-0.3, -0.22, 0.34), (0.34, -0.26, 0.3), (0.0, -0.72, 0.22)):
         x, y, rr = cx + dx * r, cy + dy * r, s * r
         d.polygon([(x - rr, y), (x - rr * 0.5, y - rr * 0.85), (x + rr * 0.6, y - rr * 0.8), (x + rr, y + rr * 0.1),
-                   (x + rr * 0.45, y + rr * 0.8), (x - rr * 0.6, y + rr * 0.72)], fill=(132, 124, 114), outline=INK)
+                   (x + rr * 0.45, y + rr * 0.8), (x - rr * 0.6, y + rr * 0.72)], fill=(126, 128, 130), outline=INK)
+
+
+def hazard(d, box, w=26):
+    """Emergency stripes (amber and graphite) inside box."""
+    x0, y0, x1, y1 = box
+    k = x0 - (y1 - y0)
+    while k < x1:
+        d.polygon([(k, y1), (k + w, y1), (k + w + (y1 - y0), y0), (k + (y1 - y0), y0)], fill=EMERG)
+        k += 2 * w
 
 
 def save(im, fn):
@@ -220,51 +234,62 @@ TILE_PX = 512
 DOOR = {"N": (196, 0, 316, 64), "S": (196, 448, 316, 512), "W": (0, 196, 64, 316), "E": (448, 196, 512, 316)}
 
 
-OBJ_SLOT_PX = [(150, 198), (362, 198), (256, 372)]   # the three places, a token's size (1.4 of a 3.6 room)
+OBJ_SLOT_PX = [(150, 182), (362, 182), (150, 384), (362, 384)]   # the four slots, a token's size (1.4 of a 3.6 room)
 
 
 def room_img(kind, doors):
+    # A station sector: graphite walls, steel floor plates with rivets (narrative §5: "matte metal").
     im = Image.new("RGB", (TILE_PX, TILE_PX), WALL)
     d = ImageDraw.Draw(im)
     d.rectangle((40, 40, 472, 472), fill=FLOOR)
-    for x in range(40, 472, 72):   # flagstones
-        d.line((x, 40, x, 472), fill=(132, 122, 106), width=3)
-    for y in range(40, 472, 72):
-        d.line((40, y, 472, y), fill=(132, 122, 106), width=3)
-    for s in doors:   # passages: open floor through the wall to the tile's edge
-        d.rectangle(DOOR[s], fill=FLOOR)
+    for x in range(40, 472, 108):
+        for y in range(40, 472, 108):
+            d.rectangle((x + 3, y + 3, x + 105, y + 105), outline=PLATE, width=3)
+            for rx, ry in ((x + 12, y + 12), (x + 96, y + 12), (x + 12, y + 96), (x + 96, y + 96)):
+                d.ellipse((rx - 3, ry - 3, rx + 3, ry + 3), fill=PLATE)
+    for s_ in doors:   # passages: open floor through the wall to the tile's edge, a light strip at the door
+        d.rectangle(DOOR[s_], fill=FLOOR)
+        x0, y0, x1, y1 = DOOR[s_]
+        if s_ in "NS":
+            d.line((x0, y0, x0, y1), fill=GOLD, width=5); d.line((x1, y0, x1, y1), fill=GOLD, width=5)
+        else:
+            d.line((x0, y0, x1, y0), fill=GOLD, width=5); d.line((x0, y1, x1, y1), fill=GOLD, width=5)
+    name = ROOM_NAME[kind].upper()
     if kind == "safe":
-        # §12: the starting room is the Safe Room, where treasure is secured.
+        # Narrative §4: the gathering point; rules §9: where you escape to.
         d.rounded_rectangle((92, 112, 420, 400), 18, fill=SAFE_COL, outline=GOLD, width=6)
-        crown(d, 256, 190, 62, GOLD)
-        d.text((256, 290), "SAFE ROOM", font=fit(d, "SAFE ROOM", BLACK, 54, 300), fill=CREAM, anchor="mm")
-        d.text((256, 352), "secure your treasure", font=f(REG, 27), fill=GOLD, anchor="mm")
+        safe_mark(d, 256, 192, 60, GOLD, SAFE_COL)
+        d.text((256, 296), name, font=fit(d, name, BLACK, 56, 300), fill=CREAM, anchor="mm")
+        d.text((256, 352), "start · escape here", font=f(REG, 27), fill=GOLD, anchor="mm")
     elif kind == "monster":
-        d.ellipse((136, 136, 376, 376), fill=SYM_COL["attack"], outline=INK, width=6)
-        crossed(d, 256, 248, 92, CREAM)
-        d.text((256, 420), "MONSTER", font=f(BOLD, 40), fill=INK, anchor="mm")
+        d.ellipse((136, 128, 376, 368), fill=SYM_COL["attack"], outline=INK, width=6)
+        claw(d, 256, 248, 84, CREAM)
+        d.text((256, 420), name, font=fit(d, name, BLACK, 42, 420), fill=INK, anchor="mm")
     elif kind == "treasure":
-        d.ellipse((136, 136, 376, 376), fill=GOLD, outline=INK, width=6)
-        chest(d, 256, 271, 70)
-        d.text((256, 420), "TREASURE", font=f(BOLD, 40), fill=INK, anchor="mm")
+        d.ellipse((136, 128, 376, 368), fill=GOLD, outline=INK, width=6)
+        chest(d, 256, 252, 70)
+        d.text((256, 420), name, font=fit(d, name, BLACK, 42, 420), fill=INK, anchor="mm")
     elif kind == "special":
-        # §8: "rooms with special objects have special places for placing objects".
-        d.text((256, 66), "SPECIAL OBJECTS", font=fit(d, "SPECIAL OBJECTS", BOLD, 34, 420), fill=INK, anchor="mm")
-        for name, (cx, cy) in zip(OBJECTS, OBJ_SLOT_PX):
-            d.ellipse((cx - 90, cy - 90, cx + 90, cy + 90), fill=(196, 214, 210), outline=OBJ_COL, width=8)
-            d.text((cx, cy), name, font=f(BLACK, 64), fill=OBJ_COL, anchor="mm")
+        # Rules §7: one tile with four slots, one special object in each.
+        d.text((256, 64), name, font=fit(d, name, BLACK, 34, 420), fill=INK, anchor="mm")
+        for o, (cx, cy) in zip(OBJECTS, OBJ_SLOT_PX):
+            d.ellipse((cx - 86, cy - 86, cx + 86, cy + 86), fill=(196, 222, 226), outline=OBJ_COL, width=8)
+            d.text((cx, cy), o, font=f(BLACK, 58), fill=OBJ_COL, anchor="mm")
+        d.text((256, 488), "place objects in round 2", font=f(BOLD, 20), fill=CREAM, anchor="mm")
     else:
-        d.text((256, 256), "EMPTY ROOM", font=f(BOLD, 38), fill=(96, 88, 76), anchor="mm")
+        d.text((256, 240), "UNREGISTERED", font=f(BLACK, 46), fill=(62, 68, 76), anchor="mm")
+        d.text((256, 286), "SECTOR", font=f(BLACK, 46), fill=(62, 68, 76), anchor="mm")
     fn = f"room-{kind}-{''.join(sorted(doors))}.png"
     return save(im, fn)
 
 
 def room_back():
-    im = Image.new("RGB", (TILE_PX, TILE_PX), (52, 40, 34))
+    im = Image.new("RGB", (TILE_PX, TILE_PX), GRAPHITE)
     d = ImageDraw.Draw(im)
-    d.rectangle((14, 14, 498, 498), outline=GOLD, width=8)
-    d.text((256, 226), "KINGBOUND", font=f(BLACK, 54), fill=GOLD, anchor="mm")
-    d.text((256, 290), "unexplored room", font=f(REG, 30), fill=CREAM, anchor="mm")
+    d.rectangle((14, 14, 498, 498), outline=GOLD, width=6)
+    d.rectangle((30, 30, 482, 482), outline=STEEL, width=2)
+    d.text((256, 226), "NULLWAKE", font=f(BLACK, 66), fill=GOLD, anchor="mm")
+    d.text((256, 290), "unexplored sector", font=f(REG, 30), fill=CREAM, anchor="mm")
     return save(im, "room-back.png")
 
 
@@ -272,13 +297,15 @@ def room_back():
 TOK = 360
 
 
-def token_front(fn, ring, title, need_kind, need_n, pts_text):
+def token_front(fn, ring, title, need_kind, need_n, lines, title_col=None):
+    """A round token: name, the symbols it needs, and one or two lines under them."""
     im = Image.new("RGB", (TOK, TOK), ring)
     d = ImageDraw.Draw(im)
     d.ellipse((14, 14, TOK - 14, TOK - 14), fill=PAPER, outline=INK, width=5)
-    d.text((TOK / 2, 76), title, font=fit(d, title, BLACK, 40, 220), fill=ring, anchor="mm")   # the circle is narrow at the top
-    sym_row(d, need_kind, need_n, TOK / 2, 160, 30 if need_n <= 3 else 26)
-    d.text((TOK / 2, 252), pts_text, font=f(BOLD, 40 if len(pts_text) < 10 else 30), fill=INK, anchor="mm")
+    d.text((TOK / 2, 76), title, font=fit(d, title, BLACK, 44, 220), fill=title_col or ring, anchor="mm")   # the circle is narrow at the top
+    sym_row(d, need_kind, need_n, TOK / 2, 156, 30 if need_n <= 3 else 26)
+    for i, t in enumerate(lines):
+        d.text((TOK / 2, 236 + i * 44), t, font=fit(d, t, BOLD, 38, 250 - i * 40), fill=INK, anchor="mm")
     return save(im, fn)
 
 
@@ -286,33 +313,35 @@ def token_back(fn, ring, text):
     im = Image.new("RGB", (TOK, TOK), ring)
     d = ImageDraw.Draw(im)
     d.ellipse((14, 14, TOK - 14, TOK - 14), outline=CREAM, width=6)
-    d.text((TOK / 2, TOK / 2), text, font=f(BLACK, 46), fill=CREAM, anchor="mm")
+    d.text((TOK / 2, TOK / 2), text, font=fit(d, text, BLACK, 50, 280), fill=CREAM, anchor="mm")
     return save(im, fn)
 
 
 def rubble_img():
-    """The destruction token (§5): it closes a room."""
-    im = Image.new("RGB", (TOK, TOK), (90, 84, 76))
+    """The rock token (rules §10): it closes a room."""
+    im = Image.new("RGB", (TOK, TOK), EMERG)
     d = ImageDraw.Draw(im)
-    d.ellipse((14, 14, TOK - 14, TOK - 14), fill=(168, 160, 148), outline=INK, width=5)
+    d.ellipse((14, 14, TOK - 14, TOK - 14), fill=(176, 178, 180), outline=INK, width=5)
     rubble(d, TOK / 2, 150, 96)
-    d.text((TOK / 2, 268), "CLOSED", font=f(BLACK, 40), fill=INK, anchor="mm")
+    d.text((TOK / 2, 270), "ROCKS", font=f(BLACK, 46), fill=INK, anchor="mm")
     return save(im, "rubble.png")
 
 
-# ------------------------------------------------------------------ event cards (§5)
+# ------------------------------------------------------------------ event cards (rules §10)
 CW, CH = 400, 560
-EVENT_COLS = 2
+EVENT_COLS = 2   # a sheet has at least two cells: the second one stays empty
 
 
 def event_face(name, what, rule):
     im = Image.new("RGB", (CW, CH), PAPER)
     d = ImageDraw.Draw(im)
     d.rectangle((0, 0, CW - 1, CH - 1), outline=EVENT_COL, width=12)
-    d.rectangle((0, 0, CW, 70), fill=EVENT_COL)
-    d.text((CW / 2, 36), "EVENT · ROUND 2", font=f(BOLD, 26), fill=CREAM, anchor="mm")
-    y = para(d, name.upper(), 100, 30, CW - 30, name=BLACK, size=38, gap=6)
-    y = para(d, what, y + 18, 34, CW - 34, size=27, gap=6)
+    d.rectangle((0, 0, CW, 70), fill=GRAPHITE)
+    hazard(d, (0, 62, CW, 74), 18)
+    d.text((CW / 2, 32), "EVENT | ROUND 2", font=f(BLACK, 30), fill=EMERG, anchor="mm")
+    y = para(d, name.upper(), 104, 30, CW - 30, name=BLACK, size=46, gap=6)
+    rubble(d, CW / 2, y + 70, 64)
+    y = para(d, what, y + 150, 34, CW - 34, size=27, gap=6)
     d.line((50, y + 14, CW - 50, y + 14), fill=EVENT_COL, width=3)
     para(d, rule, y + 34, 34, CW - 34, name=BOLD, size=25, fill=EVENT_COL, gap=6)
     return im
@@ -325,94 +354,106 @@ def event_sheet():
     for i, im in enumerate(ims):
         sheet.paste(im, ((i % EVENT_COLS) * CW, (i // EVENT_COLS) * CH))
     save(sheet, "event-sheet.png")
-    back = Image.new("RGB", (CW, CH), (60, 22, 20))
+    back = Image.new("RGB", (CW, CH), GRAPHITE)
     d = ImageDraw.Draw(back)
-    d.rectangle((16, 16, CW - 16, CH - 16), outline=GOLD, width=8)
-    d.text((CW / 2, CH / 2 - 20), "EVENT", font=f(BLACK, 70), fill=GOLD, anchor="mm")
-    d.text((CW / 2, CH / 2 + 50), "KINGBOUND", font=f(BOLD, 28), fill=CREAM, anchor="mm")
+    hazard(d, (0, 0, CW, 40)); hazard(d, (0, CH - 40, CW, CH))
+    d.rectangle((16, 56, CW - 16, CH - 56), outline=EMERG, width=6)
+    d.text((CW / 2, CH / 2 - 20), "EVENT", font=f(BLACK, 80), fill=EMERG, anchor="mm")
+    d.text((CW / 2, CH / 2 + 50), "NULLWAKE", font=f(BLACK, 32), fill=CREAM, anchor="mm")
     save(back, "event-back.png")
     return rows
 
 
 # ------------------------------------------------------------------ player mats
-# Three boxes: dice, CARRIED (treasure not secured yet) and POINTS (defeated monsters and secured treasure;
-# only this box counts at the end). v1.1's LOOT box went with the Loot Deck. Above them, what each action
-# needs (§7). Pixel spots for the pieces the tutorial places.
-MAT_W, MAT_H = 1100, 680
+# Three boxes: dice, TREASURE (the treasure and objects you took) and MONSTERS (the ones you beat), and the
+# treasure points of rules §6.1 at the right. v2.0's CARRIED box is gone: the rules of 11-03 have no
+# securing treasure in the Safe Room, only escaping at the end. Above, what each action needs. The mat is
+# wider than v2.0's (1400 px, 12.7 table units) to fit the points table. Pixel spots for the tutorial.
+MAT_W, MAT_H = 1400, 680
 BOX_Y = (180, 660)
-MAT_BOX = {"dice": (30, 320, "DICE", ""), "carry": (335, 690, "CARRIED", "treasure, not secured"),
-           "points": (705, 1070, "POINTS", f"monsters · a set of 3 types = {SET_POINTS}")}
-MAT_ACTIONS = [("MOVE / OPEN", "move", 2), ("WEAK", "attack", 2), ("MEDIUM", "attack", 3), ("STRONG", "attack", 4),
-               ("TREASURE / OBJECT", "magic", 2), ("SECURE", None, 0)]
-DIE_PX = [(105, 375), (245, 375), (105, 555), (245, 555)]
-CARRY_PX = [(x, y) for y in (365, 478, 591) for x in (400, 512, 625)]
-POINTS_PX = [(x, y) for y in (365, 478, 591) for x in (770, 888, 1006)]
+MAT_BOX = {"dice": (30, 300, "DICE", ""), "carry": (315, 660, "TREASURE", "and special objects"),
+           "points": (675, 1020, "MONSTERS", "beaten: their points")}
+TABLE_X = (1035, 1370)
+MAT_ACTIONS = [("MOVE / OPEN", "move", 2), ("SCRAPER", "attack", 1), ("CARRIER", "attack", 2), ("ANOMALY", "attack", 3),
+               ("TAKE", "magic", 2), ("ESCAPE", None, 0)]
+DIE_PX = [(100, 375), (230, 375), (100, 555), (230, 555)]
+CARRY_PX = [(x, y) for y in (365, 478, 591) for x in (375, 487, 600)]
+POINTS_PX = [(x, y) for y in (365, 478, 591) for x in (735, 847, 960)]
 
 
 def mat_img(color):
-    im = Image.new("RGB", (MAT_W, MAT_H), PAPER)
+    im = Image.new("RGB", (MAT_W, MAT_H), GRAPHITE)
     d = ImageDraw.Draw(im)
     d.rectangle((0, 0, MAT_W - 1, MAT_H - 1), outline=PIX[color], width=16)
     d.rectangle((0, 0, MAT_W, 78), fill=PIX[color])
     light = color in ("Yellow",)
-    d.text((MAT_W / 2, 40), color.upper(), font=f(BLACK, 46), fill=INK if light else CREAM, anchor="mm")
+    d.text((MAT_W / 2, 40), color.upper(), font=f(BLACK, 50), fill=INK if light else CREAM, anchor="mm")
     slot = (MAT_W - 60) / len(MAT_ACTIONS)
     for i, (name, kind, n) in enumerate(MAT_ACTIONS):
         cx = 30 + slot * (i + 0.5)
-        d.text((cx, 106), name, font=fit(d, name, BOLD, 21, slot - 10), fill=INK, anchor="mm")
+        d.text((cx, 104), name, font=fit(d, name, BLACK, 26, slot - 10), fill=CREAM, anchor="mm")
         if kind:
             sym_row(d, kind, n, cx, 143, 14)
         else:
-            crown(d, cx - 52, 141, 13, GOLD)
-            d.text((cx - 32, 143), "in the Safe Room", font=f(REG, 17), fill=INK, anchor="lm")
+            safe_mark(d, cx - 92, 143, 15, GOLD, SAFE_COL)
+            d.text((cx - 70, 143), "Safe Zone + object placed", font=fit(d, "Safe Zone + object placed", REG, 18, slot - 50),
+                   fill=CREAM, anchor="lm")
         if i:
-            d.line((30 + slot * i, 92, 30 + slot * i, 162), fill=(200, 184, 150), width=2)
+            d.line((30 + slot * i, 90, 30 + slot * i, 164), fill=(80, 88, 98), width=2)
     for key, (x0, x1, head, sub) in MAT_BOX.items():
-        fill = {"carry": (242, 220, 196), "points": (226, 230, 196)}.get(key)
-        d.rounded_rectangle((x0, BOX_Y[0], x1, BOX_Y[1]), 16, fill=fill, outline=(150, 130, 100), width=4)
-        d.text(((x0 + x1) / 2, BOX_Y[0] + 28), head, font=f(BOLD, 28), fill=(120, 100, 70), anchor="mm")
+        fill = {"dice": (52, 58, 66), "carry": (46, 60, 72), "points": (66, 50, 52)}[key]
+        d.rounded_rectangle((x0, BOX_Y[0], x1, BOX_Y[1]), 16, fill=fill, outline=STEEL, width=3)
+        d.text(((x0 + x1) / 2, BOX_Y[0] + 28), head, font=f(BLACK, 30), fill=(170, 182, 192), anchor="mm")
         if sub:
-            d.text(((x0 + x1) / 2, BOX_Y[0] + 60), sub, font=fit(d, sub, REG, 20, x1 - x0 - 16), fill=(120, 100, 70), anchor="mm")
+            d.text(((x0 + x1) / 2, BOX_Y[0] + 60), sub, font=fit(d, sub, REG, 20, x1 - x0 - 16), fill=(150, 160, 170), anchor="mm")
+    # Rules §6.1: the treasure points. Each treasure counts in one line only; you choose.
+    x0, x1 = TABLE_X
+    d.rounded_rectangle((x0, BOX_Y[0], x1, BOX_Y[1]), 16, fill=PAPER, outline=STEEL, width=3)
+    d.text(((x0 + x1) / 2, BOX_Y[0] + 28), "TREASURE POINTS", font=f(BLACK, 28), fill=INK, anchor="mm")
+    rows = [(f"{TREASURES[k][0]} alone", v) for k, v in SINGLE.items()] + COMBOS
+    y = BOX_Y[0] + 64
+    for i, (t, v) in enumerate(rows):
+        if i == len(SINGLE):
+            d.line((x0 + 16, y - 4, x1 - 16, y - 4), fill=STEEL, width=2)
+            y += 6
+        d.text((x0 + 16, y + 14), t, font=fit(d, t, REG, 21, x1 - x0 - 70), fill=INK, anchor="lm")
+        d.text((x1 - 18, y + 14), str(v), font=f(BOLD, 24), fill=INK, anchor="rm")
+        y += 34
+    d.text(((x0 + x1) / 2, BOX_Y[1] - 22), "each treasure in one line only", font=f(REG, 18), fill=(90, 98, 108), anchor="mm")
     return save(im, f"mat-{color.lower()}.png")
 
 
 def title_img():
-    """The name plate: only KINGBOUND (Yavuz, 2026-10-26), in the Safe Room's royal purple and gold."""
+    """The name plate: only the name (Yavuz, 2026-10-26, for Kingbound), now NULLWAKE in cold blue on graphite."""
     w, h = 1400, 360
-    deep, royal, bronze = (26, 14, 34), (70, 34, 92), (110, 78, 30)
+    deep, mid = (14, 17, 22), (44, 52, 62)
     im = Image.new("RGB", (w, h))
     px = im.load()
-    for y in range(h):                       # purple, lighter in the middle, dark at the edges
+    for y in range(h):                       # graphite, lighter in the middle, dark at the edges
         k = 1 - abs(y - h * 0.45) / (h * 0.55)
-        row = tuple(int(deep[i] + (royal[i] - deep[i]) * max(0.0, k)) for i in range(3))
+        row = tuple(int(deep[i] + (mid[i] - deep[i]) * max(0.0, k)) for i in range(3))
         for x in range(w):
             px[x, y] = row
     d = ImageDraw.Draw(im)
-    # Two gold frames and a diamond in each corner.
-    d.rectangle((14, 14, w - 15, h - 15), outline=GOLD, width=8)
-    d.rectangle((34, 34, w - 35, h - 35), outline=bronze, width=3)
-    for cx, cy in ((34, 34), (w - 35, 34), (34, h - 35), (w - 35, h - 35)):
-        d.polygon([(cx, cy - 16), (cx + 16, cy), (cx, cy + 16), (cx - 16, cy)], fill=GOLD, outline=bronze)
-    crown(d, w / 2, 66, 24, GOLD, bronze)
-    # Letters spaced out, with a soft shadow under them.
-    font, track = f(BLACK, 150), 18
-    widths = [d.textlength(ch, font=font) for ch in "KINGBOUND"]
-    x0, base = (w - (sum(widths) + track * 8)) / 2, 236
-    shadow = Image.new("L", (w, h), 0)
-    sd = ImageDraw.Draw(shadow)
+    d.rectangle((14, 14, w - 15, h - 15), outline=STEEL, width=6)
+    d.rectangle((30, 30, w - 31, h - 31), outline=GOLD, width=2)
+    hazard(d, (30, h - 58, 210, h - 31), 16)
+    hazard(d, (w - 210, h - 58, w - 31, h - 31), 16)
+    # Letters spaced out, with a cold glow under them.
+    font, track = f(COND, 210), 26
+    widths = [d.textlength(ch, font=font) for ch in "NULLWAKE"]
+    x0, base = (w - (sum(widths) + track * 7)) / 2, 262
+    glow_ = Image.new("L", (w, h), 0)
+    sd = ImageDraw.Draw(glow_)
     x = x0
-    for ch, cw in zip("KINGBOUND", widths):
-        sd.text((x + 6, base + 8), ch, font=font, fill=200, anchor="ls")
+    for ch, cw in zip("NULLWAKE", widths):
+        sd.text((x, base), ch, font=font, fill=170, anchor="ls")
         x += cw + track
-    im.paste((8, 4, 12), (0, 0), shadow.filter(ImageFilter.GaussianBlur(6)))
+    im.paste(GOLD, (0, 0), glow_.filter(ImageFilter.GaussianBlur(14)))
     x = x0
-    for ch, cw in zip("KINGBOUND", widths):
-        d.text((x, base), ch, font=font, fill=GOLD, anchor="ls", stroke_width=3, stroke_fill=bronze)
+    for ch, cw in zip("NULLWAKE", widths):
+        d.text((x, base), ch, font=font, fill=CREAM, anchor="ls", stroke_width=2, stroke_fill=GOLD)
         x += cw + track
-    # A line under the name with a diamond in the middle.
-    for x1, x2 in ((x0, w / 2 - 22), (w / 2 + 22, x0 + sum(widths) + track * 8)):
-        d.line((x1, 282, x2, 282), fill=GOLD, width=3)
-    d.polygon([(w / 2, 270), (w / 2 + 12, 282), (w / 2, 294), (w / 2 - 12, 282)], fill=GOLD, outline=bronze)
     return save(im, "title.png")
 
 
@@ -427,16 +468,15 @@ for c in COLORS:
 title_img()
 RUBBLE = rubble_img()
 TOKEN_IMG = {}
-for k, (atk, pts, n) in MONSTERS.items():
-    TOKEN_IMG[("monster", k)] = token_front(f"mon-{k}.png", SYM_COL["attack"], k.upper(), "attack", atk,
-                                            f"{pts} POINT{'S' if pts > 1 else ''}")
-for k in TREASURES:
-    TOKEN_IMG[("treasure", k)] = token_front(f"tre-{k}.png", GOLD, k.upper(), "magic", 2, "PART OF A SET")
+for k, (name, hp, pts, n) in MONSTERS.items():
+    TOKEN_IMG[("monster", k)] = token_front(f"mon-{k}.png", SYM_COL["attack"], name.upper(), "attack", hp,
+                                            [f"{hp} HP", f"{pts} POINT{'S' if pts > 1 else ''}"])
+for k, (name, n) in TREASURES.items():
+    TOKEN_IMG[("treasure", k)] = token_front(f"tre-{k}.png", GOLD, name.upper(), "magic", 2, [f"ALONE: {SINGLE[k]}"],
+                                            title_col=(24, 92, 138))   # the cold blue ring is too light for letters
 for o in OBJECTS:
     TOKEN_IMG[("object", o)] = token_front(f"obj-{o.lower()}.png", OBJ_COL, f"OBJECT {o}", "magic", 2,
-                                           f"{OBJECT_POINTS} POINTS PLACED")
-AWAKE_IMG = token_front("mon-awakened.png", SYM_COL["attack"], "AWAKENED", "attack", MONSTERS["strong"][0],
-                        f"{MONSTERS['strong'][1]} POINTS")
+                                           ["PLACE IT", "IN ROUND 2"])
 # Symbol icons beside the part's name on screen (what the step costs), same look as the dice faces.
 for k, fn in (("move", "icon-move.png"), ("attack", "icon-attack.png"), ("magic", "icon-magic.png")):
     im = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
@@ -588,9 +628,10 @@ def tile(fn, transform, nick, back=None, circle=False, thick=0.12, desc="", **kw
 # for a fifth player, lies next to Red. rot is the mat's Y rotation: 180 reads from the south, 0 from
 # the north, 270 from the west, 90 from the east. The felt ends near x = ±28.3 and z = ±18.3.
 GRID = 3.7            # room spacing; rooms are 3.6 wide
-DUNGEON = (0.0, 0.0)  # the Safe Room, in the middle of the table
+DUNGEON = (0.0, 0.0)  # the Safe Zone, in the middle of the table
 ROOM_S = 1.8
-MAT_SIZE = (10.0, round(10.0 * MAT_H / MAT_W, 4))        # width, depth in table units
+MAT_DEPTH = round(10.0 * 680 / 1100, 4)                    # v2.0's depth; v2.1 is only wider
+MAT_SIZE = (round(MAT_DEPTH * MAT_W / MAT_H, 4), MAT_DEPTH)  # width, depth in table units: 12.7 x 6.2
 MAT_S = MAT_SIZE[1] / 2                                    # Stretch on: depth = 2 x scale
 EDGE_Z, EDGE_X = round(18.2 - MAT_SIZE[1] / 2, 3), round(28.2 - MAT_SIZE[1] / 2, 3)   # mats against the felt's edge
 MATS = {"Red": (7.5, -EDGE_Z, 180), "Purple": (-7.5, -EDGE_Z, 180), "Green": (0.0, EDGE_Z, 0),
@@ -622,7 +663,6 @@ RUBBLE_POS = (-18.0, 15.6)
 MON_PILE, TRE_PILE = (11.5, 15.6), (14.6, 15.6)
 EVENT_POS = (18.6, 15.2)    # the event deck, where v1.1's Loot Deck was
 EVENT_SHOW = (22.6, 15.2)   # the event card turned up for round 2
-AWAKE_POS = (22.6, 11.6)    # the awakened monster waits face down
 TITLE_POS = (-20.5, -15.4)
 PAWN_HOME = {c: mat_world(c, 70, -110) for c in COLORS}   # just inside the mat's top edge, towards the middle
 # Cards (measured live, 2026-10-25): a card cut from a square cell is 3.06 across at scale 1 and 0.027
@@ -639,9 +679,9 @@ def cell_pos(c): return (round(DUNGEON[0] + c[0] * GRID, 3), round(DUNGEON[1] + 
 
 # Pieces players move are unlocked; the director locks them while it films (OPS.reset with stage).
 objs = []
-objs.append(tile("title.png", tr(*TITLE_POS, s=1.2, y=1.02), "Kingbound", thick=0.05, Tags=["title"]))
-objs.append(tile(ROOM_IMG[(0, 0)], tr(*cell_pos((0, 0)), s=ROOM_S, y=0.98), "Safe Room", back=ROOM_BACK,
-                 desc="Start here. Bring your CARRIED treasure back here to secure it: move it to POINTS, no dice.",
+objs.append(tile("title.png", tr(*TITLE_POS, s=1.2, y=1.02), "NULLWAKE", thick=0.05, Tags=["title"]))
+objs.append(tile(ROOM_IMG[(0, 0)], tr(*cell_pos((0, 0)), s=ROOM_S, y=0.98), "Safe Zone", back=ROOM_BACK,
+                 desc="Everyone starts here. Be back here at 0:00 with an object placed to keep your points.",
                  Tooltip=True, Tags=["room", "saferoom"], GMNotes="0,0"))
 
 # Cards and decks. A deck lies face down; each card carries its identity in GM Notes, so the tutorial
@@ -670,9 +710,8 @@ def deck(nick, pos, key, cd, cards, tag, s):
 ROOM_DECK = cdeck("room-sheet.png", ROOM_BACK, ROOM_SHEET, "square")
 ROOM_TEXT = {"empty": "Nothing to fight or take.", "monster": "Turn a monster token face up on it.",
              "treasure": "Turn a treasure token face up on it.",
-             "special": f"Place each special object on its own place here: {OBJECT_POINTS} points for whoever places it. "
-                        "When all the places are filled, the goal is completed."}
-ROOM_NICK = {"empty": "Empty room", "monster": "Monster room", "treasure": "Treasure room", "special": "Special objects room"}
+             "special": "Four slots. In round 2, drop a special object here: that completes your special task."}
+ROOM_NICK = {k: ROOM_NAME[k] for k in ROOM_COUNT}
 room_cards = [card(ROOM_NICK[r["kind"]], ROOM_TEXT[r["kind"]], ROOM_KEY, ROOM_DECK, i, r["notes"], ROOM_CARD_S)
               for i, r in enumerate(ROOM_CARDS)]
 objs.append(deck("Rooms", STACK, ROOM_KEY, ROOM_DECK, room_cards, "roomdeck", ROOM_CARD_S))
@@ -682,23 +721,22 @@ objs.append(deck("Rooms", STACK, ROOM_KEY, ROOM_DECK, room_cards, "roomdeck", RO
 TOKEN_IDS = []
 MON_DECK = cdeck("mon-sheet.png", MON_BACK, MON_SHEET, "circle")
 cards = []
-for j, (k, (atk, pts, n)) in enumerate(MONSTERS.items()):
+for j, (k, (name, hp, pts, n)) in enumerate(MONSTERS.items()):
     for i in range(n):
         TOKEN_IDS.append(f"m-{k}-{i + 1}")
-        cards.append(card(f"{k.capitalize()} monster", f"Needs {atk} Attack. {pts} point{'s' if pts > 1 else ''}.",
-                          MON_KEY, MON_DECK, j, TOKEN_IDS[-1], TOKEN_CARD_S))
+        cards.append(card(name, f"{hp} HP: each Attack deals 1 damage, and damage stays. {pts} point{'s' if pts > 1 else ''}. "
+                          "Right-click: Hit.", MON_KEY, MON_DECK, j, TOKEN_IDS[-1], TOKEN_CARD_S))
 random.Random(11).shuffle(cards)
 objs.append(deck("Monster tokens", MON_PILE, MON_KEY, MON_DECK, cards, "mondeck", TOKEN_CARD_S))
 objs[-1]["Tags"].append("token")       # the tutorial makes both token decks glow
 TRE_DECK = cdeck("tre-sheet.png", TRE_BACK, TRE_SHEET, "circle")
-SET_RULE = (f"Needs 2 Magic. No points alone: one common, one rare and one special make a set worth {SET_POINTS} points. "
-            "Counts once secured in the Safe Room.")
-OBJECT_DESC = f"Needs 2 Magic. Place it on its own place in the special objects room: {OBJECT_POINTS} points for you."
+def treasure_desc(k): return f"Needs 2 Magic. Alone: {SINGLE[k]} point{'s' if SINGLE[k] != 1 else ''}. Combinations: see your mat."
+OBJECT_DESC = "Needs 2 Magic. In round 2, drop it on the Integration Chamber: that completes your special task."
 cards = []
-for j, (k, n) in enumerate(TREASURES.items()):
+for j, (k, (name, n)) in enumerate(TREASURES.items()):
     for i in range(n):
         TOKEN_IDS.append(f"t-{k}-{i + 1}")
-        cards.append(card(f"{k.capitalize()} treasure", SET_RULE, TRE_KEY, TRE_DECK, j, TOKEN_IDS[-1], TOKEN_CARD_S))
+        cards.append(card(name, treasure_desc(k), TRE_KEY, TRE_DECK, j, TOKEN_IDS[-1], TOKEN_CARD_S))
 for j, o in enumerate(OBJECTS):
     TOKEN_IDS.append(f"o-{j + 1}")
     cards.append(card(f"Object {o}", OBJECT_DESC, TRE_KEY, TRE_DECK, len(TREASURES) + j, TOKEN_IDS[-1], TOKEN_CARD_S))
@@ -706,23 +744,23 @@ random.Random(11).shuffle(cards)
 objs.append(deck("Treasure tokens", TRE_PILE, TRE_KEY, TRE_DECK, cards, "tredeck", TOKEN_CARD_S))
 objs[-1]["Tags"].append("token")
 
-# Destruction tokens (§5): v1.1's rubble, round cards.
+# Rock tokens (rules §10): round cards.
 RUBBLE_DECK = cdeck("rubble-sheet.png", RUBBLE, RUBBLE_SHEET, "circle")
-rubble_cards = [card("Destruction token", "This room is closed: nobody can go in.", RUBBLE_KEY, RUBBLE_DECK, 0,
+rubble_cards = [card("Rocks", "This room is blocked: nobody can go through it.", RUBBLE_KEY, RUBBLE_DECK, 0,
                      f"rubble-{i + 1}", TOKEN_CARD_S, hide=False) for i in range(RUBBLE_COUNT)]
-objs.append(deck("Destruction tokens", RUBBLE_POS, RUBBLE_KEY, RUBBLE_DECK, rubble_cards, "rubbledeck", TOKEN_CARD_S))
+objs.append(deck("Rock tokens", RUBBLE_POS, RUBBLE_KEY, RUBBLE_DECK, rubble_cards, "rubbledeck", TOKEN_CARD_S))
 
-# Event cards (§5), face down; START GAME shuffles them and round 2 turns the top one up.
+# The event card (rules §10), face down; round 2 turns it up. One card is a card, not a deck (TTS makes a deck
+# of at least two), so it carries the deck's tag itself.
 EVENT_DECK = cdeck("event-sheet.png", "event-back.png", (EVENT_COLS, EVENT_ROWS), "rounded")
 event_cards = [card(name, f"{what} {rule}", EVENT_KEY, EVENT_DECK, i, eid, 0.75) for i, (eid, name, what, rule) in enumerate(EVENTS)]
-random.Random(3).shuffle(event_cards)
-objs.append(deck("Event cards", EVENT_POS, EVENT_KEY, EVENT_DECK, event_cards, "eventdeck", 0.75))
-
-# The awakened monster: a token of its own, not in the monster deck, so nobody draws it in round 1. A tile,
-# not a card, so RESET TABLE puts it back like the pieces.
-objs.append(tile(AWAKE_IMG, tr(*AWAKE_POS, face_down=True, s=0.7, y=1.1), "Awakened monster", back=MON_BACK, circle=True,
-                 thick=0.1, desc=f"Needs {MONSTERS['strong'][0]} Attack. {MONSTERS['strong'][1]} points. "
-                                 "You can't leave its room until you beat it.", Locked=False, Tags=["awake"]))
+if len(event_cards) > 1:
+    objs.append(deck("Event cards", EVENT_POS, EVENT_KEY, EVENT_DECK, event_cards, "eventdeck", 0.75))
+else:
+    ev = event_cards[0]
+    ev["Transform"] = tr(*EVENT_POS, face_down=True, s=0.75, y=1.3)
+    ev["Tags"] = ["eventdeck"]
+    objs.append(ev)
 
 # Player mats, pawns (character tokens, §2.2) and 4 dice each (§2.3).
 DICE_IMG = url("dice.png")
@@ -758,47 +796,49 @@ LAYOUT = {"icons": {"M": url("icon-move.png"), "A": url("icon-attack.png"), "G":
           "colors": COLORS, "mats": MATS, "mat_size": MAT_SIZE, "mat_px": (MAT_W, MAT_H),
           "die_px": DIE_PX, "carry_px": CARRY_PX, "points_px": POINTS_PX,
           "pawn_home": PAWN_HOME, "faces": DIE_FACES, "game_secs": GAME_SECS, "round2_at": ROUND2_AT,
-          "event_show": EVENT_SHOW, "close_rooms": CLOSE_ROOMS, "chase_secs": CHASE_SECS,
-          "set_points": SET_POINTS, "object_points": OBJECT_POINTS, "objects": len(OBJECTS), "object_desc": OBJECT_DESC,
-          "points": {f"m-{k}": v[1] for k, v in MONSTERS.items()}}
+          "event_show": EVENT_SHOW, "close_rooms": CLOSE_ROOMS,
+          "objects": len(OBJECTS), "object_desc": OBJECT_DESC,
+          "monsters": {k: {"name": v[0], "hp": v[1], "points": v[2]} for k, v in MONSTERS.items()},
+          "mon_desc": {k: f"{v[1]} HP: each Attack deals 1 damage, and damage stays. {v[2]} point{'s' if v[2] > 1 else ''}. "
+                          "Right-click: Hit." for k, v in MONSTERS.items()}}
 LUA = (ROOT / "global.lua").read_text().replace("__VERSION__", VERSION).replace("__LAYOUT__", json.dumps(LAYOUT))
 
 XML = (
     # The 10-minute timer (§2.5, §10), top right.
     '<Panel id="kbTimer" active="false" rectAlignment="UpperRight" offsetXY="-24 -78" width="300" height="104" color="#000000C8">\n'
-    '  <Text id="kbTimerLabel" rectAlignment="UpperCenter" offsetXY="0 -4" height="26" fontSize="19" color="#D4AF4B" alignment="MiddleCenter">TIME LEFT</Text>\n'
-    '  <Text id="kbTimerText" rectAlignment="LowerCenter" offsetXY="0 2" height="76" fontSize="62" color="#F5ECD7" alignment="MiddleCenter">10:00</Text>\n'
+    '  <Text id="kbTimerLabel" rectAlignment="UpperCenter" offsetXY="0 -4" height="26" fontSize="19" color="#5CB0DE" alignment="MiddleCenter">TIME LEFT</Text>\n'
+    '  <Text id="kbTimerText" rectAlignment="LowerCenter" offsetXY="0 2" height="76" fontSize="62" color="#ECF0F2" alignment="MiddleCenter">10:00</Text>\n'
     '</Panel>\n'
     # The name of the current part, bottom centre (no sentences: the team explains it while presenting).
     # Up to 4 symbol icons follow the name: what the step costs (2 Movement, 3 Attack ...).
     # Small (Yavuz, 2026-10-19: "make the texts at the bottom smaller").
     '<Panel id="kbCaption" active="false" rectAlignment="LowerCenter" offsetXY="0 22" width="400" height="56" color="#000000DC">\n'
     '  <HorizontalLayout childAlignment="MiddleCenter" childForceExpandWidth="false" childForceExpandHeight="false" spacing="8" padding="16 16 6 6">\n'
-    '    <Text id="kbCaptionHead" preferredWidth="300" preferredHeight="44" fontSize="29" fontStyle="Bold" color="#D4AF4B" alignment="MiddleCenter" horizontalOverflow="Overflow" verticalOverflow="Overflow"></Text>\n'
+    '    <Text id="kbCaptionHead" preferredWidth="300" preferredHeight="44" fontSize="29" fontStyle="Bold" color="#5CB0DE" alignment="MiddleCenter" horizontalOverflow="Overflow" verticalOverflow="Overflow"></Text>\n'
     + "\n".join(f'    <Image id="kbIcon{i}" active="false" preferredWidth="38" preferredHeight="38"></Image>' for i in range(1, 5))
     + '\n  </HorizontalLayout>\n</Panel>\n'
     # Scores at the end, top centre over the dungeon (the camera is on the mats then).
-    f'<Panel id="kbScore" active="false" rectAlignment="UpperCenter" offsetXY="0 -96" width="660" height="{40 + 50 * len(COLORS)}" color="#000000E6">\n'
+    f'<Panel id="kbScore" active="false" rectAlignment="UpperCenter" offsetXY="0 -96" width="820" height="{40 + 50 * len(COLORS)}" color="#000000E6">\n'
     '  <VerticalLayout padding="24 24 14 14" spacing="6">\n'
-    + "\n".join(f'    <Text id="kbScore{i}" fontSize="34" fontStyle="Bold" color="#F5ECD7" alignment="MiddleLeft"></Text>' for i in range(1, len(COLORS) + 1))
+    + "\n".join(f'    <Text id="kbScore{i}" fontSize="30" fontStyle="Bold" color="#ECF0F2" alignment="MiddleLeft"></Text>' for i in range(1, len(COLORS) + 1))
     + '\n  </VerticalLayout>\n</Panel>\n'
     # A big centre banner for "go", "time's up" and the winner.
-    # Two lines at round 2: the round and the event (its name is long), so smaller than v1.1's 72.
+    # Two lines at round 2: the round and the event, so smaller than v1.1's 72.
     '<Panel id="kbBanner" active="false" rectAlignment="MiddleCenter" offsetXY="0 120" width="1200" height="170" color="#000000D2">\n'
-    '  <Text id="kbBannerText" fontSize="56" color="#D4AF4B" alignment="MiddleCenter"></Text>\n'
+    '  <Text id="kbBannerText" fontSize="56" color="#5CB0DE" alignment="MiddleCenter"></Text>\n'
     '</Panel>\n'
     # The buttons under TTS's own toolbar at the top left (Yavuz, 2026-10-13: few buttons, and not over the toolbar).
-    '<Button id="kbStart" rectAlignment="UpperLeft" offsetXY="8 -410" width="150" height="34" fontSize="15" color="#5C2C7A" textColor="#F5ECD7" onClick="startGame">START GAME</Button>\n'
-    '<Button id="kbReset" rectAlignment="UpperLeft" offsetXY="8 -450" width="150" height="34" fontSize="15" color="#3C2819" textColor="#F5ECD7" onClick="resetGame">RESET TABLE</Button>\n'
+    '<Button id="kbStart" rectAlignment="UpperLeft" offsetXY="8 -410" width="150" height="34" fontSize="15" color="#1C4668" textColor="#ECF0F2" onClick="startGame">START GAME</Button>\n'
+    '<Button id="kbReset" rectAlignment="UpperLeft" offsetXY="8 -450" width="150" height="34" fontSize="15" color="#2D3238" textColor="#ECF0F2" onClick="resetGame">RESET TABLE</Button>\n'
     # ROLL DICE rolls the clicking player's own 4 dice (Yavuz, 2026-10-26: "4 zarın birden rollanması lazım").
     # Pressed all game long, so it is bigger, gold, and kept apart from the two buttons that clear the table.
-    '<Button id="kbRoll" rectAlignment="UpperLeft" offsetXY="8 -520" width="150" height="48" fontSize="19" fontStyle="Bold" color="#D4AF4B" textColor="#1E1915" onClick="rollDice">ROLL DICE</Button>\n'
+    '<Button id="kbRoll" rectAlignment="UpperLeft" offsetXY="8 -520" width="150" height="48" fontSize="19" fontStyle="Bold" color="#5CB0DE" textColor="#181C22" onClick="rollDice">ROLL DICE</Button>\n'
 )
 
 now = time.localtime()
 save_json = {
     "SaveName": SAVE_NAME, "EpochTime": int(time.time()), "Date": time.strftime("%m/%d/%Y %I:%M:%S %p", now),
-    "VersionNumber": "v14.2.2", "GameMode": "Kingbound", "Tags": [], "Gravity": 0.5,
+    "VersionNumber": "v14.2.2", "GameMode": "NULLWAKE", "Tags": [], "Gravity": 0.5,
     "PlayArea": 0.5, "Table": "Table_RPG", "Sky": "Sky_Regal",
     "Note": "",
     "Hands": {"Enable": True, "DisableUnused": False, "Hiding": 0},
@@ -806,7 +846,7 @@ save_json = {
 }
 (OUT / f"{SAVE_NAME}.json").write_text(json.dumps(save_json, indent=1, ensure_ascii=False))
 shutil.copy(OUT / f"{SAVE_NAME}.json", SAVES / f"{SAVE_NAME}.json")
-print(f"{len(objs)} objects: decks of {len(room_cards)} rooms, {len(TOKEN_IDS)} tokens, {len(rubble_cards)} destruction tokens, "
+print(f"{len(objs)} objects: decks of {len(room_cards)} rooms, {len(TOKEN_IDS)} tokens, {len(rubble_cards)} rock tokens, "
       f"{len(event_cards)} event cards")
 print(f"images: {len(HASHED)}, {len(LOCAL)} of them local only (not on Steam Cloud){': ' + ', '.join(sorted(LOCAL)) if 0 < len(LOCAL) < 8 else ''}")
 print(f"save → {SAVES / (SAVE_NAME + '.json')}")

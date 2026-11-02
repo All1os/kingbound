@@ -2,7 +2,7 @@
 
 First sends the Global script and UI through the External Editor API's "Save & Play" (messageID 1).
 That reloads whatever save file TTS has open, so the objects come next: the table is cleared and every
-object of output/KINGBOUND-realtime.json is spawned, then the script's onLoad runs again so it
+object of output/NULLWAKE.json is spawned, then the script's onLoad runs again so it
 remembers the new starting places and decks. (Spawning first and reloading last only worked while the
 open file was the build itself: after a save made in TTS, the reload brought that save's objects back,
 seen 2026-10-25.) Needs TTS open with any game loaded.
@@ -15,7 +15,7 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).parent
-SAVE = ROOT / "output" / "KINGBOUND-realtime.json"
+SAVE = ROOT / "output" / "NULLWAKE.json"
 sys.path.insert(0, str(ROOT.parent))
 from tutorial import TTS  # noqa: E402
 
