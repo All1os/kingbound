@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## v2.0 (2026-11-02)
 
-The team's new design document (2026-11-02):
+The team's new design document:
 
 - Two rounds of 5 minutes: collect points, then escape. Round 2 starts with an event card.
 - Four event cards: Dungeon Collapse, Flood and Magical Chaos close 3 rooms with destruction tokens; The Awakening of the Monster brings a strong monster that chases the nearest player.
