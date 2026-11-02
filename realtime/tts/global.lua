@@ -538,7 +538,14 @@ local function closeRooms()
     local p = cellPos(rooms[i])
     Wait.time(function()
       takeCard("rubble-" .. i, {x = p.x, y = 2.6, z = p.z}, function(card)
-        Wait.time(function() settle(card, {x = p.x, y = CARD_ON_CARD + 0.1, z = p.z}, L.deck_s.rubble, nil) end, 0.4)
+        -- Locked at once and laid on top, never dropped: a round card falling on the room's round token
+        -- joins it into a deck (both destroyed; seen live 2026-11-02).
+        card.setLock(true)
+        Wait.time(function()
+          card.setScale({x = L.deck_s.rubble, y = 1, z = L.deck_s.rubble})
+          card.setPositionSmooth({x = p.x, y = CARD_ON_CARD + 0.05, z = p.z}, false, true)
+          glow(card, nil, 3)
+        end, 0.4)
       end)
     end, (i - 1) * 0.6)
   end
