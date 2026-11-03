@@ -80,11 +80,12 @@ ROOM_NAME = {"safe": "Safe Zone", "empty": "Unregistered Sector", "monster": "In
 # they are in the Safe Zone and have completed the special task; everyone else loses all their points (open:
 # the rules say "the points earned in the first round" and "uncredited points").
 GAME_SECS, ROUND2_AT = 600, 300
-# Event (rules §10): one card for now, Rockfall. Rocks go only into empty rooms: no character, monster,
-# treasure or special object in them. How many is open: 3, as v2.0's events closed.
+# Event (rules §10): one card for now, Rockfall. Rocks go only into empty rooms, that is Unregistered Sectors
+# (Yavuz, 2026-11-03: "empty roomdan kasıt unregistered sector"), and all of them close ("bütün boş odalar
+# kapanacak"), except one with a character in it (rules §10.4).
 EVENTS = [("E1", "Rockfall", "Part of the station collapses and some rooms become inaccessible.",
-           "Rocks fill 3 empty rooms. Nobody can go through them.")]
-CLOSE_ROOMS = 3
+           "Rocks fill every Unregistered Sector with nobody in it. Nobody can go through them.")]
+CLOSE_ROOMS = 6   # = ROOM_COUNT["empty"]: enough rock tokens for every Unregistered Sector
 RUBBLE_COUNT = CLOSE_ROOMS + 1   # one spare: taking a deck's last card stops the script (seen live, 2026-10-25)
 
 # ------------------------------------------------------------------ drawing helpers
@@ -537,7 +538,7 @@ rng.shuffle(SPARE)
 # loose tiles (Yavuz, 2026-10-25: "deste oluşturabilirsin"). The room deck, top card first: the
 # tutorial's rooms in the order it reveals them, then the spares. START GAME shuffles every deck.
 # The special objects room is "special" in its GM Notes: the script finds it there (objects placed).
-ROOM_CARDS = ([{"fn": ROOM_IMG[c], "kind": k, "notes": f"{c[0]},{c[1]}"} for c, k, _ in P.ROOMS]
+ROOM_CARDS = ([{"fn": ROOM_IMG[c], "kind": k, "notes": "special" if k == "special" else f"{c[0]},{c[1]}"} for c, k, _ in P.ROOMS]
               + [{"fn": fn, "kind": kind, "notes": "special" if kind == "special" else f"spare{i}"}
                  for i, (fn, kind) in enumerate(SPARE)])
 assert len(ROOM_CARDS) == sum(ROOM_COUNT.values())
@@ -797,15 +798,17 @@ LAYOUT = {"icons": {"M": url("icon-move.png"), "A": url("icon-attack.png"), "G":
           "die_px": DIE_PX, "carry_px": CARRY_PX, "points_px": POINTS_PX,
           "pawn_home": PAWN_HOME, "faces": DIE_FACES, "game_secs": GAME_SECS, "round2_at": ROUND2_AT,
           "event_show": EVENT_SHOW, "close_rooms": CLOSE_ROOMS,
-          "objects": len(OBJECTS), "object_desc": OBJECT_DESC,
+          "objects": len(OBJECTS), "object_desc": OBJECT_DESC, "obj_slot_px": OBJ_SLOT_PX, "room_w": 3.6,
+          "title_pos": TITLE_POS, "empty_name": ROOM_NAME["empty"],
           "monsters": {k: {"name": v[0], "hp": v[1], "points": v[2]} for k, v in MONSTERS.items()},
           "mon_desc": {k: f"{v[1]} HP: each Attack deals 1 damage, and damage stays. {v[2]} point{'s' if v[2] > 1 else ''}. "
                           "Right-click: Hit." for k, v in MONSTERS.items()}}
 LUA = (ROOT / "global.lua").read_text().replace("__VERSION__", VERSION).replace("__LAYOUT__", json.dumps(LAYOUT))
 
 XML = (
-    # The 10-minute timer (§2.5, §10), top right.
-    '<Panel id="kbTimer" active="false" rectAlignment="UpperRight" offsetXY="-24 -78" width="300" height="104" color="#000000C8">\n'
+    # The 10-minute timer, top right, below TTS's toolbar and the player list: a 16:9 crop of the screen
+    # without the toolbar (the gameplay video, 2026-11-03) keeps it whole.
+    '<Panel id="kbTimer" active="false" rectAlignment="UpperRight" offsetXY="-24 -150" width="300" height="104" color="#000000C8">\n'
     '  <Text id="kbTimerLabel" rectAlignment="UpperCenter" offsetXY="0 -4" height="26" fontSize="19" color="#5CB0DE" alignment="MiddleCenter">TIME LEFT</Text>\n'
     '  <Text id="kbTimerText" rectAlignment="LowerCenter" offsetXY="0 2" height="76" fontSize="62" color="#ECF0F2" alignment="MiddleCenter">10:00</Text>\n'
     '</Panel>\n'
@@ -818,7 +821,7 @@ XML = (
     + "\n".join(f'    <Image id="kbIcon{i}" active="false" preferredWidth="38" preferredHeight="38"></Image>' for i in range(1, 5))
     + '\n  </HorizontalLayout>\n</Panel>\n'
     # Scores at the end, top centre over the dungeon (the camera is on the mats then).
-    f'<Panel id="kbScore" active="false" rectAlignment="UpperCenter" offsetXY="0 -96" width="820" height="{48 + 58 * len(COLORS)}" color="#000000E6">\n'
+    f'<Panel id="kbScore" active="false" rectAlignment="UpperCenter" offsetXY="0 -160" width="820" height="{48 + 58 * len(COLORS)}" color="#000000E6">\n'
     '  <VerticalLayout padding="24 24 14 14" spacing="6">\n'
     + "\n".join(f'    <Text id="kbScore{i}" fontSize="30" fontStyle="Bold" color="#ECF0F2" alignment="MiddleLeft"></Text>' for i in range(1, len(COLORS) + 1))
     + '\n  </VerticalLayout>\n</Panel>\n'

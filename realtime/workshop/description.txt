@@ -9,7 +9,7 @@ Sit at Red, Yellow, Green, Blue or Purple. Your mat is on your side of the table
 [*]2 Movement: move to a connected room, or open a new one (round 1 only).
 [*]Monsters have 1, 2 or 3 HP (Scraper, Carrier, Anomaly) and give as many points. Each Attack deals 1 damage and the damage stays: right-click the monster, Hit.
 [*]2 Magic: take a treasure (Module, Archive, Specimen) or a special object. Treasure scores alone or in combinations: see your mat.
-[*]At 5:00 round 2 starts with Rockfall: rocks block 3 empty rooms and no new rooms can be opened.
+[*]At 5:00 round 2 starts with Rockfall: rocks block every Unregistered Sector with nobody in it and no new rooms can be opened.
 [*]In round 2, place a special object on the Integration Chamber. That is your special task.
 [*]At 0:00, only players in the Safe Zone who completed the task keep their points. Most points wins.
 [/list]

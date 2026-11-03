@@ -9,7 +9,7 @@ Kingbound is now NULLWAKE, set in ORPHEON, an abandoned research station. The te
 - Treasure: Modules, Archives and Specimens, scored with the table on your mat (a Module alone is 3, a combination like 2 Modules + 1 Archive is 5).
 - The mats are wider. CARRIED is gone: a TREASURE box, a MONSTERS box and the treasure points table.
 - The Integration Chamber has four slots, and there are four special objects. Objects are placed in round 2 only; placing one completes your special task. Objects no longer give points.
-- Round 2 has one event, Rockfall: rocks fill 3 empty rooms. No new rooms can be opened in round 2.
+- Round 2 has one event, Rockfall: rocks fill every Unregistered Sector (the empty rooms) with nobody in it. No new rooms can be opened in round 2.
 - At 0:00 the game shows who escaped: in the Safe Zone with the special task completed. Everyone else loses all their points. A tie is a draw.
 - Play in cycles: everyone rolls, rerolls once, acts, and waits for the others.
 - The save is now called NULLWAKE.

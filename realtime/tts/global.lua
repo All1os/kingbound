@@ -293,9 +293,9 @@ function viewFor(d)
   if v == "play" then return {position = {x = 0, y = 0, z = -4.0}, pitch = 62, yaw = 0, distance = 40} end
   if v == "dungeon" then return {position = {x = 0, y = 0, z = 1.5}, pitch = 70, yaw = 0, distance = 30} end
   if v == "mats" then return {position = {x = 0, y = 0, z = 0}, pitch = 75, yaw = 0, distance = 60} end
-  if v == "chart" then return {position = {x = -16.5, y = 0, z = -0.2}, pitch = 66, yaw = 0, distance = 16} end
-  if v == "supply" then return {position = {x = 4, y = 0, z = 7}, pitch = 64, yaw = 0, distance = 34} end
-  if v == "title" then return {position = {x = 0, y = 0, z = 15.8}, pitch = 70, yaw = 0, distance = 20} end
+  if v == "supply" then return {position = {x = 0, y = 0, z = 13}, pitch = 60, yaw = 0, distance = 42} end
+  if v == "title" then return {position = {x = L.title_pos[1], y = 0, z = L.title_pos[2]}, pitch = 70, yaw = 0, distance = 16} end
+  if v == "event" then return {position = {x = L.event_show[1] - 1.5, y = 0, z = L.event_show[2] - 1}, pitch = 66, yaw = 0, distance = 13} end
   if v == "mat" then
     local m = L.mats[d.color]
     return {position = {x = m[1], y = 0, z = m[2]}, pitch = 62, yaw = (m[3] + 180) % 360, distance = d.distance or 15}
@@ -451,7 +451,8 @@ function OPS.reveal(d)
   -- The room card of this cell comes off the room deck, turns over and lands next to the room it was
   -- revealed from, passages lined up (build.py drew them that way).
   local p = cellPos(d.cell)
-  takeCard(d.cell[1] .. "," .. d.cell[2], {x = p.x, y = 2.6, z = p.z}, function(card)
+  -- d.id: a room card known by another name (the Integration Chamber is "special").
+  takeCard(d.id or (d.cell[1] .. "," .. d.cell[2]), {x = p.x, y = 2.6, z = p.z}, function(card)
     Wait.time(function() settle(card, {x = p.x, y = CARD_Y, z = p.z}, L.deck_s.room, d.color) end, 0.4)
   end)
   if d.token then
@@ -530,7 +531,7 @@ function monsterHit(color, o, n)   -- global so the tests can call it
   if DMG[g] >= m.hp then
     o.setName(m.name .. " · beaten")
     if L.mats[color] then
-      broadcastToAll(color .. " beat the " .. m.name .. ": " .. m.points .. " point" .. (m.points > 1 and "s" or "") .. ".", GOLDEN)
+      if not STAGED then broadcastToAll(color .. " beat the " .. m.name .. ": " .. m.points .. " point" .. (m.points > 1 and "s" or "") .. ".", GOLDEN) end
       OPS.take({id = notes(o), color = color})
     end
   end
@@ -589,27 +590,28 @@ local function characterCells(open)
   end
   return out
 end
--- Rooms where rocks may go (rules §10): open rooms other than the Safe Zone with no character, monster,
--- treasure or special object in them, so not the Integration Chamber either. Shuffled.
+-- Rooms where rocks may go (rules §10 "empty rooms"; Yavuz, 2026-11-03: "empty roomdan kasıt unregistered
+-- sector"): open Unregistered Sectors with no character in them (and nothing a player left there). Shuffled.
 local function emptyRooms()
   local open = openRooms()
-  local taken, out = characterCells(open), {}
+  local taken, sectors, out = characterCells(open), {}, {}
   for _, o in ipairs(getObjects()) do
-    if o.type == "Card" and not isMain(o) then
+    if o.type == "Card" and not isMain(o) and not o.is_face_down then
       local k, c = kindOf(notes(o)), cellAt(o.getPosition())
-      if c and (k == "monster" or k == "treasure" or notes(o) == "special") then taken[key(c)] = true end
+      if c and k == "room" and o.getName() == L.empty_name then sectors[key(c)] = true end
+      if c and (k == "monster" or k == "treasure") then taken[key(c)] = true end
     elseif o.type == "Deck" and not isMain(o) then
       local c = cellAt(o.getPosition())   -- tokens players stacked in a room
       if c then taken[key(c)] = true end
     end
   end
-  for k, c in pairs(open) do if k ~= "0,0" and not taken[k] then table.insert(out, c) end end
+  for k, c in pairs(open) do if sectors[k] and not taken[k] then table.insert(out, c) end end
   for i = #out, 2, -1 do local j = math.random(1, i) out[i], out[j] = out[j], out[i] end
   return out
 end
 
-local function closeRooms()
-  local rooms = emptyRooms()
+local function closeRooms(cells)
+  local rooms = cells or emptyRooms()   -- the director chooses the rooms (empty ones) so the video can plan routes
   for i = 1, math.min(L.close_rooms, #rooms) do
     local p = cellPos(rooms[i])
     Wait.time(function()
@@ -634,16 +636,19 @@ local function roomDeckOpen(yes)
 end
 
 -- Round 2: the top event card turns up next to the event deck and its event happens.
+ROCK_CELLS = nil
 round2 = function()
   ROUND = 2
   UI.setValue("kbTimerLabel", "ROUND 2 · ESCAPE")
   roomDeckOpen(false)
   local function happen(card)
     OPS.banner({text = "ROUND 2: ESCAPE!\n" .. card.getName():upper()})
-    broadcastToAll("Round 2: " .. card.getName() .. ". " .. card.getDescription()
-      .. " No new rooms now. Place a special object on the Integration Chamber and be back in the Safe Zone at 0:00,"
-      .. " or you lose all your points.", GOLDEN)
-    closeRooms()
+    if not STAGED then
+      broadcastToAll("Round 2: " .. card.getName() .. ". " .. card.getDescription()
+        .. " No new rooms now. Place a special object on the Integration Chamber and be back in the Safe Zone at 0:00,"
+        .. " or you lose all your points.", GOLDEN)
+    end
+    closeRooms(ROCK_CELLS)
     Wait.time(function() if ROUND == 2 and TIMER.left > 0 then OPS.banner({}) end end, 6)
   end
   local deck = mainDeck("event")
@@ -686,6 +691,40 @@ function onObjectDrop(color, o)
   end
 end
 
+-- ------------------------------------------------------------------ the director's game ops (tutorial.py)
+local function tableCard(id)
+  for _, o in ipairs(getObjects()) do if o.type == "Card" and notes(o) == id then return o end end
+end
+function OPS.hit(d)
+  -- d.n Attacks on the monster token d.id, from d.color (a beaten one goes to that player's mat).
+  local o = tableCard(d.id)
+  if not o then return end
+  for _ = 1, d.n or 1 do monsterHit(d.color, o, 1) end
+  glow(o, d.color, 2)
+end
+function OPS.place(d)
+  -- The object d.id goes from the mat onto slot d.slot (1-4) of the Integration Chamber and completes d.color's task.
+  local o = tableCard(d.id)
+  local r = tableCard("special")
+  if not o or not r then return end
+  local px = L.obj_slot_px[d.slot or 1]
+  local c = r.getPosition()
+  local p = {x = c.x + (px[1] / 512 - 0.5) * L.room_w, y = CARD_ON_CARD + 0.03, z = c.z - (px[2] / 512 - 0.5) * L.room_w}
+  o.setLock(true)
+  o.setScale({x = L.deck_s.monster, y = 1, z = L.deck_s.monster})
+  o.setPositionSmooth(p, false, true)
+  o.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)
+  PLACED[o.getGUID()] = true
+  TASK[d.color] = true
+  glow(o, d.color, 3)
+end
+function OPS.round2(d)
+  -- Round 2 now, with the rocks in d.cells (the director's choice of empty rooms).
+  ROCK_CELLS = d.cells
+  round2()
+end
+function OPS.label(d) UI.setValue("kbTimerLabel", d.text) end
+
 -- ------------------------------------------------------------------ reset
 -- Every object's starting place is remembered at load; RESET TABLE (or the director) puts it back.
 HOME = {}
@@ -721,7 +760,7 @@ function OPS.reset(d)
     if alive(o) then o.setLock(false) o.setDescription(L.object_desc) end
   end
   PLACED, TASK, DMG = {}, {}, {}
-  ROUND = 1
+  ROUND, ROCK_CELLS = 1, nil
   roomDeckOpen(true)
   UI.setValue("kbTimerLabel", "TIME LEFT")
   gatherCards()

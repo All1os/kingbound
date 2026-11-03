@@ -1,14 +1,16 @@
-"""Plays the Kingbound real-time tutorial in a running Tabletop Simulator, for the team's video.
+"""Plays the NULLWAKE tutorial in a running Tabletop Simulator, for the team's gameplay video.
 
-  python3 tutorial.py               play it (the save KINGBOUND-realtime must be loaded)
+  python3 tutorial.py               play it (the save NULLWAKE must be loaded)
   python3 tutorial.py --dry-run     print the captions with their times, no TTS
   python3 tutorial.py --record out.mov   also record the screen (macOS screencapture) while it plays
+  python3 tutorial.py --cues cues.md     write what to say, second by second
 
-It teaches the game for the team's presentation (at most 5 minutes, the team talks over the video):
-the goal, setup, one player practising without the timer, bigger challenges, then a real game with
-everyone at once. On screen there is only the name of each part and the symbols it costs; what to say
-is in the cue sheet (--cues). The dice faces are set by this script so each rule is shown once,
-including the document's own example (§5: 2 Attack, 1 Movement, 1 Magic against a medium monster).
+It follows the video script of the team's rules (2026-11-03, part 2): its 13 scenes in order, except that
+opening a room (scene 4) comes before moving (scene 3), because at the start no room is open to move into.
+On screen there is only the name of each part and the symbols it costs (Yavuz, 2026-10-19: the team talks
+over the video); what to say is the document's voiceover, in the cue sheet, corrected where it doesn't match
+the game: a room costs 2 Movement to open and 2 to enter, and there is no "special" symbol (Yavuz,
+2026-11-03: "eski oyundaki gibi"). The dice faces are set by this script so each rule is shown once.
 """
 import argparse
 import json
@@ -89,16 +91,12 @@ class TTS:
 
 
 # ------------------------------------------------------------------ the script
-# How it teaches (Yavuz, 2026-10-19: "explain it like to a child"; the team talks over the video in a
-# presentation of at most 5 minutes, for a teacher who must understand the game). From the course
-# book, Adams & Dormans, Game Mechanics: rules in small chunks, first in a safe place where mistakes
-# cost nothing (p. 31); every chunk is one action and its visible result (skill atoms, p. 238-239);
-# the order of karate training: one move, the move repeated, moves combined, a free fight (p. 241-242).
-# So: the goal first, setup, one player practising without the timer, bigger challenges with the
-# known moves sped up, then the real game with everyone at once.
+# How it teaches (Yavuz, 2026-10-19: "explain it like to a child"; from the course book, Adams & Dormans:
+# rules in small chunks, first where mistakes cost nothing, p. 31; one action and its visible result each,
+# p. 238-239): one player at a time and slowly for each new rule (scenes 2-8), then everyone at once, fast,
+# with moves the viewer already knows (scenes 9 and 11).
 STEPS = []          # (seconds to wait after, [commands])
 rng = random.Random(5)
-NEED = {"weak": "AA", "medium": "AAA", "strong": "AAAA"}
 
 
 def step(wait, *cmds):
@@ -125,8 +123,11 @@ def keep(color, *dice, secs=3, delay=0):
     return {"op": "keep", "color": color, "dice": list(dice), "secs": secs, "delay": delay}
 
 
-def reveal(color, cell, token=None, delay=0):
-    return {"op": "reveal", "color": color, "cell": list(cell), "token": token, "delay": delay}
+def reveal(color, cell, token=None, delay=0, rid=None):
+    d = {"op": "reveal", "color": color, "cell": list(cell), "token": token, "delay": delay}
+    if rid:
+        d["id"] = rid
+    return d
 
 
 def move(color, *cells, delay=0):
@@ -136,9 +137,10 @@ def move(color, *cells, delay=0):
 def take(color, tid, delay=0): return {"op": "take", "color": color, "id": tid, "delay": delay}
 
 
-def need_of(tid):
-    """What a token costs: monsters by strength, treasures 2 Magic (§5)."""
-    return NEED[tid.split("-")[1]] if tid.startswith("m-") else "GG"
+def hit(color, tid, n, delay=0): return {"op": "hit", "color": color, "id": tid, "n": n, "delay": delay}
+
+
+def place(color, tid, slot, delay=0): return {"op": "place", "color": color, "id": tid, "slot": slot, "delay": delay}
 
 
 def filler(syms):
@@ -149,161 +151,194 @@ def filler(syms):
 
 def act(color, kind, *args):
     """A move the viewer already knows, in one beat: the roll lands, the dice that count glow, it happens.
-    kind: "reveal" (cell, token), "move" (cells...), "take" (token id), "fail" (strong monster, 3 Attack)."""
-    # The symbols that count come first, so dice 1..n are the ones that glow.
-    if kind == "fail":
-        syms, n = "AAAM", 3
-    elif kind == "take":
-        need = need_of(args[0])
-        syms, n = filler(need), len(need)
+    kind: "reveal" (cell, token or None, room id), "move" (cells...), "take" (token id), "hit" (monster id,
+    Attacks), "place" (object id, slot: no dice), "blocked" (2 Movement, but the way is shut), "wait" (no luck)."""
+    if kind == "place":
+        return [place(color, args[0], args[1])]
+    if kind == "wait":      # a roll with nothing useful in it
+        return [roll(color, rng.choice(["AAGG", "AGAG", "GGAA"]))]
+    if kind == "take":
+        syms, n = filler("GG"), 2
+    elif kind == "hit":
+        syms, n = filler("A" * args[1]), args[1]
     else:
         syms, n = filler("MM"), 2
     cmds = [roll(color, syms), keep(color, *range(1, n + 1), delay=0.7)]
     if kind == "reveal":
-        cmds.append(reveal(color, args[0], args[1] if len(args) > 1 else None, delay=0.8))
+        cmds.append(reveal(color, args[0], args[1] if len(args) > 1 else None, delay=0.8,
+                           rid=args[2] if len(args) > 2 else None))
     elif kind == "move":
         cmds.append(move(color, *args, delay=0.8))
     elif kind == "take":
         cmds.append(take(color, args[0], delay=0.8))
+    elif kind == "hit":
+        cmds.append(hit(color, args[0], args[1], delay=0.8))
+    elif kind == "blocked":
+        cmds.append({"op": "spot", "color": color, "secs": 3, "delay": 0.8})
     return cmds
 
 
-# --- 1. what the game is: the goal first, so every rule after it has a reason
+# --- scene 1: game start
 step(2.0, {"op": "reset", "stage": True}, {"op": "button", "show": False}, {"op": "nocaption"}, {"op": "timer", "hide": True})
-step(4.5, cam("title"), cap("KINGBOUND", "This is Kingbound: a dungeon race for 3 to 5 players."))
-step(5.5, cam("mats"), {"op": "timer", "left": 600}, {"op": "glowtag", "tag": "mat", "secs": 5},
-     cap("GOAL", "The goal: have the most points when the 10-minute timer runs out."))
-step(4.5, cam("table"), {"op": "glowtag", "tag": "pawn", "secs": 4},
-     cap("NO TURNS", "There are no turns. Everybody plays at the same time."))
+step(6.0, cam("title"), cap("NULLWAKE", "NULLWAKE is a competitive exploration game. Players explore the station's rooms, fight "
+                                        "monsters, collect treasures, and escape before time runs out."))
+step(4.5, cam("mats"), {"op": "deal"}, {"op": "glowtag", "tag": "mat", "secs": 4},
+     cap("SETUP", "Everyone sits at their own mat and takes 4 dice."))
+step(4.5, cam("dungeon"), {"op": "pawns"}, cap("SAFE ZONE", "Every character starts in the Safe Zone."))
+step(4.5, cam("supply"), {"op": "shuffle"}, {"op": "glowtag", "tag": "token", "secs": 4},
+     cap("SETUP", "The rooms are shuffled face down. Monster and treasure tokens wait next to them."))
+step(6.0, cam("play"), {"op": "timer", "left": 600}, {"op": "label", "text": "ROUND 1 · COLLECT POINTS"},
+     cap("TWO ROUNDS", "The game has two rounds of five minutes: scoring points, then escaping. "
+                       "All players act simultaneously."))
 
-# --- 2. setup (§3), one piece at a time
-step(4.5, cam("mats"), {"op": "deal"}, {"op": "timer", "hide": True},
-     cap("SETUP", "Everyone takes a character and 4 dice."))
-step(4.0, cam("dungeon"), {"op": "pawns"}, cap("SETUP", "All characters start in the start room, in the middle."))
-step(4.0, cam("supply"), {"op": "shuffle"},
-     cap("SETUP", "The other rooms are shuffled face down. Nobody knows what is inside."))
-step(4.5, {"op": "glowtag", "tag": "token", "secs": 4}, {"op": "glowtag", "tag": "lootdeck", "secs": 4},
-     cap("SETUP", "Monster tokens, treasure tokens and the Loot Deck wait next to them."))
+# --- scene 2: first dice roll
+step(4.0, cam("mats"), roll("Red", "MMAG"), roll("Yellow", "GAMM"), roll("Green", "AGMG"), roll("Blue", "MAAG"),
+     cap("ROLL", "At the beginning of each game cycle, all players roll their dice simultaneously."))
+step(3.5, cam("mat", color="Red", distance=11), keep("Red", 1, 2), cap("MOVEMENT", "Green is Movement: it moves you through the station.", "M"))
+step(3.0, keep("Red", 3), cap("ATTACK", "Red is Attack: it is used against monsters.", "A"))
+step(3.0, keep("Red", 4), cap("MAGIC", "Blue is Magic: it takes treasures and special objects.", "G"))
+step(4.0, keep("Red", 1, 2, secs=5), cap("REROLL", "Keep the results you need and reroll the others, once. "
+                                                     "Everyone rerolls at the same time."))
+step(3.0, roll("Red", "MM", dice=(3, 4)))
+step(3.0, keep("Red", 1, 2, 3, 4), cap("LOCKED", "After the reroll the results are locked until the next cycle. "
+                                                 "Each die is used once."))
 
-# --- 3. practice: one player, no timer, every rule once and slowly (kihon)
-step(4.0, cam("cell", cell=(0, -1), color="Red", distance=22), {"op": "spot", "color": "Red", "secs": 4},
-     cap("PRACTICE", "First we watch one player, Bora, without the timer."))
-step(3.5, cam("mat", color="Red", distance=10), roll("Red", "MAGM"),
-     cap("DICE", "Each die shows one of three symbols."))
-step(3.0, keep("Red", 1, 4), cap("MOVEMENT", "Green is Movement.", "M"))
-step(3.0, keep("Red", 2), cap("ATTACK", "Red is Attack.", "A"))
-step(3.0, keep("Red", 3), cap("MAGIC", "Blue is Magic.", "G"))
-step(3.0, cam("cell", cell=(0, -1), color="Red", distance=22), roll("Red", "MMAG"),
-     cap("ROLL", "Bora rolls his 4 dice."))
-step(4.5, keep("Red", 1, 2), reveal("Red", (0, -1)),
-     cap("NEW ROOM", "Two Movement: he takes a new room and puts it next to his room, doors connected.", "MM"))
-step(2.5, roll("Red", "MGMA"), cap("MOVE", "He rolls again: two Movement...", "MM"))
-step(3.5, keep("Red", 1, 3), move("Red", (0, -1)), cap("MOVE", "...and he walks into the new room. It is empty.", "MM"))
-step(3.0, *act("Red", "reveal", (0, -2), "m-weak-1"), cap("NEW ROOM", "Two Movement again: another room...", "MM"))
-step(3.0, cap("WEAK MONSTER", "...with a monster in it. A weak monster needs 2 Attack.", "AA"))
-step(2.5, *act("Red", "move", (0, -2)), cap("MOVE", "He walks in.", "MM"))
-step(3.5, roll("Red", "AMGM"), cap("FIGHT", "He rolls for the fight: only one Attack.", "AA"))
-step(4.0, keep("Red", 1, secs=6), cap("REROLL", "Not enough? Keep the good dice and roll the others again."))
-step(3.0, roll("Red", "AGM", dice=(2, 3, 4)))
-step(4.0, keep("Red", 1, 2), take("Red", "m-weak-1"),
-     cap("DEFEATED", "Two Attack: the monster is defeated and goes on his mat."))
-step(4.0, cam("mat", color="Red", distance=11),
-     cap("POINTS", "Everything on your mat is points. A weak monster is 1 point."))
-# the same moves again, faster (kihon-kata)
-step(2.5, cam("cell", cell=(-1, -2), color="Red", distance=22), *act("Red", "reveal", (-1, -2), "t-common-2"),
-     cap("NEW ROOM", "Again: two Movement, a new room...", "MM"))
-step(2.5, cap("TREASURE", "...with a treasure."))
-step(2.5, *act("Red", "move", (-1, -2)), cap("MOVE", "He walks in...", "MM"))
-step(3.5, *act("Red", "take", "t-common-2"), cap("TREASURE", "...and two Magic collect the treasure: 1 more point.", "GG"))
-step(6.0, cam("chart"), cap("ACTIONS", "That is the whole game: roll, collect symbols, do an action, take the "
-                                       "reward, roll again. This card shows every action."))
+# --- scene 4 (before 3): opening a new room
+step(4.5, cam("cell", cell=(0, -1), color="Red", distance=22), keep("Red", 1, 2), reveal("Red", (0, -1), delay=0.4),
+     cap("NEW ROOM", "Two Movement open a new room: take a room card and connect its passage to an open passage.", "MM"))
+step(4.0, cap("PASSAGES", "Passages must connect to passages. You cannot connect a passage to a wall or block a passage."))
 
-# --- 4. bigger challenges: known moves fast, new things slow (kata)
-step(2.5, cam("cell", cell=(-1, 0), color="Yellow", distance=22), *act("Yellow", "reveal", (-1, 0), "m-medium-1"),
-     cap("NEW ROOM", "Bigger monsters need more Attack. Anastasya finds one.", "MM"))
-step(2.5, *act("Yellow", "move", (-1, 0)), cap("MEDIUM MONSTER", "A medium monster needs 3 Attack.", "AAA"))
-step(3.5, roll("Yellow", "AAMG"), cap("FIGHT", "Two Attack, one Movement, one Magic: not enough.", "AAA"))
-step(3.0, keep("Yellow", 1, 2, secs=4), roll("Yellow", "AG", dice=(3, 4)),
-     cap("REROLL", "She keeps the Attacks and rolls the other two."))
-step(3.5, keep("Yellow", 1, 2, 3), take("Yellow", "m-medium-1"),
-     cap("DEFEATED", "Three Attack: 2 points."))
-step(2.5, cam("cell", cell=(1, 0), color="Blue", distance=22), *act("Blue", "reveal", (1, 0), "m-strong-1"),
-     cap("STRONG MONSTER", "Esma finds a strong monster: 4 Attack, 4 points.", "AAAA"))
-step(2.0, *act("Blue", "move", (1, 0)))
-step(2.5, roll("Blue", "AMAG"), cap("FIGHT", "Two Attack...", "AAAA"))
-step(2.5, keep("Blue", 1, 3), roll("Blue", "GA", dice=(2, 4)), cap("REROLL", "...three..."))
-step(2.5, keep("Blue", 1, 3, 4), roll("Blue", "M", dice=(2,)), cap("REROLL", "...still three."))
-step(4.0, {"op": "spot", "color": "Blue", "secs": 4},
-     cap("TOO HARD", "In the real game the timer never stops, so she can leave it and try something easier."))
-step(2.5, cam("cell", cell=(0, 1), color="Green", distance=24), *act("Green", "reveal", (0, 1), "t-special-1"),
-     cap("SPECIAL TREASURE", "Amira finds a special treasure.", "GG"))
-step(2.0, *act("Green", "move", (0, 1)))
-step(3.5, *act("Green", "take", "t-special-1"), {"op": "loot", "color": "Green", "id": "L1", "delay": 0.9},
-     cap("SPECIAL TREASURE", "Two Magic: 1 point and a card from the Loot Deck.", "GG"))
-step(5.0, cam("mat", color="Green", distance=10), {"op": "glowloot", "color": "Green", "secs": 5},
-     cap("LOOT", "Her Iron Sword counts as one Attack in every fight.", "A"))
-step(2.5, cam("cell", cell=(0, 2), color="Green", distance=26), *act("Green", "reveal", (0, 2), "m-weak-2"),
-     cap("USE LOOT", "A weak monster needs 2 Attack...", "AA"))
-step(2.0, *act("Green", "move", (0, 2)))
-step(3.0, roll("Green", "AGMG"), cap("USE LOOT", "...she rolls only one...", "AA"))
-step(4.0, keep("Green", 1), {"op": "glowloot", "color": "Green", "secs": 4}, take("Green", "m-weak-2", delay=0.5),
-     cap("USE LOOT", "...and the sword is the second. Defeated.", "AA"))
+# --- scene 3: movement
+step(4.0, keep("Red", 3, 4), move("Red", (0, -1), delay=0.4),
+     cap("MOVE", "Two more Movement: Bora moves into the room. You can only move through open passages.", "MM"))
 
-# --- 5. the real game: everyone at once, the timer running (kumite)
-step(3.0, {"op": "reset", "stage": True}, cam("table"), cap("REAL GAME", "Now a real game, from the start."))
-step(3.5, {"op": "deal"}, {"op": "pawns"}, {"op": "timer", "left": 600},
-     cap("10 MINUTES", "Same setup, and the timer is set to 10 minutes."))
-step(1.5, cam("play"), {"op": "nocaption"}, {"op": "banner", "text": "GO!"}, {"op": "timer", "left": 600, "run": True})
-# Each player's own sequence; one beat = every player acts at once.
-SEQ = {
-    "Red": [("reveal", (0, -1)), ("move", (0, -1)), ("reveal", (0, -2), "m-weak-1"), ("move", (0, -2)),
-            ("take", "m-weak-1"), ("reveal", (-1, -2), "t-common-2"), ("move", (-1, -2)), ("take", "t-common-2"),
-            ("reveal", (-2, -2), "m-medium-3"), ("move", (-2, -2)), ("take", "m-medium-3")],
-    "Yellow": [("reveal", (-1, 0), "m-medium-1"), ("move", (-1, 0)), ("take", "m-medium-1"),
-               ("reveal", (-2, 0), "t-rare-1"), ("move", (-2, 0)), ("take", "t-rare-1"),
-               ("reveal", (-2, 1), "m-medium-2"), ("move", (-2, 1)), ("take", "m-medium-2"), ("move", (-2, 0)),
-               ("reveal", (-2, -1), "t-common-3"), ("move", (-2, -1)), ("take", "t-common-3")],
-    "Green": [("reveal", (0, 1), "t-special-1"), ("move", (0, 1)), ("take", "t-special-1"),
-              ("reveal", (0, 2), "m-weak-2"), ("move", (0, 2)), ("take", "m-weak-2"),
-              ("reveal", (-1, 2), "t-rare-3"), ("move", (-1, 2)), ("take", "t-rare-3"), ("move", (0, 2)),
-              ("reveal", (1, 2), "t-rare-2"), ("move", (1, 2)), ("take", "t-rare-2")],
-    "Blue": [("reveal", (1, 0), "m-strong-1"), ("move", (1, 0)), ("fail",), ("fail",),
-             ("reveal", (2, 0), "t-common-1"), ("move", (2, 0)), ("take", "t-common-1"),
-             ("reveal", (2, 1), "m-weak-3"), ("move", (2, 1)), ("take", "m-weak-3"), ("move", (2, 0)), ("move", (1, 0))],
+# --- scene 5: monster encounter
+step(3.0, roll("Red", "MMAG"), cap("NEXT CYCLE", "When everyone has finished, the next cycle begins."))
+step(4.5, keep("Red", 1, 2), reveal("Red", (0, -2), "m-strong-1", delay=0.4),
+     cap("MONSTER", "Some rooms contain monsters.", "MM"))
+step(4.5, cam("cell", cell=(0, -2), distance=10), cap("3 HP", "Each monster has health. This Anomaly has 3 HP.", "AAA"))
+step(3.0, cam("cell", cell=(0, -2), color="Red", distance=22), roll("Red", "MMAA"), cap("NEXT CYCLE", "Next cycle."))
+step(4.0, keep("Red", 1, 2), move("Red", (0, -2), delay=0.4),
+     cap("SAME ROOM", "To attack a monster, the player must be in the same room.", "MM"))
+
+# --- scene 6: monster battle (3 HP: 2 damage, then 1 in the next cycle)
+step(4.0, keep("Red", 3, 4), hit("Red", "m-strong-1", 2, delay=0.4),
+     cap("2 DAMAGE", "Each Attack deals one damage. Two Attack: two damage.", "AA"))
+step(3.5, cam("cell", cell=(0, -2), distance=10), cap("1 HP LEFT", "The monster has one health left, and the damage stays."))
+step(3.0, cam("cell", cell=(0, -2), color="Red", distance=22), roll("Red", "AGMM"), cap("NEXT CYCLE", "In the next cycle..."))
+step(4.5, keep("Red", 1), hit("Red", "m-strong-1", 1, delay=0.4),
+     cap("DEFEATED", "...one more Attack, and the monster is defeated. It goes to his mat.", "A"))
+step(4.5, cam("mat", color="Red", distance=11), cap("3 POINTS", "An Anomaly gives 3 points. You don't have to fight every "
+                                                                  "monster: you can look for another route."))
+
+# --- scene 7: treasure collection (Anastasya, the known moves faster)
+step(3.0, cam("cell", cell=(-1, 0), color="Yellow", distance=22), *act("Yellow", "reveal", (-1, 0), "t-module-1"),
+     cap("TREASURE", "Three types of treasure can be found in the station.", "MM"))
+step(2.5, *act("Yellow", "move", (-1, 0)))
+step(3.5, *act("Yellow", "take", "t-module-1"), cap("MODULE", "Two Magic take a treasure: a Module...", "GG"))
+step(2.5, cam("cell", cell=(-2, 0), color="Yellow", distance=22), *act("Yellow", "reveal", (-2, 0), "t-archive-1"))
+step(2.5, *act("Yellow", "move", (-2, 0)))
+step(3.0, *act("Yellow", "take", "t-archive-1"), cap("ARCHIVE", "...an Archive...", "GG"))
+step(2.5, *act("Yellow", "reveal", (-2, -1), "t-specimen-1"))
+step(2.5, *act("Yellow", "move", (-2, -1)))
+step(3.0, *act("Yellow", "take", "t-specimen-1"), cap("SPECIMEN", "...and a Specimen.", "GG"))
+step(7.0, cam("mat", color="Yellow", distance=12),
+     cap("COMBINATIONS", "Treasures give points alone or in combinations. Two Modules and one Archive give five points. "
+                         "Three Archives give four. A Module, an Archive and a Specimen give four."))
+step(3.5, cap("ONE EACH", "A single treasure counts in one combination only."))
+
+# --- scene 8: the special tile
+step(3.0, cam("cell", cell=(0, 1), color="Green", distance=22), *act("Green", "reveal", (0, 1), None, "special"),
+     cap("SPECIAL TILE", "Amira opens a special room: the Integration Chamber.", "MM"))
+step(5.0, cam("cell", cell=(0, 1), distance=9),
+     cap("4 SLOTS", "It has four slots for special objects. They are linked to the special task of round two."))
+step(4.0, cap("OBJECTS", "The objects hide among the treasure tokens. Take one with two Magic now; you place it in round two."))
+
+# --- scene 9: end of the first round (everyone at once, fast)
+R1 = {
+    "Red": [("reveal", (-1, -2), "o-4"), ("move", (-1, -2)), ("take", "o-4"), ("reveal", (-1, -1), "t-archive-2"),
+            ("move", (-1, -1)), ("take", "t-archive-2"),
+            # Bora ends round 1 in the Unregistered Sector (0,-1): no rock goes there, as a player stands in it.
+            ("move", (-1, -2)), ("move", (0, -2)), ("move", (0, -1))],
+    "Yellow": [("reveal", (-2, -2)), ("move", (-2, 0)), ("reveal", (-2, 1), "m-medium-1"), ("move", (-2, 1)), ("hit", "m-medium-1", 2),
+               ("move", (-2, 0)), ("move", (-1, 0)), ("reveal", (-1, 1), "o-3"), ("move", (-1, 1)), ("take", "o-3")],
+    "Green": [("move", (0, 1)), ("reveal", (1, 1), "o-2"), ("move", (1, 1)), ("take", "o-2"), ("reveal", (1, 2)), ("move", (0, 1)),
+              ("reveal", (0, 2), "m-weak-2"), ("move", (0, 2)), ("hit", "m-weak-2", 1)],
+    "Blue": [("reveal", (1, 0)), ("move", (1, 0)), ("reveal", (2, 0), "t-module-2"), ("move", (2, 0)), ("take", "t-module-2"),
+             ("reveal", (2, -1), "m-weak-1"), ("move", (2, -1)), ("hit", "m-weak-1", 1), ("reveal", (1, -1), "m-weak-3"),
+             ("move", (2, 0)), ("reveal", (2, 1), "o-1"), ("move", (2, 1)), ("take", "o-1")],
 }
-BEATS = max(len(v) for v in SEQ.values())
-for k in range(BEATS):
-    cmds = []
-    for color, seq in SEQ.items():
-        if k < len(seq):
-            cmds += act(color, *seq[k])
-            if seq[k] == ("take", "t-special-1"):
-                cmds.append({"op": "loot", "color": "Green", "id": "L1", "delay": 0.9})
+BEAT = 1.9
+beats = max(len(v) for v in R1.values())
+for k in range(beats):
+    cmds = [c for color, seq in R1.items() if k < len(seq) for c in act(color, *seq[k])]
     if k == 0:
-        step(4.0, {"op": "banner"}, *cmds, cap("SAME TIME", "Everyone rolls and acts at the same time."))
+        step(4.0, cam("play"), {"op": "timer", "left": 590, "run": True}, *cmds,
+             cap("SAME TIME", "Players explore different parts of the station at the same time."))
     elif k == 1:
-        step(1.9, *cmds, {"op": "timer", "rate": 25, "run": True},
-             cap("FAST FORWARD", "Fast forward: the dungeon grows, monsters fall, treasures are taken."))
+        step(BEAT, *cmds, {"op": "timer", "rate": 12, "run": True},   # 12 beats of 1.9 s: about 9:46 down to 5:00
+             cap("FAST FORWARD", "Everyone chooses their own route and how to spend their dice."))
     else:
-        step(1.9, *cmds)
-step(3.5, cam("cell", cell=(1, 0), color="Blue", distance=24), {"op": "timer", "left": 11, "run": True},
-     cap("LAST SECONDS", "The last seconds: Esma is back at the strong monster."))
-step(2.5, roll("Blue", "AAAA"))
-step(3.5, keep("Blue", 1, 2, 3, 4, secs=5), take("Blue", "m-strong-1"),
-     cap("DEFEATED", "Four Attack, just in time: 4 points."))
-step(1.5, {"op": "timer", "left": 0})
-step(4.0, cam("mats"), {"op": "banner", "text": "TIME'S UP!"},
-     cap("END", "When the timer ends, everyone stops at the same moment."))
-SCORES = [("Yellow", 8, 2), ("Green", 8, 1), ("Blue", 6, 2), ("Red", 4, 2)]
-step(5.5, {"op": "banner"}, {"op": "score", "lines": [{"text": f"{NAME[c]}: {p} points", "hex": HEX[c]} for c, p, _ in SCORES]},
-     cap("SCORE", "Count the points on your mat: monsters and treasures."))
-step(6.0, {"op": "score", "lines": [{"text": f"{NAME[c]}: {p} points · {m} monster{'s' if m > 1 else ''}", "hex": HEX[c]}
-                                    for c, p, m in SCORES]},
-     cap("TIE", "Anastasya and Amira both have 8. The tie goes to the most monsters: Anastasya has 2."))
-step(4.5, cam("mat", color="Yellow", distance=12), {"op": "banner", "text": "ANASTASYA WINS!"},
-     cap("WINNER", "Anastasya wins."))
-step(4.0, {"op": "banner"}, {"op": "score"}, cam("table"),
-     cap("KINGBOUND", "Roll fast, choose fast: the timer waits for no one."))
+        step(BEAT, *cmds)
+step(4.5, {"op": "timer", "left": 300}, {"op": "banner", "text": "ROUND 1 OVER"},
+     cap("ROUND 1 OVER", "The first round is complete. Now the hardest part begins: escaping from the station."))
+
+# --- scene 10: the event card
+ROCKS = [(1, 0), (-2, -2), (1, 2)]      # every Unregistered Sector but (0,-1), where Bora stands
+step(2.5, {"op": "banner"}, cam("event"), {"op": "round2", "cells": [list(c) for c in ROCKS]},
+     cap("EVENT", "At the beginning of the second round, an event card is revealed. This time, a rockfall."))
+step(3.0, {"op": "banner"})      # the round 2 banner lies over the card: off, so the card reads
+step(5.0, cam("dungeon"), {"op": "banner"},
+     cap("ROCKS", "Rocks fill every empty room, the Unregistered Sectors. Rooms with players, monsters, "
+                 "treasures and special objects stay free."))
+step(4.0, cap("BLOCKED", "Blocked rooms can no longer be used for movement, and no new rooms can be opened."))
+
+# --- scene 11: escape
+R2 = {
+    "Green": [("move", (0, 1)), ("place", "o-2", 2), ("move", (0, 0))],
+    "Red": [("move", (0, 0)), ("move", (0, 1)), ("place", "o-4", 4), ("move", (0, 0))],
+    "Yellow": [("move", (-1, 0)), ("move", (0, 0)), ("move", (0, 1)), ("place", "o-3", 3), ("move", (0, 0))],
+    # Esma: two unlucky cycles, then the rocks at (1,0) send her the long way round (shown on its own beat).
+    "Blue": [("move", (2, 0)), ("wait",), ("wait",), ("blocked",), ("move", (2, -1)), ("move", (1, -1)), ("move", (0, -1)),
+             ("move", (0, 0)), ("move", (0, 1)), ("place", "o-1", 1)],
+}
+beats = max(len(v) for v in R2.values())
+for k in range(beats):
+    cmds = [c for color, seq in R2.items() if k < len(seq) for c in act(color, *seq[k])]
+    if k == 0:
+        step(4.5, *cmds, {"op": "timer", "left": 300, "rate": 1, "run": True},
+             cap("ESCAPE", "Now everyone must complete the special task and return to the Safe Zone."))
+    elif k == 1:
+        step(4.5, *cmds, {"op": "timer", "rate": 11, "run": True},   # ~25 s of beats left: 5:00 runs out at the end
+             cap("PLACE IT", "Amira places her object in the Integration Chamber: her special task is completed."))
+    elif k == 2:
+        step(4.0, *cmds, cap("ESCAPED", "And she is back in the Safe Zone."))
+    elif k == 3:
+        step(4.0, *cmds, cam("cell", cell=(2, 0), color="Blue", distance=22),
+             cap("DETOUR", "Esma's way home is blocked by rocks: she has to take the long way round."))
+    elif k == 4:
+        step(BEAT, *cmds, cam("dungeon"), {"op": "nocaption"})
+    else:
+        step(BEAT, *cmds)
+
+# --- scene 12: end of the game
+step(4.0, {"op": "timer", "left": 0}, {"op": "banner", "text": "TIME'S UP!"}, cap("TIME'S UP", "Time is up! Everyone stops."))
+ESC = [("Yellow", True, 6, "4 + 2"), ("Red", True, 4, "3 + 1"), ("Green", True, 1, "1"), ("Blue", False, 4, "")]
+step(6.5, {"op": "banner"},
+     {"op": "score", "lines": [{"text": f"{NAME[c]}: " + ("escaped" if ok else "trapped, loses the points"),
+                                "hex": HEX[c] if ok else "#E28C24"} for c, ok, _, _ in ESC]},
+     cap("ESCAPED?", "Players who completed the special task and are in the Safe Zone keep their points. "
+                     "Esma placed her object but didn't make it back: she loses hers."))
+step(6.5, {"op": "score", "lines": [{"text": f"{NAME[c]}: " + (f"{p} point{'s' if p != 1 else ''} ({why})" if ok else "0 points"),
+                                     "hex": HEX[c] if ok else "#E28C24"} for c, ok, p, why in ESC]},
+     cap("SCORE", "Count the saved points: monsters, plus treasure alone or in combinations."))
+# The score list goes away here: the winner banner sits in the middle of the screen, over its last line.
+step(4.5, cam("mat", color="Yellow", distance=12), {"op": "score"}, {"op": "banner", "text": "ANASTASYA WINS!"},
+     cap("WINNER", "The player with the most saved points wins. A tie is a draw."))
+
+# --- scene 13: finale
+step(5.0, {"op": "banner"}, {"op": "score"}, cam("table"),
+     cap("NULLWAKE", "Explore, collect, and get out before the station collapses."))
 
 
 def total(): return sum(w for w, _ in STEPS)
@@ -311,7 +346,7 @@ def total(): return sum(w for w, _ in STEPS)
 
 def cue_sheet():
     """Time, the part's name on screen and what happens: for the people presenting over the video."""
-    out = ["# Kingbound tutorial: what to say", "",
+    out = ["# NULLWAKE gameplay video: what to say", "",
            f"The video is {mmss(total())} long. On screen there is only the name of each part (and the dice symbols it "
            "costs). Each line below starts at its time; one short sentence fits before the next one.", "",
            "| Time | On screen | Say |", "|---|---|---|"]
@@ -334,7 +369,7 @@ def mmss(s): return f"{int(s // 60)}:{int(s % 60):02d}"
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Kingbound real-time tutorial in Tabletop Simulator.")
+    ap = argparse.ArgumentParser(description="NULLWAKE tutorial in Tabletop Simulator.")
     ap.add_argument("--dry-run", action="store_true")
     ap.add_argument("--record", metavar="FILE", help="record the screen to this .mov while playing")
     ap.add_argument("--cues", metavar="FILE", help="write the presenters' cue sheet (time, part, what happens) as Markdown")
@@ -359,9 +394,9 @@ def main():
     try:
         version = tts.hello()
     except OSError:
-        sys.exit("Tabletop Simulator is not running. Open it and load KINGBOUND-realtime (Games → Save & Load → prototipler).")
+        sys.exit("Tabletop Simulator is not running. Open it and load NULLWAKE (Games → Save & Load → prototipler).")
     if not version:
-        sys.exit("TTS is running but the KINGBOUND-realtime save is not loaded.")
+        sys.exit("TTS is running but the NULLWAKE save is not loaded.")
     # The mouse goes to the left edge, off the table, so nothing on the table lights up under it.
     subprocess.run(["swift", "-e", "import CoreGraphics; CGWarpMouseCursorPosition(CGPoint(x: 4, y: 760))"],
                    capture_output=True)

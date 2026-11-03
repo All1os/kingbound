@@ -2,7 +2,7 @@
 
 NULLWAKE (until v2.0 called Kingbound) is a real-time race for 3 to 5 players, played in Tabletop Simulator. An expedition explores ORPHEON, an abandoned research station: unknown creatures live in its rooms, and valuable discoveries are left behind. There are no turns. For 10 minutes everyone rolls their dice at the same time, opens new sectors, fights creatures and collects treasure. In round 1 you collect points; in round 2 the station starts to collapse and you have to escape. Only the players who escape keep their points.
 
-![A game of NULLWAKE in Tabletop Simulator: round 2, Rockfall has blocked three empty rooms](realtime/workshop/dungeon.jpg)
+![A game of NULLWAKE in Tabletop Simulator: round 2, Rockfall has blocked the Unregistered Sectors](realtime/workshop/dungeon.jpg)
 
 ## Getting the game
 
@@ -67,7 +67,7 @@ Four special objects are mixed into the treasure tokens. Take one like a treasur
 
 ### Round 2: escape
 
-At 5:00 round 2 starts with the Rockfall card. Rocks fill 3 empty rooms (rooms with no character, monster, treasure or special object), and nobody can go through them. No new rooms can be opened.
+At 5:00 round 2 starts with the Rockfall card. Rocks fill every Unregistered Sector (the empty rooms) with nobody in it, and nobody can go through them. No new rooms can be opened.
 
 When the timer reaches 0:00, everyone stops. A player who is in the Safe Zone and has completed the special task keeps their points: beaten monsters plus treasure. Everyone else loses all their points. The most points wins; a tie is a draw.
 
