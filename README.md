@@ -65,6 +65,12 @@ There are three types: Modules, Archives and Specimens. Put the ones you take in
 
 Four special objects lie in their own deck, apart from the treasure tokens. Taking one needs 2 Magic. The Integration Chamber is a room with four slots. In round 2, drop your object on it: that completes your special task.
 
+### Last one done
+
+The player who finishes their actions last in a cycle rolls only 3 dice in the next cycle: press ROLL 3 DICE (die 4 glows red and doesn't count).
+
+The ROUND 2 and END GAME buttons jump the timer to 5:00 or 0:00, for trying the game out.
+
 ### Round 2: escape
 
 At 5:00 round 2 starts and no new rooms can be opened. Turn up one event card from the deck of eight and set it up by hand: the rock, gas, black hole, alien and Safe Zone tokens and the second Integration Chamber lie beside the table.

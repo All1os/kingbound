@@ -15,6 +15,8 @@ The team's GDD of 2026-11-04: seven more event cards for round 2. The players tu
 - The points lost to gas and black holes are shown at 0:00.
 - The event card text now always fits on the card.
 - The special objects have a deck of their own, apart from the treasure tokens.
+- Last one done: the player who finishes last in a cycle rolls 3 dice next cycle (ROLL 3 DICE button).
+- ROUND 2 and END GAME buttons jump the timer.
 
 ## v2.1 (2026-11-03)
 

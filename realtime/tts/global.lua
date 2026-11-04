@@ -427,7 +427,16 @@ end
 -- the mat, so the dice never wander off it in a 10-minute game, and it is locked until it has landed
 -- so it can't tumble onto another face. To keep some dice, the others are still rolled by hand (R).
 ROLLING = {}
-function rollDice(player)
+-- ROLL 3 DICE (Yavuz, 2026-11-04, the team's rule against stalling): the player who finished last in a cycle
+-- rolls only 3 dice in the next one. Die 4 stays where it is and glows red: it doesn't count this cycle.
+function rollDice(player) rollN(player, 4) end
+function rollThree(player)
+  rollN(player, 3)
+  local d = L.mats[player.color] and dieOf(player.color, 4)
+  if d then glow(d, "Red", 4) end
+  if L.mats[player.color] then broadcastToAll(player.color .. " finished last: 3 dice this cycle.", {0.89, 0.55, 0.14}) end
+end
+function rollN(player, n)
   local color = player.color
   if not L.mats[color] then
     broadcastToColor("Sit at Red, Yellow, Green, Blue or Purple to roll your dice.", color, GOLDEN)
@@ -435,7 +444,7 @@ function rollDice(player)
   end
   if ROLLING[color] then return end   -- a second click while the dice are in the air
   ROLLING[color] = true
-  for i = 1, 4 do
+  for i = 1, n do
     local die = dieOf(color, i)
     if die then
       die.setLock(true)
