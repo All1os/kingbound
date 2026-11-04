@@ -59,10 +59,6 @@
   "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
   "sha1": "650448f2cbbaea0670805327aa44a8b0ff293285"
  },
- "tre-sheet.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
-  "sha1": "7f7682298f97bcdb7114e06a7f3585a3b14f6d4b"
- },
  "icon-move.png": {
   "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-move.png",
   "sha1": "c48ec6ff41ea5f0a2314098c211a23036d8bf34a"
@@ -87,10 +83,6 @@
   "url": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
   "sha1": "ba58937935759815c428c7c65a37281ddacc00fa"
  },
- "event-sheet.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
-  "sha1": "04c5bbf55b746f8ca1d7149e0738e2ca5e1f3e10"
- },
  "extra-sheet.png": {
   "url": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/extra-sheet.png",
   "sha1": "57d60791f24a0e0ae479978a517416d93055b7e7"
@@ -102,5 +94,21 @@
  "hazard-sheet.png": {
   "url": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
   "sha1": "561cfbe49090362434b158a25eb4a9bff09619a4"
+ },
+ "event-sheet.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/52125ce/realtime/tts/output/event-sheet.png",
+  "sha1": "e6f3665b57aa33a826c1a2e0396b08a384a39ff1"
+ },
+ "obj-back.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/52125ce/realtime/tts/output/obj-back.png",
+  "sha1": "1e767d2687488338d6686ccac7cac7381b5d776c"
+ },
+ "obj-sheet.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/52125ce/realtime/tts/output/obj-sheet.png",
+  "sha1": "b7d4ca2894ce68e5f65d8175824fdefd99e16565"
+ },
+ "tre-sheet.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/52125ce/realtime/tts/output/tre-sheet.png",
+  "sha1": "5fa79aa0329ba93f8e15e3175035e5430bac7008"
  }
 }
