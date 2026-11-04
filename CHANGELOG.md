@@ -1,5 +1,20 @@
 # Changelog
 
+## v2.2 (2026-11-04)
+
+The team's GDD of 2026-11-04: seven more event cards for round 2. Round 2 now turns up one card from a shuffled deck of eight:
+
+- Rockfall, as before.
+- Lost Path: the Safe Zone moves 5 rooms away. A Safe Zone token marks the new one.
+- Time Freeze: nobody can move for 15 seconds.
+- Extra Risk: a +1 EVENT button draws one or two more event cards.
+- Extra Special Tile: a second Integration Chamber. An object on either chamber completes your special task.
+- Poison Gas: gas in an empty room and the rooms beside it. Entering one costs 1 point.
+- Aliens: every monster becomes an alien with 1 HP more.
+- Black Holes: in every room with treasure. Going through one costs 1 point.
+- The points lost to gas and black holes are shown at 0:00.
+- The event card text now always fits on the card.
+
 ## v2.1 (2026-11-03)
 
 Kingbound is now NULLWAKE, set in ORPHEON, an abandoned research station. The team's new rules and the narrative document:

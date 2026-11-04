@@ -1,7 +1,8 @@
 """Builds the Tabletop Simulator save for the real-time game, now called NULLWAKE (was Kingbound).
 
 Rules: the team's "Game rules and gameplay video script" of 2026-11-03 (vault: kingbound/realtime/
-kaynak-NULLWAKE-rules-2026-11-03.pdf). Names and look: Nastya's narrative document NULLWAKE (vault:
+kaynak-NULLWAKE-rules-2026-11-03.pdf), and from v2.2 the GDD of 2026-11-04 (vault: kaynak-NULLWAKE-GDD-2026-11-04.pdf):
+the same rules word for word plus seven more event cards for round 2 ("According to last presentation"). Names and look: Nastya's narrative document NULLWAKE (vault:
 kaynak-NULLWAKE-narrative.docx). Yavuz, 2026-11-03: "gdd ve narrative ne diyosa o".
 Where the rules document contradicts itself, Yavuz decided: moving one room and opening a room cost 2
 Movement and treasure 2 Magic, "like the old game" (v2.0); the dice keep three symbols (no "special"
@@ -17,10 +18,11 @@ import hashlib, json, math, random, shutil, time
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-VERSION = "2.1"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table,
+VERSION = "2.2"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table,
                   # v1.2: a seat (hand zone) at every mat for online games, and ROLL DICE,
                   # v2.0: the GDD of 2026-11-02 (two rounds, events, treasure sets, special objects; no Loot, no traps)
                   # v2.1: NULLWAKE, the rules of 2026-11-03 and the narrative document (names, sci-fi look)
+                  # v2.2: the GDD of 2026-11-04, eight event cards (Rockfall and seven new ones)
 ROOT = Path(__file__).parent
 OUT = ROOT / "output"
 ASSETS = Path.home() / "Library/Tabletop Simulator/Mods/kingbound-realtime"
@@ -83,8 +85,31 @@ GAME_SECS, ROUND2_AT = 600, 300
 # Event (rules §10): one card for now, Rockfall. Rocks go only into empty rooms, that is Unregistered Sectors
 # (Yavuz, 2026-11-03: "empty roomdan kasıt unregistered sector"), and all of them close ("bütün boş odalar
 # kapanacak"), except one with a character in it (rules §10.4).
+# GDD 11-04 adds seven cards (Yavuz, 2026-11-04: "ekle"). Round 2 turns up the top card of the shuffled deck.
+# Where the GDD leaves a detail open, the simplest value, marked (open) in global.lua beside the effect.
+# "Time Freeze" is the GDD's only Time Event card and "Extra Risk" its only EXIT Challenge card: the headings
+# are groups, the cards are what goes in the deck.
 EVENTS = [("E1", "Rockfall", "Part of the station collapses and some rooms become inaccessible.",
-           "Rocks fill every Unregistered Sector with nobody in it. Nobody can go through them.")]
+           "Rocks fill every Unregistered Sector with nobody in it. Nobody can go through them."),
+          ("E2", "Lost Path", "The Safe Zone moves 5 rooms away.",
+           "Its new place is marked. The old Safe Zone is a normal room now: reach the new one by 0:00."),
+          ("E3", "Time Freeze", "Nobody can move for 15 seconds.",
+           "You can still fight, take treasure and do everything else."),
+          ("E4", "Extra Risk", "You may draw one or two more event cards.",
+           "Press +1 EVENT (up to twice). Every card drawn happens."),
+          ("E5", "Extra Special Tile", "A second Integration Chamber joins the station.",
+           "It has four slots too. An object placed on either chamber completes your special task."),
+          ("E6", "Poison Gas", "Gas fills an empty room and the rooms beside it.",
+           "Each time you enter a room with gas, you lose 1 point. The gas stays until the end."),
+          ("E7", "Aliens", "Aliens take the place of every monster.",
+           "1 HP more than the monster they replace, same points. You can't go through their room without beating them."),
+          ("E8", "Black Holes", "Black holes open in every room with treasure.",
+           "Each time you go through one, you lose 1 point. You can still enter and take the treasure.")]
+# Tokens for the new events, each kind with one spare (taking a deck's last card stops the script).
+GAS_COUNT = 5 + 1          # GDD: one room and the four beside it
+HOLE_COUNT = ROOM_COUNT["treasure"] + 1
+ALIEN_COL = (96, 168, 72)  # (open) the GDD gives aliens no colour: a sickly green, apart from the monsters' red
+GAS_COL, HOLE_COL = (150, 176, 60), (60, 40, 96)
 CLOSE_ROOMS = 6   # = ROOM_COUNT["empty"]: enough rock tokens for every Unregistered Sector
 RUBBLE_COUNT = CLOSE_ROOMS + 1   # one spare: taking a deck's last card stops the script (seen live, 2026-10-25)
 
@@ -333,7 +358,48 @@ CW, CH = 400, 560
 EVENT_COLS = 2   # a sheet has at least two cells: the second one stays empty
 
 
-def event_face(name, what, rule):
+def gas_cloud(d, cx, cy, r):
+    for dx, dy, s in ((-0.5, 0.15, 0.45), (0.0, -0.2, 0.55), (0.5, 0.15, 0.45), (0.0, 0.35, 0.45)):
+        d.ellipse((cx + dx * r - s * r, cy + dy * r - s * r, cx + dx * r + s * r, cy + dy * r + s * r),
+                  fill=GAS_COL, outline=INK, width=3)
+
+
+def black_hole(d, cx, cy, r):
+    for k, col in ((1.0, (120, 96, 170)), (0.72, HOLE_COL), (0.45, (20, 14, 34))):
+        d.ellipse((cx - k * r, cy - k * r, cx + k * r, cy + k * r), fill=col, outline=INK, width=2)
+
+
+def alien_head(d, cx, cy, r):
+    d.ellipse((cx - r * 0.7, cy - r * 0.9, cx + r * 0.7, cy + r * 0.8), fill=ALIEN_COL, outline=INK, width=4)
+    for sx in (-1, 1):
+        d.ellipse((cx + sx * r * 0.32 - r * 0.2, cy - r * 0.2, cx + sx * r * 0.32 + r * 0.2, cy + r * 0.12), fill=INK)
+
+
+def event_icon(d, eid, cx, cy, r):
+    if eid == "E1": rubble(d, cx, cy, r)
+    elif eid == "E2":
+        safe_mark(d, cx + r * 0.45, cy, r * 0.6, GOLD, SAFE_COL)
+        d.polygon([(cx - r * 1.1, cy - 10), (cx - r * 0.3, cy - 10), (cx - r * 0.3, cy - 26), (cx, cy),
+                   (cx - r * 0.3, cy + 26), (cx - r * 0.3, cy + 10), (cx - r * 1.1, cy + 10)], fill=EVENT_COL)
+    elif eid == "E3":
+        d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=CREAM, outline=GOLD, width=8)
+        d.line((cx, cy, cx, cy - r * 0.7), fill=INK, width=8); d.line((cx, cy, cx + r * 0.5, cy), fill=INK, width=8)
+        d.text((cx, cy + r * 0.45), "15", font=f(BLACK, 26), fill=INK, anchor="mm")
+    elif eid == "E4":
+        d.text((cx, cy), "+1 +2", font=f(BLACK, 70), fill=EVENT_COL, anchor="mm")
+    elif eid == "E5":
+        d.rectangle((cx - r, cy - r, cx + r, cy + r), fill=FLOOR, outline=INK, width=4)
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                x, y = cx + sx * r * 0.45, cy + sy * r * 0.45
+                d.ellipse((x - r * 0.3, y - r * 0.3, x + r * 0.3, y + r * 0.3), fill=(196, 222, 226), outline=OBJ_COL, width=4)
+    elif eid == "E6": gas_cloud(d, cx, cy, r)
+    elif eid == "E7": alien_head(d, cx, cy, r)
+    elif eid == "E8": black_hole(d, cx, cy, r)
+
+
+def event_face(eid, name, what, rule, size=27):
+    # The text shrinks until the rule fits on the card (Rockfall's last line was cut off since v2.1, seen 2026-11-04).
     im = Image.new("RGB", (CW, CH), PAPER)
     d = ImageDraw.Draw(im)
     d.rectangle((0, 0, CW - 1, CH - 1), outline=EVENT_COL, width=12)
@@ -341,15 +407,17 @@ def event_face(name, what, rule):
     hazard(d, (0, 62, CW, 74), 18)
     d.text((CW / 2, 32), "EVENT | ROUND 2", font=f(BLACK, 30), fill=EMERG, anchor="mm")
     y = para(d, name.upper(), 104, 30, CW - 30, name=BLACK, size=46, gap=6)
-    rubble(d, CW / 2, y + 70, 64)
-    y = para(d, what, y + 150, 34, CW - 34, size=27, gap=6)
+    event_icon(d, eid, CW / 2, y + 70, 64)
+    y = para(d, what, y + 150, 34, CW - 34, size=size, gap=6)
     d.line((50, y + 14, CW - 50, y + 14), fill=EVENT_COL, width=3)
-    para(d, rule, y + 34, 34, CW - 34, name=BOLD, size=25, fill=EVENT_COL, gap=6)
+    end = para(d, rule, y + 34, 34, CW - 34, name=BOLD, size=size - 2, fill=EVENT_COL, gap=6)
+    if end > CH - 20 and size > 18:
+        return event_face(eid, name, what, rule, size - 1)
     return im
 
 
 def event_sheet():
-    ims = [event_face(e[1], e[2], e[3]) for e in EVENTS]
+    ims = [event_face(*e) for e in EVENTS]
     rows = math.ceil(len(ims) / EVENT_COLS)
     sheet = Image.new("RGB", (CW * EVENT_COLS, CH * rows), PAPER)
     for i, im in enumerate(ims):
@@ -486,6 +554,28 @@ for k, fn in (("move", "icon-move.png"), ("attack", "icon-attack.png"), ("magic"
     icon(d, k, 64, 64, 40)
     save(im, fn)
 MON_BACK = token_back("mon-back.png", SYM_COL["attack"], "MONSTER")
+# Aliens (event E7): a token for each monster kind, 1 HP more, the same points.
+ALIENS = {f"alien{k}": (f"Alien {name}", hp + 1, pts, n + 1) for k, (name, hp, pts, n) in MONSTERS.items()}
+for k, (name, hp, pts, n) in ALIENS.items():
+    TOKEN_IMG[("alien", k)] = token_front(f"{k}.png", ALIEN_COL, name.upper(), "attack", hp,
+                                          [f"{hp} HP", f"{pts} POINT{'S' if pts > 1 else ''}"], title_col=(40, 96, 30))
+ALIEN_BACK = token_back("alien-back.png", ALIEN_COL, "ALIEN")
+
+
+def small_token(fn, ring, draw, text):
+    """Gas, black hole and the new Safe Zone mark (events E6, E8, E2): a corner of a room, so small and simple."""
+    im = Image.new("RGB", (TOK, TOK), ring)
+    d = ImageDraw.Draw(im)
+    d.ellipse((14, 14, TOK - 14, TOK - 14), fill=PAPER, outline=INK, width=5)
+    draw(d, TOK / 2, 150, 92)
+    d.text((TOK / 2, 278), text, font=fit(d, text, BLACK, 52, 230), fill=INK, anchor="mm")
+    return save(im, fn)
+
+
+HAZ_IMG = [small_token("gas.png", GAS_COL, gas_cloud, "GAS -1"),
+           small_token("hole.png", HOLE_COL, black_hole, "HOLE -1"),
+           small_token("newsafe.png", SAFE_COL, lambda d, x, y, r: safe_mark(d, x, y, r * 0.9, GOLD, SAFE_COL), "SAFE ZONE")]
+HAZ_BACK = token_back("haz-back.png", EMERG, "EVENT")
 TRE_BACK = token_back("tre-back.png", GOLD, "TREASURE")
 
 # ------------------------------------------------------------------ the dungeon plan
@@ -560,6 +650,12 @@ MON_SHEET = card_sheet([TOKEN_IMG[("monster", k)] for k in MONSTERS], "mon-sheet
 TRE_SHEET = card_sheet([TOKEN_IMG[("treasure", k)] for k in TREASURES] + [TOKEN_IMG[("object", o)] for o in OBJECTS],
                        "tre-sheet.png", 3)
 RUBBLE_SHEET = card_sheet([RUBBLE, RUBBLE], "rubble-sheet.png", 2)    # one face; a sheet has at least two cells
+ALIEN_SHEET = card_sheet([TOKEN_IMG[("alien", k)] for k in ALIENS], "alien-sheet.png", 3)
+HAZ_SHEET = card_sheet(HAZ_IMG, "hazard-sheet.png", 3)
+# Event E5's second Integration Chamber: passages on every side, so it fits beside any room (GDD: "It must be
+# connected to an existing room").
+EXTRA_ROOM = room_img("special", ["N", "S", "E", "W"])
+EXTRA_SHEET = card_sheet([EXTRA_ROOM, EXTRA_ROOM], "extra-sheet.png", 2)
 
 # ------------------------------------------------------------------ images into Mods/
 for old in ASSETS.glob("*.png"):
@@ -663,7 +759,9 @@ STACK = (-13.5, 15.2)  # face-down room deck
 RUBBLE_POS = (-18.0, 15.6)
 MON_PILE, TRE_PILE = (11.5, 15.6), (14.6, 15.6)
 EVENT_POS = (18.6, 15.2)    # the event deck, where v1.1's Loot Deck was
-EVENT_SHOW = (22.6, 15.2)   # the event card turned up for round 2
+EVENT_SHOW = (22.6, 15.2)   # the event card turned up for round 2; Extra Risk's cards go below it
+EXTRA_POS = (18.6, 11.4)    # event E5's chamber waits face down under the event deck
+ALIEN_POS, HAZ_POS = (-21.4, 15.6), (-24.6, 15.6)
 TITLE_POS = (-20.5, -15.4)
 PAWN_HOME = {c: mat_world(c, 70, -110) for c in COLORS}   # just inside the mat's top edge, towards the middle
 # Cards (measured live, 2026-10-25): a card cut from a square cell is 3.06 across at scale 1 and 0.027
@@ -688,7 +786,7 @@ objs.append(tile(ROOM_IMG[(0, 0)], tr(*cell_pos((0, 0)), s=ROOM_S, y=0.98), "Saf
 # Cards and decks. A deck lies face down; each card carries its identity in GM Notes, so the tutorial
 # takes the card its plan needs and RESET TABLE sends every card back to its own deck. A face-down card
 # hides its name and text (HideWhenFaceDown), so hovering over a deck gives nothing away.
-ROOM_KEY, MON_KEY, TRE_KEY, RUBBLE_KEY, EVENT_KEY = 2, 3, 4, 5, 1
+ROOM_KEY, MON_KEY, TRE_KEY, RUBBLE_KEY, EVENT_KEY, ALIEN_KEY, HAZ_KEY, EXTRA_KEY = 2, 3, 4, 5, 1, 6, 7, 8
 SHAPE = {"rounded": 0, "square": 1, "circle": 4}     # TTS custom deck card shapes
 
 
@@ -751,6 +849,31 @@ rubble_cards = [card("Rocks", "This room is blocked: nobody can go through it.",
                      f"rubble-{i + 1}", TOKEN_CARD_S, hide=False) for i in range(RUBBLE_COUNT)]
 objs.append(deck("Rock tokens", RUBBLE_POS, RUBBLE_KEY, RUBBLE_DECK, rubble_cards, "rubbledeck", TOKEN_CARD_S))
 
+# Event tokens (GDD 11-04): aliens (E7), gas (E6), black holes (E8) and the new Safe Zone mark (E2).
+ALIEN_DECK = cdeck("alien-sheet.png", ALIEN_BACK, ALIEN_SHEET, "circle")
+def mon_desc(hp, pts, alien=False):
+    return (f"{hp} HP: each Attack deals 1 damage, and damage stays. {pts} point{'s' if pts > 1 else ''}. Right-click: Hit."
+            + (" You can't go through its room without beating it." if alien else ""))
+alien_cards = []
+for j, (k, (name, hp, pts, n)) in enumerate(ALIENS.items()):
+    alien_cards += [card(name, mon_desc(hp, pts, True), ALIEN_KEY, ALIEN_DECK,
+                         j, f"m-{k}-{i + 1}", TOKEN_CARD_S) for i in range(n)]
+objs.append(deck("Alien tokens", ALIEN_POS, ALIEN_KEY, ALIEN_DECK, alien_cards, "aliendeck", TOKEN_CARD_S))
+HAZ_DECK = cdeck("hazard-sheet.png", HAZ_BACK, HAZ_SHEET, "circle")
+haz_cards = ([card("Poison gas", "Entering this room costs 1 point.", HAZ_KEY, HAZ_DECK, 0, f"gas-{i + 1}", MAT_TOKEN_S, hide=False)
+              for i in range(GAS_COUNT)]
+             + [card("Black hole", "Going through this room costs 1 point.", HAZ_KEY, HAZ_DECK, 1, f"hole-{i + 1}", MAT_TOKEN_S, hide=False)
+                for i in range(HOLE_COUNT)]
+             + [card("New Safe Zone", "Lost Path: the Safe Zone is here now.", HAZ_KEY, HAZ_DECK, 2, f"newsafe-{i + 1}", MAT_TOKEN_S, hide=False)
+                for i in range(2)])
+objs.append(deck("Event tokens", HAZ_POS, HAZ_KEY, HAZ_DECK, haz_cards, "hazarddeck", MAT_TOKEN_S))
+EXTRA_DECK = cdeck("extra-sheet.png", ROOM_BACK, EXTRA_SHEET, "square")
+extra = card("Integration Chamber", "Extra Special Tile: four more slots. In round 2, drop a special object here: that "
+             "completes your special task.", EXTRA_KEY, EXTRA_DECK, 0, "special2", ROOM_CARD_S)
+extra["Transform"] = tr(*EXTRA_POS, face_down=True, s=ROOM_CARD_S, y=1.3)
+extra["Tags"] = ["extradeck"]
+objs.append(extra)
+
 # The event card (rules §10), face down; round 2 turns it up. One card is a card, not a deck (TTS makes a deck
 # of at least two), so it carries the deck's tag itself.
 EVENT_DECK = cdeck("event-sheet.png", "event-back.png", (EVENT_COLS, EVENT_ROWS), "rounded")
@@ -790,9 +913,12 @@ for o in objs:
 # ------------------------------------------------------------------ Lua and UI
 LAYOUT = {"icons": {"M": url("icon-move.png"), "A": url("icon-attack.png"), "G": url("icon-magic.png")},
           "grid": GRID, "dungeon": DUNGEON,
-          "decks": {"room": "roomdeck", "monster": "mondeck", "treasure": "tredeck", "rubble": "rubbledeck", "event": "eventdeck"},
-          "deck_pos": {"room": STACK, "monster": MON_PILE, "treasure": TRE_PILE, "rubble": RUBBLE_POS, "event": EVENT_POS},
-          "deck_s": {"room": ROOM_CARD_S, "monster": TOKEN_CARD_S, "treasure": TOKEN_CARD_S, "rubble": TOKEN_CARD_S, "event": 0.75},
+          "decks": {"room": "roomdeck", "monster": "mondeck", "treasure": "tredeck", "rubble": "rubbledeck", "event": "eventdeck",
+                    "alien": "aliendeck", "hazard": "hazarddeck", "extra": "extradeck"},
+          "deck_pos": {"room": STACK, "monster": MON_PILE, "treasure": TRE_PILE, "rubble": RUBBLE_POS, "event": EVENT_POS,
+                       "alien": ALIEN_POS, "hazard": HAZ_POS, "extra": EXTRA_POS},
+          "deck_s": {"room": ROOM_CARD_S, "monster": TOKEN_CARD_S, "treasure": TOKEN_CARD_S, "rubble": TOKEN_CARD_S, "event": 0.75,
+                     "alien": TOKEN_CARD_S, "hazard": MAT_TOKEN_S, "extra": ROOM_CARD_S},
           "mat_tok_s": MAT_TOKEN_S,
           "colors": COLORS, "mats": MATS, "mat_size": MAT_SIZE, "mat_px": (MAT_W, MAT_H),
           "die_px": DIE_PX, "carry_px": CARRY_PX, "points_px": POINTS_PX,
@@ -800,9 +926,9 @@ LAYOUT = {"icons": {"M": url("icon-move.png"), "A": url("icon-attack.png"), "G":
           "event_show": EVENT_SHOW, "close_rooms": CLOSE_ROOMS,
           "objects": len(OBJECTS), "object_desc": OBJECT_DESC, "obj_slot_px": OBJ_SLOT_PX, "room_w": 3.6,
           "title_pos": TITLE_POS, "empty_name": ROOM_NAME["empty"],
-          "monsters": {k: {"name": v[0], "hp": v[1], "points": v[2]} for k, v in MONSTERS.items()},
-          "mon_desc": {k: f"{v[1]} HP: each Attack deals 1 damage, and damage stays. {v[2]} point{'s' if v[2] > 1 else ''}. "
-                          "Right-click: Hit." for k, v in MONSTERS.items()}}
+          "monsters": {k: {"name": v[0], "hp": v[1], "points": v[2]} for k, v in {**MONSTERS, **ALIENS}.items()},
+          "mon_desc": {k: mon_desc(v[1], v[2], k in ALIENS) for k, v in {**MONSTERS, **ALIENS}.items()},
+          "alien_s": TOKEN_CARD_S}
 LUA = (ROOT / "global.lua").read_text().replace("__VERSION__", VERSION).replace("__LAYOUT__", json.dumps(LAYOUT))
 
 XML = (
@@ -835,6 +961,8 @@ XML = (
     '<Button id="kbReset" rectAlignment="UpperLeft" offsetXY="8 -450" width="150" height="34" fontSize="15" color="#2D3238" textColor="#ECF0F2" onClick="resetGame">RESET TABLE</Button>\n'
     # ROLL DICE rolls the clicking player's own 4 dice (Yavuz, 2026-10-26: "4 zarın birden rollanması lazım").
     # Pressed all game long, so it is bigger, gold, and kept apart from the two buttons that clear the table.
+    # Event E4 (Extra Risk): draw another event card, up to twice; shown only while that is allowed.
+    '<Button id="kbRisk" active="false" rectAlignment="UpperLeft" offsetXY="8 -580" width="150" height="40" fontSize="17" fontStyle="Bold" color="#E28C24" textColor="#181C22" onClick="riskDraw">+1 EVENT</Button>\n'
     '<Button id="kbRoll" rectAlignment="UpperLeft" offsetXY="8 -520" width="150" height="48" fontSize="19" fontStyle="Bold" color="#5CB0DE" textColor="#181C22" onClick="rollDice">ROLL DICE</Button>\n'
 )
 
@@ -850,6 +978,6 @@ save_json = {
 (OUT / f"{SAVE_NAME}.json").write_text(json.dumps(save_json, indent=1, ensure_ascii=False))
 shutil.copy(OUT / f"{SAVE_NAME}.json", SAVES / f"{SAVE_NAME}.json")
 print(f"{len(objs)} objects: decks of {len(room_cards)} rooms, {len(TOKEN_IDS)} tokens, {len(rubble_cards)} rock tokens, "
-      f"{len(event_cards)} event cards")
+      f"{len(event_cards)} event cards, {len(alien_cards)} alien and {len(haz_cards)} event tokens")
 print(f"images: {len(HASHED)}, {len(LOCAL)} of them local only (not on Steam Cloud){': ' + ', '.join(sorted(LOCAL)) if 0 < len(LOCAL) < 8 else ''}")
 print(f"save → {SAVES / (SAVE_NAME + '.json')}")
