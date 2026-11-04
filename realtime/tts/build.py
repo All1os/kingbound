@@ -969,6 +969,9 @@ XML = (
     '<Button id="kbReset" rectAlignment="UpperLeft" offsetXY="8 -450" width="150" height="34" fontSize="15" color="#2D3238" textColor="#ECF0F2" onClick="resetGame">RESET TABLE</Button>\n'
     # ROLL DICE rolls the clicking player's own 4 dice (Yavuz, 2026-10-26: "4 zarın birden rollanması lazım").
     # Pressed all game long, so it is bigger, gold, and kept apart from the two buttons that clear the table.
+    # ROUND 2 and END GAME jump the timer (Yavuz, 2026-11-04), under ROLL DICE and smaller, so nobody presses them by mistake.
+    '<Button id="kbSkip" rectAlignment="UpperLeft" offsetXY="8 -600" width="150" height="30" fontSize="14" color="#2D3238" textColor="#E28C24" onClick="skipToRound2">ROUND 2</Button>\n'
+    '<Button id="kbEnd" rectAlignment="UpperLeft" offsetXY="8 -636" width="150" height="30" fontSize="14" color="#2D3238" textColor="#E28C24" onClick="endGameNow">END GAME</Button>\n'
     '<Button id="kbRoll" rectAlignment="UpperLeft" offsetXY="8 -520" width="150" height="48" fontSize="19" fontStyle="Bold" color="#5CB0DE" textColor="#181C22" onClick="rollDice">ROLL DICE</Button>\n'
 )
 

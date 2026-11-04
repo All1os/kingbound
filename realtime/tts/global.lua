@@ -921,6 +921,23 @@ round2 = function()
   end
 end
 
+-- ROUND 2 and END GAME (Yavuz, 2026-11-04: "2. rounda atlamak için bi tuş koy, end game için bu tuş koy"):
+-- jump the running timer to 5:00 or to 0:00, for trying out round 2 and the results without waiting.
+function skipToRound2(player)
+  if not TIMER.play or ROUND == 2 or TIMER.left <= L.round2_at then return end
+  TIMER.left = L.round2_at
+  if TIMER.ends then TIMER.ends = wall() + TIMER.left end
+  showTime()
+  round2()
+end
+function endGameNow(player)
+  if not TIMER.play or TIMER.left <= 0 then return end
+  TIMER.token = TIMER.token + 1   -- stops the running tick
+  TIMER.left, TIMER.ends = 0, nil
+  showTime()
+  timeUp()
+end
+
 -- Special objects (rules §7, §9): in round 2, an object dropped on the Integration Chamber is placed. It
 -- stays there (locked) and completes the special task of the player who dropped it. In round 1 it can't be
 -- placed yet (rules §7: "objects are placed during the second round").
