@@ -85,18 +85,19 @@ GAME_SECS, ROUND2_AT = 600, 300
 # Event (rules §10): one card for now, Rockfall. Rocks go only into empty rooms, that is Unregistered Sectors
 # (Yavuz, 2026-11-03: "empty roomdan kasıt unregistered sector"), and all of them close ("bütün boş odalar
 # kapanacak"), except one with a character in it (rules §10.4).
-# GDD 11-04 adds seven cards (Yavuz, 2026-11-04: "ekle"). Round 2 turns up the top card of the shuffled deck.
+# GDD 11-04 adds seven cards (Yavuz, 2026-11-04: "ekle"). Players turn up the card and set out its tokens by hand
+# (Yavuz, 2026-11-04: "eventleri biz yerleştirelim kendi koymasın"); the script only reads the tokens on the table.
 # Where the GDD leaves a detail open, the simplest value, marked (open) in global.lua beside the effect.
 # "Time Freeze" is the GDD's only Time Event card and "Extra Risk" its only EXIT Challenge card: the headings
 # are groups, the cards are what goes in the deck.
 EVENTS = [("E1", "Rockfall", "Part of the station collapses and some rooms become inaccessible.",
            "Rocks fill every Unregistered Sector with nobody in it. Nobody can go through them."),
           ("E2", "Lost Path", "The Safe Zone moves 5 rooms away.",
-           "Its new place is marked. The old Safe Zone is a normal room now: reach the new one by 0:00."),
+           "Put the Safe Zone token there. The old Safe Zone is a normal room now: reach the new one by 0:00."),
           ("E3", "Time Freeze", "Nobody can move for 15 seconds.",
            "You can still fight, take treasure and do everything else."),
           ("E4", "Extra Risk", "You may draw one or two more event cards.",
-           "Press +1 EVENT (up to twice). Every card drawn happens."),
+           "Draw them now. Every card drawn happens."),
           ("E5", "Extra Special Tile", "A second Integration Chamber joins the station.",
            "It has four slots too. An object placed on either chamber completes your special task."),
           ("E6", "Poison Gas", "Gas fills an empty room and the rooms beside it.",
@@ -554,6 +555,7 @@ for k, fn in (("move", "icon-move.png"), ("attack", "icon-attack.png"), ("magic"
     icon(d, k, 64, 64, 40)
     save(im, fn)
 MON_BACK = token_back("mon-back.png", SYM_COL["attack"], "MONSTER")
+OBJ_BACK = token_back("obj-back.png", OBJ_COL, "OBJECT")
 # Aliens (event E7): a token for each monster kind, 1 HP more, the same points.
 ALIENS = {f"alien{k}": (f"Alien {name}", hp + 1, pts, n + 1) for k, (name, hp, pts, n) in MONSTERS.items()}
 for k, (name, hp, pts, n) in ALIENS.items():
@@ -647,8 +649,8 @@ def card_sheet(fns, out, cols):
 
 ROOM_SHEET = card_sheet([r["fn"] for r in ROOM_CARDS], "room-sheet.png", 7)
 MON_SHEET = card_sheet([TOKEN_IMG[("monster", k)] for k in MONSTERS], "mon-sheet.png", 3)
-TRE_SHEET = card_sheet([TOKEN_IMG[("treasure", k)] for k in TREASURES] + [TOKEN_IMG[("object", o)] for o in OBJECTS],
-                       "tre-sheet.png", 3)
+TRE_SHEET = card_sheet([TOKEN_IMG[("treasure", k)] for k in TREASURES], "tre-sheet.png", 3)
+OBJ_SHEET = card_sheet([TOKEN_IMG[("object", o)] for o in OBJECTS], "obj-sheet.png", 2)
 RUBBLE_SHEET = card_sheet([RUBBLE, RUBBLE], "rubble-sheet.png", 2)    # one face; a sheet has at least two cells
 ALIEN_SHEET = card_sheet([TOKEN_IMG[("alien", k)] for k in ALIENS], "alien-sheet.png", 3)
 HAZ_SHEET = card_sheet(HAZ_IMG, "hazard-sheet.png", 3)
@@ -762,6 +764,7 @@ EVENT_POS = (18.6, 15.2)    # the event deck, where v1.1's Loot Deck was
 EVENT_SHOW = (22.6, 15.2)   # the event card turned up for round 2; Extra Risk's cards go below it
 EXTRA_POS = (18.6, 11.4)    # event E5's chamber waits face down under the event deck
 ALIEN_POS, HAZ_POS = (-21.4, 15.6), (-24.6, 15.6)
+OBJ_POS = (8.4, 15.6)       # the special objects, beside the monster and treasure tokens
 TITLE_POS = (-20.5, -15.4)
 PAWN_HOME = {c: mat_world(c, 70, -110) for c in COLORS}   # just inside the mat's top edge, towards the middle
 # Cards (measured live, 2026-10-25): a card cut from a square cell is 3.06 across at scale 1 and 0.027
@@ -786,7 +789,7 @@ objs.append(tile(ROOM_IMG[(0, 0)], tr(*cell_pos((0, 0)), s=ROOM_S, y=0.98), "Saf
 # Cards and decks. A deck lies face down; each card carries its identity in GM Notes, so the tutorial
 # takes the card its plan needs and RESET TABLE sends every card back to its own deck. A face-down card
 # hides its name and text (HideWhenFaceDown), so hovering over a deck gives nothing away.
-ROOM_KEY, MON_KEY, TRE_KEY, RUBBLE_KEY, EVENT_KEY, ALIEN_KEY, HAZ_KEY, EXTRA_KEY = 2, 3, 4, 5, 1, 6, 7, 8
+ROOM_KEY, MON_KEY, TRE_KEY, RUBBLE_KEY, EVENT_KEY, ALIEN_KEY, HAZ_KEY, EXTRA_KEY, OBJ_KEY = 2, 3, 4, 5, 1, 6, 7, 8, 9
 SHAPE = {"rounded": 0, "square": 1, "circle": 4}     # TTS custom deck card shapes
 
 
@@ -836,12 +839,17 @@ for j, (k, (name, n)) in enumerate(TREASURES.items()):
     for i in range(n):
         TOKEN_IDS.append(f"t-{k}-{i + 1}")
         cards.append(card(name, treasure_desc(k), TRE_KEY, TRE_DECK, j, TOKEN_IDS[-1], TOKEN_CARD_S))
-for j, o in enumerate(OBJECTS):
-    TOKEN_IDS.append(f"o-{j + 1}")
-    cards.append(card(f"Object {o}", OBJECT_DESC, TRE_KEY, TRE_DECK, len(TREASURES) + j, TOKEN_IDS[-1], TOKEN_CARD_S))
 random.Random(11).shuffle(cards)
 objs.append(deck("Treasure tokens", TRE_PILE, TRE_KEY, TRE_DECK, cards, "tredeck", TOKEN_CARD_S))
 objs[-1]["Tags"].append("token")
+# The special objects in a deck of their own, apart from the treasure (Yavuz, 2026-11-04: "bu token de ayrı dursun
+# diğerlerinden"). Players take them by hand, like the event tokens.
+OBJ_DECK = cdeck("obj-sheet.png", OBJ_BACK, OBJ_SHEET, "circle")
+obj_cards = []
+for j, o in enumerate(OBJECTS):
+    TOKEN_IDS.append(f"o-{j + 1}")
+    obj_cards.append(card(f"Object {o}", OBJECT_DESC, OBJ_KEY, OBJ_DECK, j, TOKEN_IDS[-1], TOKEN_CARD_S, hide=False))
+objs.append(deck("Special objects", OBJ_POS, OBJ_KEY, OBJ_DECK, obj_cards, "objdeck", TOKEN_CARD_S))
 
 # Rock tokens (rules §10): round cards.
 RUBBLE_DECK = cdeck("rubble-sheet.png", RUBBLE, RUBBLE_SHEET, "circle")
@@ -914,11 +922,11 @@ for o in objs:
 LAYOUT = {"icons": {"M": url("icon-move.png"), "A": url("icon-attack.png"), "G": url("icon-magic.png")},
           "grid": GRID, "dungeon": DUNGEON,
           "decks": {"room": "roomdeck", "monster": "mondeck", "treasure": "tredeck", "rubble": "rubbledeck", "event": "eventdeck",
-                    "alien": "aliendeck", "hazard": "hazarddeck", "extra": "extradeck"},
+                    "alien": "aliendeck", "hazard": "hazarddeck", "extra": "extradeck", "object": "objdeck"},
           "deck_pos": {"room": STACK, "monster": MON_PILE, "treasure": TRE_PILE, "rubble": RUBBLE_POS, "event": EVENT_POS,
-                       "alien": ALIEN_POS, "hazard": HAZ_POS, "extra": EXTRA_POS},
+                       "alien": ALIEN_POS, "hazard": HAZ_POS, "extra": EXTRA_POS, "object": OBJ_POS},
           "deck_s": {"room": ROOM_CARD_S, "monster": TOKEN_CARD_S, "treasure": TOKEN_CARD_S, "rubble": TOKEN_CARD_S, "event": 0.75,
-                     "alien": TOKEN_CARD_S, "hazard": MAT_TOKEN_S, "extra": ROOM_CARD_S},
+                     "alien": TOKEN_CARD_S, "hazard": MAT_TOKEN_S, "extra": ROOM_CARD_S, "object": TOKEN_CARD_S},
           "mat_tok_s": MAT_TOKEN_S,
           "colors": COLORS, "mats": MATS, "mat_size": MAT_SIZE, "mat_px": (MAT_W, MAT_H),
           "die_px": DIE_PX, "carry_px": CARRY_PX, "points_px": POINTS_PX,
@@ -961,8 +969,6 @@ XML = (
     '<Button id="kbReset" rectAlignment="UpperLeft" offsetXY="8 -450" width="150" height="34" fontSize="15" color="#2D3238" textColor="#ECF0F2" onClick="resetGame">RESET TABLE</Button>\n'
     # ROLL DICE rolls the clicking player's own 4 dice (Yavuz, 2026-10-26: "4 zarın birden rollanması lazım").
     # Pressed all game long, so it is bigger, gold, and kept apart from the two buttons that clear the table.
-    # Event E4 (Extra Risk): draw another event card, up to twice; shown only while that is allowed.
-    '<Button id="kbRisk" active="false" rectAlignment="UpperLeft" offsetXY="8 -580" width="150" height="40" fontSize="17" fontStyle="Bold" color="#E28C24" textColor="#181C22" onClick="riskDraw">+1 EVENT</Button>\n'
     '<Button id="kbRoll" rectAlignment="UpperLeft" offsetXY="8 -520" width="150" height="48" fontSize="19" fontStyle="Bold" color="#5CB0DE" textColor="#181C22" onClick="rollDice">ROLL DICE</Button>\n'
 )
 

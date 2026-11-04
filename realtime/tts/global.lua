@@ -3,8 +3,8 @@
 Rules: the team's rules of 2026-11-03 and Nastya's narrative document (see build.py's header).
 For players: START GAME shuffles the decks (rooms, monster and treasure tokens), hands out the dice, puts the
 characters in the Safe Zone and starts the 10-minute timer: round 1, then at 5:00 round 2, which turns up
-one of eight event cards (GDD 11-04: Rockfall, Lost Path, Time Freeze, Extra Risk, Extra Special Tile, Poison
-Gas, Aliens, Black Holes) and does what it says, and closes the room deck (no new rooms in round 2). At 0:00 it
+round 2: the players turn up one of eight event cards (GDD 11-04) and set out its tokens by hand, and the room
+deck closes (no new rooms in round 2). At 0:00 it
 says who escaped: in the Safe Zone (Lost Path moves it) with an object placed, minus gas and black holes. RESET TABLE puts everything back; ROLL DICE rolls
 all four of the clicking player's dice. A monster's right-click menu has Hit (1 damage, it remembers); an
 object dropped on the Integration Chamber in round 2 completes the special task of the player who dropped
@@ -70,7 +70,8 @@ local function kindOf(n)
   if n == "special2" then return "extra" end
   if n:match("^%-?%d+,%-?%d+$") or n:match("^spare") or n == "special" then return "room" end
   if n:sub(1, 2) == "m-" then return "monster" end
-  if n:sub(1, 2) == "t-" or n:sub(1, 2) == "o-" then return "treasure" end
+  if n:sub(1, 2) == "t-" then return "treasure" end
+  if n:sub(1, 2) == "o-" then return "object" end   -- a deck of their own since 2026-11-04
   if n:sub(1, 7) == "rubble-" then return "rubble" end
   if n:match("^E%d$") then return "event" end
 end
@@ -245,14 +246,16 @@ end
 SAFE, PEN, LASTCELL = {0, 0}, {}, {}
 local function timeUp()
   OPS.banner({text = "TIME'S UP!"})
-  UI.setAttribute("kbRisk", "active", "false")
   -- The banner lies over the results' list, so it goes after a moment (seen live 2026-11-03).
   Wait.time(function() if TIMER.left <= 0 then OPS.banner({}) end end, 4)
   local lines = {}
+  -- Lost Path: the Safe Zone is where a Safe Zone token lies, if one was put down.
+  local safe = SAFE
+  for _, c in pairs(tokenCells("newsafe")) do safe = c end
   for _, color in ipairs(seated()) do
     local p = pawnOf(color)
     local c = alive(p) and cellAt(p.getPosition())
-    local home = c and c[1] == SAFE[1] and c[2] == SAFE[2]
+    local home = c and c[1] == safe[1] and c[2] == safe[2]
     local text, hex
     if home and TASK[color] then
       local pen = PEN[color] or 0
@@ -610,7 +613,7 @@ local function emptyRooms()
     if o.type == "Card" and not isMain(o) and not o.is_face_down then
       local k, c = kindOf(notes(o)), cellAt(o.getPosition())
       if c and k == "room" and o.getName() == L.empty_name then sectors[key(c)] = true end
-      if c and (k == "monster" or k == "treasure") then taken[key(c)] = true end
+      if c and (k == "monster" or k == "treasure" or k == "object") then taken[key(c)] = true end
     elseif o.type == "Deck" and not isMain(o) then
       local c = cellAt(o.getPosition())   -- tokens players stacked in a room
       if c then taken[key(c)] = true end
@@ -740,19 +743,7 @@ FX.E3 = function()
   end
 end
 
--- E4 Extra Risk: +1 EVENT draws another card, at most twice (GDD: "one or two additional Event Cards"). (open)
--- Anyone at the table may press it; it goes away after two cards or at 0:00.
-RISK = 0
-FX.E4 = function()
-  RISK = 2
-  UI.setAttribute("kbRisk", "active", "true")
-end
-function riskDraw(player)
-  if ROUND ~= 2 or RISK <= 0 or TIMER.left <= 0 then return end
-  RISK = RISK - 1
-  if RISK == 0 then UI.setAttribute("kbRisk", "active", "false") end
-  drawEvent()
-end
+-- E4 Extra Risk: the players draw one or two more cards by hand.
 
 -- E5 Extra Special Tile: the second Integration Chamber goes on a free cell beside an open room, at random
 -- (GDD: "connected to an existing room"; it has passages on every side). (open) The extra task: an object on
@@ -861,18 +852,31 @@ end
 
 -- A character dropped in a new room with gas or a black hole loses 1 point there (GDD E6, E8). Points are
 -- the players' to count; the script keeps only these losses and shows them at 0:00.
+-- Event tokens on the table, wherever players put them: the cells that have one of this kind ("gas", "hole",
+-- "newsafe").
+function tokenCells(kind)
+  local out = {}
+  for _, o in ipairs(getObjects()) do
+    if o.type == "Card" and not o.is_face_down and not isMain(o) and notes(o):match("^" .. kind .. "%-") then
+      local c = cellAt(o.getPosition())
+      if c then out[key(c)] = c end
+    end
+  end
+  return out
+end
 local function pawnDropped(color, o)
   local c = cellAt(o.getPosition())
   if not c then LASTCELL[color] = nil return end
   if LASTCELL[color] == key(c) then return end
   LASTCELL[color] = key(c)
   if ROUND ~= 2 or not L.mats[color] then return end
-  local lost = (GAS[key(c)] and 1 or 0) + (HOLES[key(c)] and 1 or 0)
+  local gas, holes = tokenCells("gas"), tokenCells("hole")
+  local lost = (gas[key(c)] and 1 or 0) + (holes[key(c)] and 1 or 0)
   if lost > 0 then
     PEN[color] = (PEN[color] or 0) + lost
     glow(o, "Red", 2)
     broadcastToAll(color .. " lost " .. lost .. " point" .. (lost > 1 and "s" or "") .. " ("
-      .. (GAS[key(c)] and "gas" or "black hole") .. "). Lost so far: " .. PEN[color] .. ".", {0.89, 0.55, 0.14})
+      .. (gas[key(c)] and "gas" or "black hole") .. "). Lost so far: " .. PEN[color] .. ".", {0.89, 0.55, 0.14})
   end
 end
 
@@ -904,10 +908,17 @@ round2 = function()
   UI.setValue("kbTimerLabel", "ROUND 2 · ESCAPE")
   roomDeckOpen(false)
   if not STAGED then
-    broadcastToAll("Round 2! No new rooms now. Place a special object on the Integration Chamber and be back in the Safe"
-      .. " Zone at 0:00, or you lose all your points.", GOLDEN)
+    broadcastToAll("Round 2! Turn up an event card and set it up. No new rooms now. Place a special object on the"
+      .. " Integration Chamber and be back in the Safe Zone at 0:00, or you lose all your points.", GOLDEN)
   end
-  drawEvent(ROUND2_EVENT)
+  -- Players turn up the event card and set out its tokens by hand (Yavuz, 2026-11-04: "eventleri biz
+  -- yerleştirelim kendi koymasın"). Only the director still has the script do it, for the tutorial's Rockfall.
+  if ROUND2_EVENT then
+    drawEvent(ROUND2_EVENT)
+  else
+    OPS.banner({text = "ROUND 2: ESCAPE!"})
+    Wait.time(function() if ROUND == 2 and TIMER.left > 0 then OPS.banner({}) end end, 5)
+  end
 end
 
 -- Special objects (rules §7, §9): in round 2, an object dropped on the Integration Chamber is placed. It
@@ -993,7 +1004,7 @@ function onLoad()
   end
   clearMats()
   for _, o in ipairs(getObjects()) do addHitMenu(o) end
-  for _, id in ipairs({"kbCaption", "kbScore", "kbBanner", "kbRisk"}) do UI.setAttribute(id, "active", "false") end
+  for _, id in ipairs({"kbCaption", "kbScore", "kbBanner"}) do UI.setAttribute(id, "active", "false") end
   -- ROLL DICE's faces come from math.random: seeded from the clock, so two games never roll alike.
   local t = wall()
   if t then math.randomseed(t) end
@@ -1012,10 +1023,9 @@ function OPS.reset(d)
     if alive(o) then o.setLock(false) o.setDescription(L.object_desc) end
   end
   PLACED, TASK, DMG = {}, {}, {}
-  ROUND, ROCK_CELLS, ROUND2_EVENT, SHOWN, RISK = 1, nil, nil, 0, 0
+  ROUND, ROCK_CELLS, ROUND2_EVENT, SHOWN = 1, nil, nil, 0
   SAFE, PEN, LASTCELL, GAS, HOLES = {0, 0}, {}, {}, {}, {}
   FREEZE = FREEZE + 1   -- a Time Freeze still counting doesn't unlock anything after the reset
-  UI.setAttribute("kbRisk", "active", "false")
   roomDeckOpen(true)
   UI.setValue("kbTimerLabel", "TIME LEFT")
   gatherCards()

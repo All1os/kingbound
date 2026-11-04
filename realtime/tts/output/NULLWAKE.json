@@ -1,7 +1,7 @@
 {
  "SaveName": "NULLWAKE",
- "EpochTime": 1793811080,
- "Date": "11/04/2026 07:51:20 PM",
+ "EpochTime": 1793817449,
+ "Date": "11/04/2026 09:37:29 PM",
  "VersionNumber": "v14.2.2",
  "GameMode": "NULLWAKE",
  "Tags": [],
@@ -15,9 +15,9 @@
   "DisableUnused": false,
   "Hiding": 0
  },
- "LuaScript": "--[[ NULLWAKE (was Kingbound) real-time prototype: Global script (build.py fills in the __PLACEHOLDERS__).\n\nRules: the team's rules of 2026-11-03 and Nastya's narrative document (see build.py's header).\nFor players: START GAME shuffles the decks (rooms, monster and treasure tokens), hands out the dice, puts the\ncharacters in the Safe Zone and starts the 10-minute timer: round 1, then at 5:00 round 2, which turns up\none of eight event cards (GDD 11-04: Rockfall, Lost Path, Time Freeze, Extra Risk, Extra Special Tile, Poison\nGas, Aliens, Black Holes) and does what it says, and closes the room deck (no new rooms in round 2). At 0:00 it\nsays who escaped: in the Safe Zone (Lost Path moves it) with an object placed, minus gas and black holes. RESET TABLE puts everything back; ROLL DICE rolls\nall four of the clicking player's dice. A monster's right-click menu has Hit (1 damage, it remembers); an\nobject dropped on the Integration Chamber in round 2 completes the special task of the player who dropped\nit. Everything else is done by hand, as on a real table.\nFor the tutorial video: the director (../tutorial.py) decides everything in Python and sends \"show\nthis\" commands through TTS's External Editor API; this script only moves pieces, rolls dice to the\nfaces it is told, and draws the caption, the timer and the scores. (tutorial.py still follows v1.1.)\n\nRooms, tokens, rocks and the event are cards. A card's GM Notes say what it is: a room its dungeon cell\n(\"x,z\"), \"spareN\" or \"special\" (the Integration Chamber), a token its ID (m-weak-1, t-module-2, o-1 ...),\na rock \"rubble-n\", an event E1-E8, an alien m-alienweak-1 ..., gas-n, hole-n, newsafe-1, the extra chamber\n\"special2\". Dice hold \"Color:n\"; pawns and mats their colour; the Safe Zone tile \"0,0\".\n]]\nKB_VERSION = \"2.2\"\nL = JSON.decode([==[{\"icons\": {\"M\": \"https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-move.png\", \"A\": \"https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-attack.png\", \"G\": \"https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-magic.png\"}, \"grid\": 3.7, \"dungeon\": [0.0, 0.0], \"decks\": {\"room\": \"roomdeck\", \"monster\": \"mondeck\", \"treasure\": \"tredeck\", \"rubble\": \"rubbledeck\", \"event\": \"eventdeck\", \"alien\": \"aliendeck\", \"hazard\": \"hazarddeck\", \"extra\": \"extradeck\"}, \"deck_pos\": {\"room\": [-13.5, 15.2], \"monster\": [11.5, 15.6], \"treasure\": [14.6, 15.6], \"rubble\": [-18.0, 15.6], \"event\": [18.6, 15.2], \"alien\": [-21.4, 15.6], \"hazard\": [-24.6, 15.6], \"extra\": [18.6, 11.4]}, \"deck_s\": {\"room\": 1.1765, \"monster\": 0.4575, \"treasure\": 0.4575, \"rubble\": 0.4575, \"event\": 0.75, \"alien\": 0.4575, \"hazard\": 0.3268, \"extra\": 1.1765}, \"mat_tok_s\": 0.3268, \"colors\": [\"Red\", \"Yellow\", \"Green\", \"Blue\", \"Purple\"], \"mats\": {\"Red\": [7.5, -15.109, 180], \"Purple\": [-7.5, -15.109, 180], \"Green\": [0.0, 15.109, 0], \"Yellow\": [-25.109, 0.0, 270], \"Blue\": [25.109, 0.0, 90]}, \"mat_size\": [12.7272, 6.1818], \"mat_px\": [1400, 680], \"die_px\": [[100, 375], [230, 375], [100, 555], [230, 555]], \"carry_px\": [[375, 365], [487, 365], [600, 365], [375, 478], [487, 478], [600, 478], [375, 591], [487, 591], [600, 591]], \"points_px\": [[735, 365], [847, 365], [960, 365], [735, 478], [847, 478], [960, 478], [735, 591], [847, 591], [960, 591]], \"pawn_home\": {\"Red\": [1.773, -11.018], \"Yellow\": [-21.018, 5.727], \"Green\": [5.727, 11.018], \"Blue\": [21.018, -5.727], \"Purple\": [-13.227, -11.018]}, \"faces\": {\"1\": \"move\", \"2\": \"move\", \"3\": \"attack\", \"4\": \"attack\", \"5\": \"magic\", \"6\": \"magic\"}, \"game_secs\": 600, \"round2_at\": 300, \"event_show\": [22.6, 15.2], \"close_rooms\": 6, \"objects\": 4, \"object_desc\": \"Needs 2 Magic. In round 2, drop it on the Integration Chamber: that completes your special task.\", \"obj_slot_px\": [[150, 182], [362, 182], [150, 384], [362, 384]], \"room_w\": 3.6, \"title_pos\": [-20.5, -15.4], \"empty_name\": \"Unregistered Sector\", \"monsters\": {\"weak\": {\"name\": \"Scraper\", \"hp\": 1, \"points\": 1}, \"medium\": {\"name\": \"Carrier\", \"hp\": 2, \"points\": 2}, \"strong\": {\"name\": \"Anomaly\", \"hp\": 3, \"points\": 3}, \"alienweak\": {\"name\": \"Alien Scraper\", \"hp\": 2, \"points\": 1}, \"alienmedium\": {\"name\": \"Alien Carrier\", \"hp\": 3, \"points\": 2}, \"alienstrong\": {\"name\": \"Alien Anomaly\", \"hp\": 4, \"points\": 3}}, \"mon_desc\": {\"weak\": \"1 HP: each Attack deals 1 damage, and damage stays. 1 point. Right-click: Hit.\", \"medium\": \"2 HP: each Attack deals 1 damage, and damage stays. 2 points. Right-click: Hit.\", \"strong\": \"3 HP: each Attack deals 1 damage, and damage stays. 3 points. Right-click: Hit.\", \"alienweak\": \"2 HP: each Attack deals 1 damage, and damage stays. 1 point. Right-click: Hit. You can't go through its room without beating it.\", \"alienmedium\": \"3 HP: each Attack deals 1 damage, and damage stays. 2 points. Right-click: Hit. You can't go through its room without beating it.\", \"alienstrong\": \"4 HP: each Attack deals 1 damage, and damage stays. 3 points. Right-click: Hit. You can't go through its room without beating it.\"}, \"alien_s\": 0.4575}]==])\n\nCOLORS = {Red = {0.86, 0.1, 0.09}, Yellow = {0.95, 0.85, 0.1}, Green = {0.19, 0.7, 0.17}, Blue = {0.12, 0.53, 1},\n          Purple = {0.63, 0.13, 0.94}}\nGOLDEN = {0.36, 0.69, 0.87}   -- the old name; now the cold blue of the narrative's look\n-- Where each character stands inside a room, so five can share one: a ring around the token in the\n-- middle (a room is 3.6 across, a token 1.4).\nPAWN_OFF = {Green = {0, 1.15}, Yellow = {-1.09, 0.36}, Red = {-0.68, -0.93}, Purple = {0.68, -0.93}, Blue = {1.09, 0.36}}\n-- Mat geometry: a mat is L.mat_size table units; its image is L.mat_px pixels (build.py mat_img). Each\n-- mat lies on its player's side of the table, turned to face them (L.mats: x, z, Y rotation), so a\n-- point of the image turns with it (same sums as build.py mat_world).\nlocal function matPos(color, px, py)\n  local m = L.mats[color]\n  local u, v = (px / L.mat_px[1] - 0.5) * L.mat_size[1], (py / L.mat_px[2] - 0.5) * L.mat_size[2]\n  local t = math.rad(m[3])\n  return {x = m[1] - u * math.cos(t) + v * math.sin(t), y = 1.25, z = m[2] + u * math.sin(t) + v * math.cos(t)}\nend\nlocal function matRot(color) return {x = 0, y = L.mats[color][3], z = 0} end\n-- Heights measured live: the felt is at y 0.96, a mat's top at 1.08, a die at scale 1.5 is 1.0 high\n-- (centre pivot) (2026-10-19); a card lies at 0.974 on the felt, at 1.001 on another card and is 0.027\n-- thick (2026-10-25).\nDIE_Y, CARD_Y, CARD_ON_CARD, CARD_ON_MAT = 1.58, 0.974, 1.001, 1.095\n-- The loose pieces players move (unlocked in the save; the director locks them while it films).\nMOVABLE = {\"die\", \"pawn\"}\nSTAGED = false\nOPS = {}\n\n-- ------------------------------------------------------------------ finding things\nlocal function alive(o) return o ~= nil and not o.isDestroyed() end\nlocal function notes(o) local ok, g = pcall(function() return o.getGMNotes() end) return ok and g or \"\" end\nlocal function byNote(tag, note)\n  for _, o in ipairs(getObjectsWithTag(tag)) do if notes(o) == note then return o end end\nend\nfunction cellPos(c) return {x = L.dungeon[1] + c[1] * L.grid, y = 1.1, z = L.dungeon[2] + c[2] * L.grid} end\nfunction dieOf(color, i) return byNote(\"die\", color .. \":\" .. i) end\nfunction pawnOf(color) return byNote(\"pawn\", color) end\n\nfunction glow(o, color, secs)\n  if alive(o) then pcall(function() o.highlightOn(COLORS[color] or GOLDEN, secs or 3) end) end\nend\n\n-- ------------------------------------------------------------------ cards and decks\n-- Which deck a card belongs to, from its GM Notes.\nlocal function kindOf(n)\n  if n == nil or n == \"\" then return nil end\n  -- The event tokens of GDD 11-04, before the older kinds: an alien's notes start like a monster's.\n  if n:sub(1, 7) == \"m-alien\" then return \"alien\" end\n  if n:match(\"^gas%-\") or n:match(\"^hole%-\") or n:match(\"^newsafe%-\") then return \"hazard\" end\n  if n == \"special2\" then return \"extra\" end\n  if n:match(\"^%-?%d+,%-?%d+$\") or n:match(\"^spare\") or n == \"special\" then return \"room\" end\n  if n:sub(1, 2) == \"m-\" then return \"monster\" end\n  if n:sub(1, 2) == \"t-\" or n:sub(1, 2) == \"o-\" then return \"treasure\" end\n  if n:sub(1, 7) == \"rubble-\" then return \"rubble\" end\n  if n:match(\"^E%d$\") then return \"event\" end\nend\n\n-- Each kind's deck, remembered by GUID. A deck that is down to its last card stops being a deck (TTS\n-- turns it into a single card); that card, or the first card to come back, becomes the deck again.\nDECK = {}\nlocal function mainDeck(kind)\n  local g = DECK[kind]\n  local o = g and getObjectFromGUID(g)\n  if alive(o) then return o end\nend\nlocal function isMain(o, kind)\n  if kind then return DECK[kind] == o.getGUID() end\n  for k, _ in pairs(L.decks) do if DECK[k] == o.getGUID() then return true end end\n  return false\nend\nlocal function deckHome(kind)\n  local p = L.deck_pos[kind]\n  return {x = p[1], y = 1.4, z = p[2]}\nend\n\n-- A card on the table, or the card with these notes taken out of whichever deck holds it; then\n-- after(card) runs with the card at pos.\nlocal function takeCard(id, pos, after)\n  for _, o in ipairs(getObjects()) do\n    if o.type == \"Card\" and notes(o) == id then\n      o.setPositionSmooth(pos, false, true)\n      o.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)\n      if after then after(o) end\n      return\n    end\n  end\n  local main = mainDeck(kindOf(id))\n  local decks = {main}\n  for _, o in ipairs(getObjects()) do if o.type == \"Deck\" and not isMain(o, kindOf(id)) then table.insert(decks, o) end end\n  for _, d in ipairs(decks) do\n    for _, c in ipairs(d.getObjects()) do\n      if c.gm_notes == id then\n        d.takeObject({guid = c.guid, position = pos, rotation = {x = 0, y = 180, z = 0}, smooth = true,\n                      callback_function = after})\n        return\n      end\n    end\n  end\nend\n\n-- A card (or a small deck players made) goes back into its kind's deck.\nlocal function sendHome(kind, o)\n  o.setLock(false)\n  local main = mainDeck(kind)\n  if main and not isMain(o, kind) then\n    local d = main.putObject(o)\n    if alive(d) then DECK[kind] = d.getGUID() end   -- two single cards become a new deck\n  else\n    o.setPosition(deckHome(kind))\n    o.setRotation({x = 0, y = 180, z = 180})\n    o.setScale({x = L.deck_s[kind], y = 1, z = L.deck_s[kind]})\n    DECK[kind] = o.getGUID()\n  end\nend\n\n-- Every card on the table goes home. A small deck of one kind goes home whole; a mixed one (a monster\n-- and a treasure token stacked on a mat) is taken apart first. Joining two cards destroys both and\n-- makes a new deck, so a piece met later in the loop may be gone: touching it stopped the whole RESET\n-- (\"Value cannot be null\", seen live 2026-10-25). Each piece is checked, and one that fails is skipped.\nlocal function gatherOne(o)\n  if not alive(o) then return end\n  if o.type == \"Card\" then\n    local kind = kindOf(notes(o))\n    if kind and not isMain(o, kind) then sendHome(kind, o) end\n  elseif o.type == \"Deck\" and not isMain(o) then\n    local kinds, first = {}, nil\n    for _, c in ipairs(o.getObjects()) do\n      local k = kindOf(c.gm_notes)\n      if k then kinds[k] = true first = first or k end\n    end\n    local n = 0\n    for _ in pairs(kinds) do n = n + 1 end\n    if n == 1 then\n      sendHome(first, o)\n    elseif n > 1 then\n      -- All but the last card: taking a deck's last card throws an error Lua can't catch (the deck is\n      -- turning into that card, seen live 2026-10-25). The card left over goes home in the second pass.\n      local cards = o.getObjects()\n      for i = 1, #cards - 1 do\n        local k = kindOf(cards[i].gm_notes)\n        if k then\n          o.takeObject({guid = cards[i].guid, position = deckHome(k), smooth = false,\n                        callback_function = function(card) sendHome(k, card) end})\n        end\n      end\n    end\n  end\nend\nlocal function gatherCards()\n  for _, o in ipairs(getObjects()) do pcall(gatherOne, o) end\nend\n\n-- ------------------------------------------------------------------ overlays\n-- Only the name of the part is shown (the team explains the rest live while presenting), with the\n-- symbols the step costs as icons after it: d.icons = \"MM\" (2 Movement), \"AAA\", \"GG\" ...\nlocal function textWidth(t)\n  local w = 0\n  -- Bold 29 px capitals are about 21 px wide (42 px ones measured 31 px on screen, 2026-10-19); a\n  -- little more, so the text never runs into the icons (it overflows its box instead of wrapping).\n  for ch in t:gmatch(\".\") do w = w + ((ch == \" \" or ch == \"·\" or ch == \":\") and 10 or 24) end\n  return math.max(60, w)\nend\nfunction caption(head, icons)\n  icons = icons or \"\"\n  local tw = textWidth(head or \"\")\n  UI.setAttribute(\"kbCaptionHead\", \"preferredWidth\", tw)\n  UI.setAttribute(\"kbCaption\", \"width\", tw + 32 + #icons * 46)\n  UI.setValue(\"kbCaptionHead\", head or \"\")\n  for i = 1, 4 do\n    local k = icons:sub(i, i)\n    if k ~= \"\" then\n      UI.setAttribute(\"kbIcon\" .. i, \"image\", \"icon\" .. k)\n      UI.setAttribute(\"kbIcon\" .. i, \"active\", \"true\")\n    else\n      UI.setAttribute(\"kbIcon\" .. i, \"active\", \"false\")\n    end\n  end\n  UI.setAttribute(\"kbCaption\", \"active\", \"true\")\nend\nfunction OPS.caption(d) caption(d.head, d.icons) end\nfunction OPS.nocaption(d) UI.setAttribute(\"kbCaption\", \"active\", \"false\") end\n\nfunction OPS.banner(d)\n  if not d.text then UI.setAttribute(\"kbBanner\", \"active\", \"false\") return end\n  UI.setValue(\"kbBannerText\", d.text)\n  UI.setAttribute(\"kbBanner\", \"active\", \"true\")\nend\n\nfunction OPS.score(d)\n  if not d.lines then UI.setAttribute(\"kbScore\", \"active\", \"false\") return end\n  UI.setAttribute(\"kbScore\", \"active\", \"true\")\n  for i = 1, #L.colors do\n    local ln = d.lines[i]\n    UI.setValue(\"kbScore\" .. i, ln and ln.text or \"\")\n    if ln and ln.hex then UI.setAttribute(\"kbScore\" .. i, \"color\", ln.hex) end\n  end\nend\n\n-- The 10-minute timer (§10); round 2 starts at L.round2_at seconds left. It never pauses in the game. In a real game (START GAME) it follows the\n-- clock, so it can't drift; the director only speeds it up for the \"a few minutes later\" part of the\n-- video (rate = game seconds per real second).\nTIMER = {left = L.game_secs, rate = 1, token = 0, play = false, ends = nil}\nlocal function wall()\n  local ok, t = pcall(function() return os.time() end)\n  if ok and type(t) == \"number\" then return t end\nend\nlocal function showTime()\n  local s = math.max(0, math.floor(TIMER.left + 0.5))\n  UI.setValue(\"kbTimerText\", string.format(\"%d:%02d\", math.floor(s / 60), s % 60))\n  UI.setAttribute(\"kbTimerText\", \"color\", s <= 60 and \"#FF6A5A\" or \"#F5ECD7\")\nend\nROUND = 1\nlocal round2\n-- 0:00 (rules §9, §11): a player in the Safe Zone with the special task completed keeps their points;\n-- everyone else loses them. The script checks both; the points themselves (monsters and the treasure\n-- combinations each player chooses) are counted by the players, from their mats.\nlocal function seated()\n  local out = {}\n  for _, pl in ipairs(Player.getPlayers()) do if L.mats[pl.color] then table.insert(out, pl.color) end end\n  if #out == 0 then return L.colors end\n  return out\nend\n-- Event state (GDD 11-04). SAFE: the Safe Zone's cell (Lost Path moves it). PEN: points lost to gas and black\n-- holes. LASTCELL: where each character was last dropped, so moving it around inside a room costs nothing.\nSAFE, PEN, LASTCELL = {0, 0}, {}, {}\nlocal function timeUp()\n  OPS.banner({text = \"TIME'S UP!\"})\n  UI.setAttribute(\"kbRisk\", \"active\", \"false\")\n  -- The banner lies over the results' list, so it goes after a moment (seen live 2026-11-03).\n  Wait.time(function() if TIMER.left <= 0 then OPS.banner({}) end end, 4)\n  local lines = {}\n  for _, color in ipairs(seated()) do\n    local p = pawnOf(color)\n    local c = alive(p) and cellAt(p.getPosition())\n    local home = c and c[1] == SAFE[1] and c[2] == SAFE[2]\n    local text, hex\n    if home and TASK[color] then\n      local pen = PEN[color] or 0\n      text, hex = color:upper() .. \": escaped, keeps the points\" .. (pen > 0 and (\", minus \" .. pen .. \" (gas, black holes)\") or \"\"), \"#ECF0F2\"\n    elseif home then\n      text, hex = color:upper() .. \": no object placed, 0 points\", \"#E28C24\"\n    else\n      text, hex = color:upper() .. \": trapped in the station, 0 points\", \"#E28C24\"\n    end\n    table.insert(lines, {text = text, hex = hex})\n  end\n  OPS.score({lines = lines})\n  broadcastToAll(\"Time's up! Whoever escaped counts their points: beaten monsters plus treasure (alone or in\"\n    .. \" combinations, see the mat). Most points wins; a tie is a draw.\", GOLDEN)\nend\nlocal function tick(token)\n  if token ~= TIMER.token then return end\n  if TIMER.ends then TIMER.left = TIMER.ends - wall() else TIMER.left = TIMER.left - 1 end\n  if TIMER.play and ROUND == 1 and TIMER.left <= L.round2_at then round2() end\n  if TIMER.left <= 0 then\n    TIMER.left = 0\n    showTime()\n    if TIMER.play then timeUp() end\n    return\n  end\n  showTime()\n  Wait.time(function() tick(token) end, TIMER.ends and 0.25 or 1 / TIMER.rate)\nend\nfunction OPS.timer(d)\n  UI.setAttribute(\"kbTimer\", \"active\", d.hide and \"false\" or \"true\")\n  TIMER.token = TIMER.token + 1\n  if d.left then TIMER.left = d.left end\n  TIMER.rate = d.rate or 1\n  TIMER.play = d.play or false\n  TIMER.ends = nil\n  if TIMER.play and wall() then TIMER.ends = wall() + TIMER.left end\n  showTime()\n  if d.run then\n    local token = TIMER.token\n    Wait.time(function() tick(token) end, TIMER.ends and 0.25 or 1 / TIMER.rate)\n  end\nend\n\n-- ------------------------------------------------------------------ camera\n-- Always from the south (yaw 0), so every mat and card reads upright.\nfunction viewFor(d)\n  local v = d.view\n  if v == \"table\" then return {position = {x = 0, y = 0, z = 0}, pitch = 68, yaw = 0, distance = 54} end\n  if v == \"play\" then return {position = {x = 0, y = 0, z = -4.0}, pitch = 62, yaw = 0, distance = 40} end\n  if v == \"dungeon\" then return {position = {x = 0, y = 0, z = 1.5}, pitch = 70, yaw = 0, distance = 30} end\n  if v == \"mats\" then return {position = {x = 0, y = 0, z = 0}, pitch = 75, yaw = 0, distance = 60} end\n  if v == \"supply\" then return {position = {x = 0, y = 0, z = 13}, pitch = 60, yaw = 0, distance = 42} end\n  if v == \"title\" then return {position = {x = L.title_pos[1], y = 0, z = L.title_pos[2]}, pitch = 70, yaw = 0, distance = 16} end\n  if v == \"event\" then return {position = {x = L.event_show[1] - 1.5, y = 0, z = L.event_show[2] - 1}, pitch = 66, yaw = 0, distance = 13} end\n  if v == \"mat\" then\n    local m = L.mats[d.color]\n    return {position = {x = m[1], y = 0, z = m[2]}, pitch = 62, yaw = (m[3] + 180) % 360, distance = d.distance or 15}\n  end\n  if v == \"cell\" then\n    local p = cellPos(d.cell)\n    -- With a colour: the room and that player's mat (where the dice are) in one shot. The view frames\n    -- both (half-way put the far-left mat's dice off screen, seen 2026-10-19) and aims a little low,\n    -- because the part's name covers the bottom of the screen.\n    if d.color then\n      local mx, mz = L.mats[d.color][1], L.mats[d.color][2]\n      local hw = math.max(L.mat_size[1], L.mat_size[2]) / 2 + 0.5\n      local hd = hw\n      local x0, x1 = math.min(mx - hw, p.x - 2.2), math.max(mx + hw, p.x + 2.2)\n      local z0, z1 = math.min(mz - hd, p.z - 2.2), math.max(mz + hd, p.z + 2.2)\n      local dist = math.max(d.distance or 0, (x1 - x0) / 1.2, (z1 - z0) * 1.1)\n      return {position = {x = (x0 + x1) / 2, y = 0, z = (z0 + z1) / 2 - 1.8}, pitch = 62, yaw = 0, distance = dist}\n    end\n    return {position = {x = p.x, y = 0, z = p.z - 0.8}, pitch = 64, yaw = 0, distance = d.distance or 16}\n  end\nend\nfunction OPS.camera(d)\n  local v = viewFor(d)\n  if not v then return end\n  for _, pl in ipairs(Player.getPlayers()) do\n    if pl.host then pcall(function() pl.lookAt(v) end) end\n  end\nend\n\n-- ------------------------------------------------------------------ setup (§3)\nfunction OPS.deal(d)\n  -- Each player takes their 4 dice (§3 step 1): from the middle of the table onto their mat.\n  local k = 0\n  for _, color in ipairs(d.colors or L.colors) do\n    for i = 1, 4 do\n      local die = dieOf(color, i)\n      if die then\n        k = k + 1\n        local px = L.die_px[i]\n        local p = matPos(color, px[1], px[2])\n        -- Face first, then the move: setRotationValue after setPositionSmooth cancels the move\n        -- (seen live, 2026-10-19: the dice stayed in the supply).\n        Wait.time(function()\n          die.setRotationValue(i)\n          die.setPositionSmooth({x = p.x, y = DIE_Y, z = p.z}, false, true)\n          glow(die, color, 2)\n        end, k * 0.06)\n      end\n    end\n  end\nend\n\nfunction OPS.pawns(d)\n  -- Characters go into the Safe Zone (rules §8: everyone starts there).\n  for _, color in ipairs(d.colors or L.colors) do\n    local pawn = pawnOf(color)\n    if pawn then\n      local c, off = cellPos({0, 0}), PAWN_OFF[color]\n      pawn.setPositionSmooth({x = c.x + off[1], y = 1.6, z = c.z + off[2]}, false, false)\n      glow(pawn, color, 3)\n    end\n  end\nend\n\nfunction OPS.shuffle(d)\n  -- §3 step 3: the room deck is shuffled (the tutorial still finds its rooms by their notes).\n  local deck = mainDeck(\"room\")\n  if deck and deck.type == \"Deck\" then deck.shuffle() glow(deck, d.color, 2) end\nend\n\nfunction OPS.button(d)\n  for _, id in ipairs({\"kbStart\", \"kbReset\", \"kbRoll\"}) do UI.setAttribute(id, \"active\", d.show and \"true\" or \"false\") end\nend\n\nfunction OPS.spot(d)\n  -- One player's character and mat glow: \"watch this player\".\n  glow(pawnOf(d.color), d.color, d.secs or 3)\n  glow(byNote(\"mat\", d.color), d.color, d.secs or 3)\nend\n\nfunction OPS.glowtag(d)\n  for _, o in ipairs(getObjectsWithTag(d.tag)) do glow(o, d.color, d.secs or 3) end\nend\n\n-- ------------------------------------------------------------------ dice (§4, §5)\n-- d.color, d.dice = which dice (1-4), d.values = the faces they land on (1-2 Movement, 3-4 Attack,\n-- 5-6 Magic). The dice jump, tumble and land on the face; kept dice stay where they are.\nlocal function rollOne(color, i, value, delay)\n  local die = dieOf(color, i)\n  if not die then return end\n  local px = L.die_px[i]\n  local p = matPos(color, px[1], px[2])\n  Wait.time(function()\n    die.setPositionSmooth({x = p.x, y = DIE_Y + 2.2, z = p.z}, false, true)\n    die.setRotationSmooth({x = math.random(0, 359), y = math.random(0, 359), z = math.random(0, 359)}, false, true)\n  end, delay)\n  Wait.time(function()\n    die.setRotationSmooth({x = math.random(0, 359), y = math.random(0, 359), z = math.random(0, 359)}, false, true)\n  end, delay + 0.25)\n  Wait.time(function()\n    die.setRotationValue(value)\n    die.setPositionSmooth({x = p.x, y = DIE_Y, z = p.z}, false, true)\n  end, delay + 0.55)\nend\nfunction OPS.roll(d)\n  for k, i in ipairs(d.dice) do rollOne(d.color, i, d.values[k], (k - 1) * 0.04) end\nend\nfunction OPS.keep(d)\n  -- The dice that already show what the player needs glow in their colour.\n  for _, i in ipairs(d.dice) do glow(dieOf(d.color, i), d.color, d.secs or 3) end\nend\n\n-- ROLL DICE: all four of the clicking player's dice at once (Yavuz, 2026-10-26: \"4 zarın birden\n-- rollanması lazım\"). The tutorial's jump with a random face: each die lands back on its own spot of\n-- the mat, so the dice never wander off it in a 10-minute game, and it is locked until it has landed\n-- so it can't tumble onto another face. To keep some dice, the others are still rolled by hand (R).\nROLLING = {}\nfunction rollDice(player)\n  local color = player.color\n  if not L.mats[color] then\n    broadcastToColor(\"Sit at Red, Yellow, Green, Blue or Purple to roll your dice.\", color, GOLDEN)\n    return\n  end\n  if ROLLING[color] then return end   -- a second click while the dice are in the air\n  ROLLING[color] = true\n  for i = 1, 4 do\n    local die = dieOf(color, i)\n    if die then\n      die.setLock(true)\n      rollOne(color, i, math.random(1, 6), (i - 1) * 0.04)\n    end\n  end\n  Wait.time(function()\n    for i = 1, 4 do\n      local die = dieOf(color, i)\n      if alive(die) then die.setLock(STAGED) end\n    end\n    ROLLING[color] = nil\n  end, 1.2)\nend\n\n-- ------------------------------------------------------------------ the dungeon (§6, §12)\n-- A card the director put somewhere stays there while it films.\nlocal function settle(card, pos, scale, color, rot)\n  card.setScale({x = scale, y = 1, z = scale})\n  if STAGED then card.setLock(true) end\n  card.setPositionSmooth(pos, false, true)\n  if rot then card.setRotationSmooth(rot, false, true) end\n  glow(card, color, 3)\nend\n\nfunction OPS.reveal(d)\n  -- The room card of this cell comes off the room deck, turns over and lands next to the room it was\n  -- revealed from, passages lined up (build.py drew them that way).\n  local p = cellPos(d.cell)\n  -- d.id: a room card known by another name (the Integration Chamber is \"special\").\n  takeCard(d.id or (d.cell[1] .. \",\" .. d.cell[2]), {x = p.x, y = 2.6, z = p.z}, function(card)\n    Wait.time(function() settle(card, {x = p.x, y = CARD_Y, z = p.z}, L.deck_s.room, d.color) end, 0.4)\n  end)\n  if d.token then\n    Wait.time(function() OPS.token({id = d.token, cell = d.cell, color = d.color}) end, 1.4)\n  end\nend\n\nfunction OPS.token(d)\n  local p = cellPos(d.cell)\n  takeCard(d.id, {x = p.x, y = 2.4, z = p.z}, function(card)\n    Wait.time(function() settle(card, {x = p.x, y = CARD_ON_CARD, z = p.z}, L.deck_s.monster, d.color) end, 0.4)\n  end)\nend\n\nfunction OPS.move(d)\n  local pawn = pawnOf(d.color)\n  if not pawn then return end\n  local path = d.path or {d.cell}\n  for k, c in ipairs(path) do\n    Wait.time(function()\n      local p, off = cellPos(c), PAWN_OFF[d.color]\n      pawn.setPositionSmooth({x = p.x + off[1], y = 1.6, z = p.z + off[2]}, false, true)\n      glow(pawn, d.color, 2)\n    end, (k - 1) * (d.t or 0.45))\n  end\nend\n\n-- What lies on each mat: TREASURE (treasure and objects taken) and MONSTERS (beaten ones). The keys are\n-- v2.0's (carry, points), only the boxes' names changed.\nCARRY, POINTS = {}, {}\nlocal function clearMats()\n  CARRY, POINTS = {}, {}\n  for _, c in ipairs(L.colors) do CARRY[c], POINTS[c] = {}, {} end\nend\nlocal function toMat(id, color, spots, n, delay)\n  local px = spots[math.min(n, #spots)]\n  local p = matPos(color, px[1], px[2])\n  Wait.time(function()\n    takeCard(id, {x = p.x, y = 2.2, z = p.z}, function(card)\n      Wait.time(function() settle(card, {x = p.x, y = CARD_ON_MAT, z = p.z}, L.mat_tok_s, color, matRot(color)) end, 0.4)\n    end)\n  end, delay)\nend\n\nfunction OPS.take(d)\n  -- A taken treasure or object goes onto TREASURE, a beaten monster onto MONSTERS.\n  if d.id:sub(1, 2) == \"t-\" or d.id:sub(1, 2) == \"o-\" then\n    table.insert(CARRY[d.color], d.id)\n    toMat(d.id, d.color, L.carry_px, #CARRY[d.color], 0)\n  else\n    table.insert(POINTS[d.color], d.id)\n    toMat(d.id, d.color, L.points_px, #POINTS[d.color], 0)\n  end\nend\n\n-- Monsters (rules §5): each Attack deals 1 damage and damage stays from one cycle to the next (video\n-- script, scene 6). A monster token's right-click menu has Hit and Undo hit; its name shows the HP left.\n-- At 0 HP it goes to the MONSTERS box of whoever hit it last. The damage is kept by GUID: a token that\n-- goes back into its deck comes out with a new GUID and full HP.\nDMG = {}\nlocal function monKind(o) return notes(o):match(\"^m%-(%a+)%-%d+$\") end\nlocal function showHP(o)\n  local k = monKind(o)\n  local m = L.monsters[k]\n  local left = m.hp - (DMG[o.getGUID()] or 0)\n  o.setName(m.name .. \" · \" .. left .. \"/\" .. m.hp .. \" HP\")\n  o.setDescription(L.mon_desc[k])\nend\nfunction monsterHit(color, o, n)   -- global so the tests can call it\n  local k = monKind(o)\n  if not k or not alive(o) then return end\n  local m = L.monsters[k]\n  local g = o.getGUID()\n  DMG[g] = math.max(0, math.min(m.hp, (DMG[g] or 0) + n))\n  showHP(o)\n  if DMG[g] >= m.hp then\n    o.setName(m.name .. \" · beaten\")\n    if L.mats[color] then\n      if not STAGED then broadcastToAll(color .. \" beat the \" .. m.name .. \": \" .. m.points .. \" point\" .. (m.points > 1 and \"s\" or \"\") .. \".\", GOLDEN) end\n      OPS.take({id = notes(o), color = color})\n    end\n  end\nend\nlocal function addHitMenu(o)\n  if o.type ~= \"Card\" or not monKind(o) then return end\n  pcall(function()\n    o.clearContextMenu()\n    o.addContextMenuItem(\"Hit (1 damage)\", function(color, _, obj) monsterHit(color, obj, 1) end)\n    o.addContextMenuItem(\"Undo hit\", function(color, _, obj) monsterHit(color, obj, -1) end)\n  end)\n  if not o.is_face_down then showHP(o) end\nend\nfunction onObjectLeaveContainer(container, o)\n  -- A monster token taken from its deck: full HP and the Hit menu (the card only exists once it is out). A\n  -- token that was beaten and went back keeps its name and maybe its GUID, so both are cleared here.\n  Wait.frames(function()\n    if not alive(o) then return end\n    local k = monKind(o)\n    if k then\n      DMG[o.getGUID()] = nil\n      o.setName(L.monsters[k].name)\n    end\n    addHitMenu(o)\n  end, 1)\nend\n\n-- ------------------------------------------------------------------ the two rounds (GDD 11-02 §4, §5, §10)\n-- The dungeon as it lies on the table: the Safe Room and every face-up room card on a dungeon cell, minus the\n-- rooms with a destruction token on them.\nlocal function key(c) return c[1] .. \",\" .. c[2] end\nfunction cellAt(p)   -- global: timeUp, above, uses it too\n  local c = {math.floor((p.x - L.dungeon[1]) / L.grid + 0.5), math.floor((p.z - L.dungeon[2]) / L.grid + 0.5)}\n  local q = cellPos(c)\n  if math.abs(p.x - q.x) > L.grid / 2 or math.abs(p.z - q.z) > L.grid / 2 then return nil end\n  return c\nend\nlocal function openRooms()\n  local open, closed = {[\"0,0\"] = {0, 0}}, {}\n  for _, o in ipairs(getObjects()) do\n    if o.type == \"Card\" and not o.is_face_down and not isMain(o) then\n      local k, c = kindOf(notes(o)), cellAt(o.getPosition())\n      if c and k == \"room\" then open[key(c)] = c end\n      if c and k == \"rubble\" then closed[key(c)] = true end\n    end\n  end\n  for k, _ in pairs(closed) do open[k] = nil end\n  return open\nend\nlocal function characterCells(open)\n  local out = {}\n  for _, color in ipairs(L.colors) do\n    local p = pawnOf(color)\n    local c = alive(p) and cellAt(p.getPosition())\n    if c and open[key(c)] then out[key(c)] = c end\n  end\n  return out\nend\n-- Rooms where rocks may go (rules §10 \"empty rooms\"; Yavuz, 2026-11-03: \"empty roomdan kasıt unregistered\n-- sector\"): open Unregistered Sectors with no character in them (and nothing a player left there). Shuffled.\nlocal function emptyRooms()\n  local open = openRooms()\n  local taken, sectors, out = characterCells(open), {}, {}\n  for _, o in ipairs(getObjects()) do\n    if o.type == \"Card\" and not isMain(o) and not o.is_face_down then\n      local k, c = kindOf(notes(o)), cellAt(o.getPosition())\n      if c and k == \"room\" and o.getName() == L.empty_name then sectors[key(c)] = true end\n      if c and (k == \"monster\" or k == \"treasure\") then taken[key(c)] = true end\n    elseif o.type == \"Deck\" and not isMain(o) then\n      local c = cellAt(o.getPosition())   -- tokens players stacked in a room\n      if c then taken[key(c)] = true end\n    end\n  end\n  for k, c in pairs(open) do if sectors[k] and not taken[k] then table.insert(out, c) end end\n  for i = #out, 2, -1 do local j = math.random(1, i) out[i], out[j] = out[j], out[i] end\n  return out\nend\n\nlocal function closeRooms(cells)\n  local rooms = cells or emptyRooms()   -- the director chooses the rooms (empty ones) so the video can plan routes\n  for i = 1, math.min(L.close_rooms, #rooms) do\n    local p = cellPos(rooms[i])\n    Wait.time(function()\n      takeCard(\"rubble-\" .. i, {x = p.x, y = 2.6, z = p.z}, function(card)\n        -- Locked at once and laid on top, never dropped: a round card falling on a round token joins it\n        -- into a deck (both destroyed; seen live 2026-11-02).\n        card.setLock(true)\n        Wait.time(function()\n          card.setScale({x = L.deck_s.rubble, y = 1, z = L.deck_s.rubble})\n          card.setPositionSmooth({x = p.x, y = CARD_Y + 0.05, z = p.z}, false, true)\n          glow(card, nil, 3)\n        end, 0.4)\n      end)\n    end, (i - 1) * 0.6)\n  end\nend\n\n-- No new rooms in round 2 (rules §4, §9): the room deck can't be touched until RESET TABLE.\nlocal function roomDeckOpen(yes)\n  local deck = mainDeck(\"room\")\n  if deck then pcall(function() deck.interactable = yes end) end\nend\n\n-- ------------------------------------------------------------------ the event cards (rules §10, GDD 11-04)\n-- Rooms beside a cell (GDD E6: \"connected to it by their sides\"): the four grid neighbours. The script doesn't\n-- read passages (open): side by side counts as connected, the same as players see rooms touching.\nlocal SIDES = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}\nlocal function beside(c, open)\n  local out = {}\n  for _, d in ipairs(SIDES) do\n    local n = {c[1] + d[1], c[2] + d[2]}\n    if open[key(n)] then table.insert(out, n) end\n  end\n  return out\nend\nlocal function shuffled(t)\n  for i = #t, 2, -1 do local j = math.random(1, i) t[i], t[j] = t[j], t[i] end\n  return t\nend\n-- Face-up token cards of a kind lying in an open room: {card, cell}.\nlocal function tokensInRooms(kind)\n  local open, out = openRooms(), {}\n  for _, o in ipairs(getObjects()) do\n    if o.type == \"Card\" and not o.is_face_down and not isMain(o) and kindOf(notes(o)) == kind then\n      local c = cellAt(o.getPosition())\n      if c and open[key(c)] then table.insert(out, {o, c}) end\n    end\n  end\n  return out\nend\n-- An event token goes to a corner of a room, clear of the token in the middle and the characters around it.\n-- Each kind has its own corner, so gas and a black hole can share a room (Extra Risk draws both).\nlocal CORNER = {gas = {-1.25, 1.25}, hole = {1.25, 1.25}, newsafe = {-1.25, -1.25}}\nlocal function layToken(id, c, delay)\n  local p = cellPos(c)\n  local k = CORNER[id:match(\"^(%a+)%-\")]\n  p = {x = p.x + k[1], z = p.z + k[2]}\n  Wait.time(function()\n    takeCard(id, {x = p.x, y = 2.6, z = p.z}, function(card)\n      card.setLock(true)   -- laid on top, never dropped (see closeRooms)\n      Wait.time(function()\n        card.setPositionSmooth({x = p.x, y = CARD_ON_CARD + 0.03, z = p.z}, false, true)\n        glow(card, nil, 3)\n      end, 0.4)\n    end)\n  end, delay or 0)\nend\n\nFX = {}\nGAS, HOLES = {}, {}\n-- E1 Rockfall: rocks in every empty Unregistered Sector.\nFX.E1 = function() closeRooms(ROCK_CELLS) end\n\n-- E2 Lost Path: the Safe Zone moves to a room 5 rooms away, counted through connected rooms (GDD), chosen at\n-- random. (open) No room that far: the farthest one. The Safe Zone tile stays where it is, a normal room now.\nFX.E2 = function()\n  local open = openRooms()\n  local dist, queue, far = {[key(SAFE)] = 0}, {SAFE}, {}\n  local i = 1\n  while queue[i] do\n    local c = queue[i]\n    for _, n in ipairs(beside(c, open)) do\n      if not dist[key(n)] then dist[key(n)] = dist[key(c)] + 1 table.insert(queue, n) end\n    end\n    i = i + 1\n  end\n  local best = 0\n  for _, d in pairs(dist) do if d <= 5 and d > best then best = d end end\n  if best == 0 then broadcastToAll(\"Lost Path: no other room to move the Safe Zone to. It stays.\", GOLDEN) return end\n  for _, c in ipairs(queue) do if dist[key(c)] == best then table.insert(far, c) end end\n  SAFE = shuffled(far)[1]\n  layToken(\"newsafe-1\", SAFE)\n  Wait.time(function()\n    for _, o in ipairs(getObjects()) do if notes(o) == \"newsafe-1\" then glow(o, nil, 8) end end\n  end, 1.2)\nend\n\n-- E3 Time Freeze: the characters are locked for 15 seconds (GDD: no moving; fighting and taking go on).\nFREEZE = 0\nFX.E3 = function()\n  FREEZE = FREEZE + 1\n  local token = FREEZE\n  for _, color in ipairs(L.colors) do local p = pawnOf(color) if alive(p) then p.setLock(true) end end\n  for s = 0, 15 do\n    Wait.time(function()\n      if FREEZE ~= token or ROUND ~= 2 then return end\n      if s < 15 then\n        UI.setValue(\"kbTimerLabel\", \"FROZEN · \" .. (15 - s) .. \" s\")\n      else\n        UI.setValue(\"kbTimerLabel\", \"ROUND 2 · ESCAPE\")\n        for _, color in ipairs(L.colors) do local p = pawnOf(color) if alive(p) then p.setLock(STAGED) end end\n        broadcastToAll(\"Time Freeze is over: move again.\", GOLDEN)\n      end\n    end, s)\n  end\nend\n\n-- E4 Extra Risk: +1 EVENT draws another card, at most twice (GDD: \"one or two additional Event Cards\"). (open)\n-- Anyone at the table may press it; it goes away after two cards or at 0:00.\nRISK = 0\nFX.E4 = function()\n  RISK = 2\n  UI.setAttribute(\"kbRisk\", \"active\", \"true\")\nend\nfunction riskDraw(player)\n  if ROUND ~= 2 or RISK <= 0 or TIMER.left <= 0 then return end\n  RISK = RISK - 1\n  if RISK == 0 then UI.setAttribute(\"kbRisk\", \"active\", \"false\") end\n  drawEvent()\nend\n\n-- E5 Extra Special Tile: the second Integration Chamber goes on a free cell beside an open room, at random\n-- (GDD: \"connected to an existing room\"; it has passages on every side). (open) The extra task: an object on\n-- either chamber completes it, so one object per player is still enough (there are only four objects).\nFX.E5 = function()\n  local used = {[\"0,0\"] = true}\n  for _, o in ipairs(getObjects()) do\n    if o.type == \"Card\" and not isMain(o) and not o.is_face_down and kindOf(notes(o)) == \"room\" then\n      local c = cellAt(o.getPosition())\n      if c then used[key(c)] = true end\n    end\n  end\n  -- (open) Clear of the mats: up to 5 cells left and right, and 2 up and down (a room at 3 touches the south and\n  -- north mats, seen live 2026-11-04); 3 only when nothing nearer is free.\n  local free, far, seen = {}, {}, {}\n  for _, c in pairs(openRooms()) do\n    for _, d in ipairs(SIDES) do\n      local n = {c[1] + d[1], c[2] + d[2]}\n      if not used[key(n)] and not seen[key(n)] and math.abs(n[1]) <= 5 and math.abs(n[2]) <= 3 then\n        seen[key(n)] = true\n        table.insert(math.abs(n[2]) <= 2 and free or far, n)\n      end\n    end\n  end\n  if #free == 0 then free = far end\n  if #free == 0 then broadcastToAll(\"Extra Special Tile: no free place beside the rooms.\", GOLDEN) return end\n  local p = cellPos(shuffled(free)[1])\n  takeCard(\"special2\", {x = p.x, y = 2.6, z = p.z}, function(card)\n    card.setLock(true)\n    Wait.time(function()\n      card.setScale({x = L.deck_s.extra, y = 1, z = L.deck_s.extra})\n      card.setPositionSmooth({x = p.x, y = CARD_Y + 0.05, z = p.z}, false, true)\n      card.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)\n      glow(card, nil, 6)\n    end, 0.4)\n  end)\nend\n\n-- E6 Poison Gas: one gas token in an empty room (an Unregistered Sector with nobody in it, as for the rocks)\n-- and one in each room beside it. (open) The room with the most rooms beside it, so the gas reaches the most;\n-- the Safe Zone never gets gas (nobody could escape without paying).\nFX.E6 = function()\n  local open = openRooms()\n  local best, bestN = nil, {}\n  for _, c in ipairs(emptyRooms()) do\n    local n = {}\n    for _, b in ipairs(beside(c, open)) do\n      if not (b[1] == SAFE[1] and b[2] == SAFE[2]) and key(b) ~= \"0,0\" then table.insert(n, b) end\n    end\n    if not best or #n > #bestN then best, bestN = c, n end\n  end\n  if not best then broadcastToAll(\"Poison Gas: no empty room for the gas.\", GOLDEN) return end\n  GAS[key(best)] = true\n  layToken(\"gas-1\", best)\n  for i, c in ipairs(bestN) do\n    if i > 4 then break end\n    GAS[key(c)] = true\n    layToken(\"gas-\" .. (i + 1), c, i * 0.5)\n  end\nend\n\n-- E7 Aliens: every monster in a room becomes an alien of its kind (1 HP more, same points), keeping the damage\n-- it has taken. (open) \"Can't go through without fighting\" is the players' rule; the script doesn't stop pawns.\nFX.E7 = function()\n  local n = {}\n  for i, t in ipairs(tokensInRooms(\"monster\")) do\n    local o = t[1]\n    local k = notes(o):match(\"^m%-(%a+)%-%d+$\")\n    local dmg = DMG[o.getGUID()] or 0\n    if k and dmg < L.monsters[k].hp then\n      n[k] = (n[k] or 0) + 1\n      local id = \"m-alien\" .. k .. \"-\" .. n[k]\n      local p = o.getPosition()\n      Wait.time(function()\n        sendHome(\"monster\", o)\n        takeCard(id, {x = p.x, y = 2.6, z = p.z}, function(card)\n          card.setLock(true)\n          Wait.time(function()\n            card.setScale({x = L.alien_s, y = 1, z = L.alien_s})\n            card.setPositionSmooth({x = p.x, y = CARD_ON_CARD + 0.02, z = p.z}, false, true)\n            Wait.time(function()\n              if not alive(card) then return end\n              card.setLock(false)\n              DMG[card.getGUID()] = dmg\n              addHitMenu(card)\n              glow(card, nil, 3)\n            end, 0.9)\n          end, 0.4)\n        end)\n      end, (i - 1) * 0.6)\n    end\n  end\nend\n\n-- E8 Black Holes: a black hole in every room with a treasure (or object) token still in it.\nFX.E8 = function()\n  local n = 0\n  for _, t in ipairs(tokensInRooms(\"treasure\")) do\n    if not HOLES[key(t[2])] then\n      HOLES[key(t[2])] = true\n      n = n + 1\n      layToken(\"hole-\" .. n, t[2], (n - 1) * 0.5)\n    end\n  end\nend\n\n-- A character dropped in a new room with gas or a black hole loses 1 point there (GDD E6, E8). Points are\n-- the players' to count; the script keeps only these losses and shows them at 0:00.\nlocal function pawnDropped(color, o)\n  local c = cellAt(o.getPosition())\n  if not c then LASTCELL[color] = nil return end\n  if LASTCELL[color] == key(c) then return end\n  LASTCELL[color] = key(c)\n  if ROUND ~= 2 or not L.mats[color] then return end\n  local lost = (GAS[key(c)] and 1 or 0) + (HOLES[key(c)] and 1 or 0)\n  if lost > 0 then\n    PEN[color] = (PEN[color] or 0) + lost\n    glow(o, \"Red\", 2)\n    broadcastToAll(color .. \" lost \" .. lost .. \" point\" .. (lost > 1 and \"s\" or \"\") .. \" (\"\n      .. (GAS[key(c)] and \"gas\" or \"black hole\") .. \"). Lost so far: \" .. PEN[color] .. \".\", {0.89, 0.55, 0.14})\n  end\nend\n\n-- Round 2: the top event card turns up next to the event deck and its event happens. Extra Risk's cards go\n-- below the first one. ROUND2_EVENT: the director's choice of card (the tutorial shows Rockfall).\nROCK_CELLS, ROUND2_EVENT, SHOWN = nil, nil, 0\nlocal function happen(card)\n  local id = notes(card)\n  OPS.banner({text = \"ROUND 2: ESCAPE!\\n\" .. card.getName():upper()})\n  if not STAGED then broadcastToAll(card.getName() .. \": \" .. card.getDescription(), GOLDEN) end\n  if FX[id] then FX[id]() end\n  Wait.time(function() if ROUND == 2 and TIMER.left > 0 then OPS.banner({}) end end, 6)\nend\nfunction drawEvent(id)\n  local p = {x = L.event_show[1], y = 1.6, z = L.event_show[2] - 3.4 * SHOWN}\n  SHOWN = SHOWN + 1\n  if id then takeCard(id, p, happen) return end\n  local deck = mainDeck(\"event\")\n  if deck and deck.type == \"Deck\" then\n    deck.takeObject({position = p, rotation = {x = 0, y = 180, z = 0}, smooth = true, callback_function = happen})\n  elseif deck then\n    deck.setPositionSmooth(p, false, true)\n    deck.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)\n    happen(deck)\n  end\nend\nround2 = function()\n  ROUND = 2\n  UI.setValue(\"kbTimerLabel\", \"ROUND 2 · ESCAPE\")\n  roomDeckOpen(false)\n  if not STAGED then\n    broadcastToAll(\"Round 2! No new rooms now. Place a special object on the Integration Chamber and be back in the Safe\"\n      .. \" Zone at 0:00, or you lose all your points.\", GOLDEN)\n  end\n  drawEvent(ROUND2_EVENT)\nend\n\n-- Special objects (rules §7, §9): in round 2, an object dropped on the Integration Chamber is placed. It\n-- stays there (locked) and completes the special task of the player who dropped it. In round 1 it can't be\n-- placed yet (rules §7: \"objects are placed during the second round\").\nPLACED, TASK = {}, {}\nfunction onObjectDrop(color, o)\n  if o.hasTag(\"pawn\") then pawnDropped(notes(o), o) return end\n  if not notes(o):match(\"^o%-%d$\") or PLACED[o.getGUID()] then return end\n  for _, r in ipairs(getObjects()) do\n    -- \"special\", or Extra Special Tile's \"special2\": either chamber completes the task.\n    if r.type == \"Card\" and notes(r):match(\"^special\") and not r.is_face_down then\n      local a, b = o.getPosition(), r.getPosition()\n      if math.abs(a.x - b.x) < L.grid / 2 and math.abs(a.z - b.z) < L.grid / 2 then\n        if ROUND ~= 2 then\n          -- To one player if they are seated; broadcastToColor stops the script for an empty colour (seen live 2026-11-03).\n          if not pcall(broadcastToColor, \"Objects are placed in round 2. Keep it until then.\", color, GOLDEN) then\n            broadcastToAll(\"Objects are placed in round 2.\", GOLDEN)\n          end\n          return\n        end\n        o.setLock(true)\n        o.setDescription(\"Placed by \" .. color .. \": \" .. color .. \"'s special task is completed.\")\n        PLACED[o.getGUID()] = true\n        if L.mats[color] then TASK[color] = true end\n        glow(o, color, 3)\n        broadcastToAll(color .. \" placed \" .. o.getName() .. \": special task completed. Now back to the Safe Zone!\", GOLDEN)\n        return\n      end\n    end\n  end\nend\n\n-- ------------------------------------------------------------------ the director's game ops (tutorial.py)\nlocal function tableCard(id)\n  for _, o in ipairs(getObjects()) do if o.type == \"Card\" and notes(o) == id then return o end end\nend\nfunction OPS.hit(d)\n  -- d.n Attacks on the monster token d.id, from d.color (a beaten one goes to that player's mat).\n  local o = tableCard(d.id)\n  if not o then return end\n  for _ = 1, d.n or 1 do monsterHit(d.color, o, 1) end\n  glow(o, d.color, 2)\nend\nfunction OPS.place(d)\n  -- The object d.id goes from the mat onto slot d.slot (1-4) of the Integration Chamber and completes d.color's task.\n  local o = tableCard(d.id)\n  local r = tableCard(\"special\")\n  if not o or not r then return end\n  local px = L.obj_slot_px[d.slot or 1]\n  local c = r.getPosition()\n  local p = {x = c.x + (px[1] / 512 - 0.5) * L.room_w, y = CARD_ON_CARD + 0.03, z = c.z - (px[2] / 512 - 0.5) * L.room_w}\n  o.setLock(true)\n  o.setScale({x = L.deck_s.monster, y = 1, z = L.deck_s.monster})\n  o.setPositionSmooth(p, false, true)\n  o.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)\n  PLACED[o.getGUID()] = true\n  TASK[d.color] = true\n  glow(o, d.color, 3)\nend\nfunction OPS.round2(d)\n  -- Round 2 now, with the event d.event (the tutorial: Rockfall, \"E1\") and the rocks in d.cells (the director's\n  -- choice of empty rooms).\n  ROCK_CELLS = d.cells\n  ROUND2_EVENT = d.event or (d.cells and \"E1\") or nil\n  round2()\nend\nfunction OPS.label(d) UI.setValue(\"kbTimerLabel\", d.text) end\n\n-- ------------------------------------------------------------------ reset\n-- Every object's starting place is remembered at load; RESET TABLE (or the director) puts it back.\nHOME = {}\nfunction onLoad()\n  local assets = {}\n  for k, u in pairs(L.icons) do table.insert(assets, {name = \"icon\" .. k, url = u}) end\n  UI.setCustomAssets(assets)\n  for _, o in ipairs(getObjects()) do\n    HOME[o.getGUID()] = {pos = o.getPosition(), rot = o.getRotation(), scale = o.getScale(), lock = o.getLock()}\n  end\n  for kind, tag in pairs(L.decks) do\n    -- A deck of one card is a card (the event: one for now).\n    for _, o in ipairs(getObjectsWithTag(tag)) do if o.type == \"Deck\" or o.type == \"Card\" then DECK[kind] = o.getGUID() end end\n  end\n  clearMats()\n  for _, o in ipairs(getObjects()) do addHitMenu(o) end\n  for _, id in ipairs({\"kbCaption\", \"kbScore\", \"kbBanner\", \"kbRisk\"}) do UI.setAttribute(id, \"active\", \"false\") end\n  -- ROLL DICE's faces come from math.random: seeded from the clock, so two games never roll alike.\n  local t = wall()\n  if t then math.randomseed(t) end\nend\n\nlocal function isMovable(o)\n  for _, t in ipairs(MOVABLE) do if o.hasTag(t) then return true end end\n  return false\nend\n\nfunction OPS.reset(d)\n  -- d.stage: the director films, so dice and characters stay locked and only its scripts move them.\n  STAGED = d.stage == true\n  for g, _ in pairs(PLACED) do\n    local o = getObjectFromGUID(g)\n    if alive(o) then o.setLock(false) o.setDescription(L.object_desc) end\n  end\n  PLACED, TASK, DMG = {}, {}, {}\n  ROUND, ROCK_CELLS, ROUND2_EVENT, SHOWN, RISK = 1, nil, nil, 0, 0\n  SAFE, PEN, LASTCELL, GAS, HOLES = {0, 0}, {}, {}, {}, {}\n  FREEZE = FREEZE + 1   -- a Time Freeze still counting doesn't unlock anything after the reset\n  UI.setAttribute(\"kbRisk\", \"active\", \"false\")\n  roomDeckOpen(true)\n  UI.setValue(\"kbTimerLabel\", \"TIME LEFT\")\n  gatherCards()\n  Wait.time(gatherCards, 1.2)    -- the last card of a small deck that was taken apart\n  for _, o in ipairs(getObjects()) do\n    local h = HOME[o.getGUID()]\n    if h and o.type ~= \"Card\" then\n      -- A die or a pawn is locked on the way home, so it doesn't tumble, then gets its own state back.\n      -- Nothing else is locked: a locked deck takes no cards back (seen live, 2026-10-25).\n      if isMovable(o) then\n        local lock = h.lock == true or STAGED\n        o.setLock(true)\n        Wait.time(function() if alive(o) then o.setLock(lock) end end, 1.2)\n      end\n      o.setPositionSmooth(h.pos, false, true)\n      o.setRotationSmooth(h.rot, false, true)\n      o.setScale(h.scale)\n    end\n  end\n  -- Decks back home, face down, even ones that were made again from returning cards.\n  Wait.time(function()\n    for kind, _ in pairs(L.decks) do\n      local deck = mainDeck(kind)\n      if deck then\n        deck.setPositionSmooth(deckHome(kind), false, true)\n        deck.setRotationSmooth({x = 0, y = 180, z = 180}, false, true)\n        deck.setScale({x = L.deck_s[kind], y = 1, z = L.deck_s[kind]})\n      end\n    end\n  end, 1.6)\n  clearMats()\n  TIMER.token = TIMER.token + 1\n  TIMER.left, TIMER.play, TIMER.ends = L.game_secs, false, nil\n  showTime()\n  for _, id in ipairs({\"kbCaption\", \"kbScore\", \"kbBanner\", \"kbTimer\"}) do UI.setAttribute(id, \"active\", \"false\") end\nend\nfunction resetGame(player) OPS.reset({}) end\n\n-- ------------------------------------------------------------------ START GAME\n-- The colours at a mat that someone sits at; nobody at a mat colour (one person trying it out) =\n-- every colour.\nlocal function seatedColors()\n  local out = {}\n  for _, pl in ipairs(Player.getPlayers()) do\n    if L.mats[pl.color] then table.insert(out, pl.color) end\n  end\n  if #out == 0 then return L.colors end\n  return out\nend\n\nlocal starting = false\nfunction startGame(player)\n  if starting then return end\n  starting = true\n  OPS.reset({})\n  Wait.time(function()\n    -- §3: the rooms, the token decks and the event deck are shuffled.\n    for _, kind in ipairs({\"room\", \"monster\", \"treasure\", \"event\"}) do\n      local deck = mainDeck(kind)\n      if deck and deck.type == \"Deck\" then deck.shuffle() end\n    end\n    local who = seatedColors()\n    OPS.deal({colors = who})\n    OPS.pawns({colors = who})\n    OPS.timer({left = L.game_secs, run = true, play = true})\n    UI.setValue(\"kbTimerLabel\", \"ROUND 1 · COLLECT POINTS\")\n    OPS.banner({text = \"ROUND 1: COLLECT POINTS\"})\n    Wait.time(function()\n      if TIMER.play and TIMER.left > 0 then OPS.banner({}) end\n      starting = false\n    end, 2.5)\n  end, 2.4)\nend\n\n-- ------------------------------------------------------------------ the director's commands\nlocal function reply(kind, text) sendExternalMessage({kind = kind, text = text}) end\nfunction OPS.hello(d) reply(\"hello\", KB_VERSION) end\n\nfunction onExternalMessage(d)\n  if type(d) ~= \"table\" then return end\n  -- One JSON string per command: TTS hands nested lists of a custom message to Lua as C# objects\n  -- (seen live on v0.1), so the director sends {json = \"...\"}.\n  if d.json then d = JSON.decode(d.json) end\n  local f = OPS[d.op]\n  if not f then reply(\"error\", \"unknown command \" .. tostring(d.op)) return end\n  local function run()\n    local ok, err = pcall(f, d)\n    if not ok then reply(\"error\", tostring(d.op) .. \": \" .. tostring(err)) end\n  end\n  -- d.delay: wait before doing it, so one beat can be \"the dice land, then the room is revealed\".\n  if type(d.delay) == \"number\" and d.delay > 0 then Wait.time(run, d.delay) else run() end\nend\n",
+ "LuaScript": "--[[ NULLWAKE (was Kingbound) real-time prototype: Global script (build.py fills in the __PLACEHOLDERS__).\n\nRules: the team's rules of 2026-11-03 and Nastya's narrative document (see build.py's header).\nFor players: START GAME shuffles the decks (rooms, monster and treasure tokens), hands out the dice, puts the\ncharacters in the Safe Zone and starts the 10-minute timer: round 1, then at 5:00 round 2, which turns up\nround 2: the players turn up one of eight event cards (GDD 11-04) and set out its tokens by hand, and the room\ndeck closes (no new rooms in round 2). At 0:00 it\nsays who escaped: in the Safe Zone (Lost Path moves it) with an object placed, minus gas and black holes. RESET TABLE puts everything back; ROLL DICE rolls\nall four of the clicking player's dice. A monster's right-click menu has Hit (1 damage, it remembers); an\nobject dropped on the Integration Chamber in round 2 completes the special task of the player who dropped\nit. Everything else is done by hand, as on a real table.\nFor the tutorial video: the director (../tutorial.py) decides everything in Python and sends \"show\nthis\" commands through TTS's External Editor API; this script only moves pieces, rolls dice to the\nfaces it is told, and draws the caption, the timer and the scores. (tutorial.py still follows v1.1.)\n\nRooms, tokens, rocks and the event are cards. A card's GM Notes say what it is: a room its dungeon cell\n(\"x,z\"), \"spareN\" or \"special\" (the Integration Chamber), a token its ID (m-weak-1, t-module-2, o-1 ...),\na rock \"rubble-n\", an event E1-E8, an alien m-alienweak-1 ..., gas-n, hole-n, newsafe-1, the extra chamber\n\"special2\". Dice hold \"Color:n\"; pawns and mats their colour; the Safe Zone tile \"0,0\".\n]]\nKB_VERSION = \"2.2\"\nL = JSON.decode([==[{\"icons\": {\"M\": \"https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-move.png\", \"A\": \"https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-attack.png\", \"G\": \"https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-magic.png\"}, \"grid\": 3.7, \"dungeon\": [0.0, 0.0], \"decks\": {\"room\": \"roomdeck\", \"monster\": \"mondeck\", \"treasure\": \"tredeck\", \"rubble\": \"rubbledeck\", \"event\": \"eventdeck\", \"alien\": \"aliendeck\", \"hazard\": \"hazarddeck\", \"extra\": \"extradeck\", \"object\": \"objdeck\"}, \"deck_pos\": {\"room\": [-13.5, 15.2], \"monster\": [11.5, 15.6], \"treasure\": [14.6, 15.6], \"rubble\": [-18.0, 15.6], \"event\": [18.6, 15.2], \"alien\": [-21.4, 15.6], \"hazard\": [-24.6, 15.6], \"extra\": [18.6, 11.4], \"object\": [8.4, 15.6]}, \"deck_s\": {\"room\": 1.1765, \"monster\": 0.4575, \"treasure\": 0.4575, \"rubble\": 0.4575, \"event\": 0.75, \"alien\": 0.4575, \"hazard\": 0.3268, \"extra\": 1.1765, \"object\": 0.4575}, \"mat_tok_s\": 0.3268, \"colors\": [\"Red\", \"Yellow\", \"Green\", \"Blue\", \"Purple\"], \"mats\": {\"Red\": [7.5, -15.109, 180], \"Purple\": [-7.5, -15.109, 180], \"Green\": [0.0, 15.109, 0], \"Yellow\": [-25.109, 0.0, 270], \"Blue\": [25.109, 0.0, 90]}, \"mat_size\": [12.7272, 6.1818], \"mat_px\": [1400, 680], \"die_px\": [[100, 375], [230, 375], [100, 555], [230, 555]], \"carry_px\": [[375, 365], [487, 365], [600, 365], [375, 478], [487, 478], [600, 478], [375, 591], [487, 591], [600, 591]], \"points_px\": [[735, 365], [847, 365], [960, 365], [735, 478], [847, 478], [960, 478], [735, 591], [847, 591], [960, 591]], \"pawn_home\": {\"Red\": [1.773, -11.018], \"Yellow\": [-21.018, 5.727], \"Green\": [5.727, 11.018], \"Blue\": [21.018, -5.727], \"Purple\": [-13.227, -11.018]}, \"faces\": {\"1\": \"move\", \"2\": \"move\", \"3\": \"attack\", \"4\": \"attack\", \"5\": \"magic\", \"6\": \"magic\"}, \"game_secs\": 600, \"round2_at\": 300, \"event_show\": [22.6, 15.2], \"close_rooms\": 6, \"objects\": 4, \"object_desc\": \"Needs 2 Magic. In round 2, drop it on the Integration Chamber: that completes your special task.\", \"obj_slot_px\": [[150, 182], [362, 182], [150, 384], [362, 384]], \"room_w\": 3.6, \"title_pos\": [-20.5, -15.4], \"empty_name\": \"Unregistered Sector\", \"monsters\": {\"weak\": {\"name\": \"Scraper\", \"hp\": 1, \"points\": 1}, \"medium\": {\"name\": \"Carrier\", \"hp\": 2, \"points\": 2}, \"strong\": {\"name\": \"Anomaly\", \"hp\": 3, \"points\": 3}, \"alienweak\": {\"name\": \"Alien Scraper\", \"hp\": 2, \"points\": 1}, \"alienmedium\": {\"name\": \"Alien Carrier\", \"hp\": 3, \"points\": 2}, \"alienstrong\": {\"name\": \"Alien Anomaly\", \"hp\": 4, \"points\": 3}}, \"mon_desc\": {\"weak\": \"1 HP: each Attack deals 1 damage, and damage stays. 1 point. Right-click: Hit.\", \"medium\": \"2 HP: each Attack deals 1 damage, and damage stays. 2 points. Right-click: Hit.\", \"strong\": \"3 HP: each Attack deals 1 damage, and damage stays. 3 points. Right-click: Hit.\", \"alienweak\": \"2 HP: each Attack deals 1 damage, and damage stays. 1 point. Right-click: Hit. You can't go through its room without beating it.\", \"alienmedium\": \"3 HP: each Attack deals 1 damage, and damage stays. 2 points. Right-click: Hit. You can't go through its room without beating it.\", \"alienstrong\": \"4 HP: each Attack deals 1 damage, and damage stays. 3 points. Right-click: Hit. You can't go through its room without beating it.\"}, \"alien_s\": 0.4575}]==])\n\nCOLORS = {Red = {0.86, 0.1, 0.09}, Yellow = {0.95, 0.85, 0.1}, Green = {0.19, 0.7, 0.17}, Blue = {0.12, 0.53, 1},\n          Purple = {0.63, 0.13, 0.94}}\nGOLDEN = {0.36, 0.69, 0.87}   -- the old name; now the cold blue of the narrative's look\n-- Where each character stands inside a room, so five can share one: a ring around the token in the\n-- middle (a room is 3.6 across, a token 1.4).\nPAWN_OFF = {Green = {0, 1.15}, Yellow = {-1.09, 0.36}, Red = {-0.68, -0.93}, Purple = {0.68, -0.93}, Blue = {1.09, 0.36}}\n-- Mat geometry: a mat is L.mat_size table units; its image is L.mat_px pixels (build.py mat_img). Each\n-- mat lies on its player's side of the table, turned to face them (L.mats: x, z, Y rotation), so a\n-- point of the image turns with it (same sums as build.py mat_world).\nlocal function matPos(color, px, py)\n  local m = L.mats[color]\n  local u, v = (px / L.mat_px[1] - 0.5) * L.mat_size[1], (py / L.mat_px[2] - 0.5) * L.mat_size[2]\n  local t = math.rad(m[3])\n  return {x = m[1] - u * math.cos(t) + v * math.sin(t), y = 1.25, z = m[2] + u * math.sin(t) + v * math.cos(t)}\nend\nlocal function matRot(color) return {x = 0, y = L.mats[color][3], z = 0} end\n-- Heights measured live: the felt is at y 0.96, a mat's top at 1.08, a die at scale 1.5 is 1.0 high\n-- (centre pivot) (2026-10-19); a card lies at 0.974 on the felt, at 1.001 on another card and is 0.027\n-- thick (2026-10-25).\nDIE_Y, CARD_Y, CARD_ON_CARD, CARD_ON_MAT = 1.58, 0.974, 1.001, 1.095\n-- The loose pieces players move (unlocked in the save; the director locks them while it films).\nMOVABLE = {\"die\", \"pawn\"}\nSTAGED = false\nOPS = {}\n\n-- ------------------------------------------------------------------ finding things\nlocal function alive(o) return o ~= nil and not o.isDestroyed() end\nlocal function notes(o) local ok, g = pcall(function() return o.getGMNotes() end) return ok and g or \"\" end\nlocal function byNote(tag, note)\n  for _, o in ipairs(getObjectsWithTag(tag)) do if notes(o) == note then return o end end\nend\nfunction cellPos(c) return {x = L.dungeon[1] + c[1] * L.grid, y = 1.1, z = L.dungeon[2] + c[2] * L.grid} end\nfunction dieOf(color, i) return byNote(\"die\", color .. \":\" .. i) end\nfunction pawnOf(color) return byNote(\"pawn\", color) end\n\nfunction glow(o, color, secs)\n  if alive(o) then pcall(function() o.highlightOn(COLORS[color] or GOLDEN, secs or 3) end) end\nend\n\n-- ------------------------------------------------------------------ cards and decks\n-- Which deck a card belongs to, from its GM Notes.\nlocal function kindOf(n)\n  if n == nil or n == \"\" then return nil end\n  -- The event tokens of GDD 11-04, before the older kinds: an alien's notes start like a monster's.\n  if n:sub(1, 7) == \"m-alien\" then return \"alien\" end\n  if n:match(\"^gas%-\") or n:match(\"^hole%-\") or n:match(\"^newsafe%-\") then return \"hazard\" end\n  if n == \"special2\" then return \"extra\" end\n  if n:match(\"^%-?%d+,%-?%d+$\") or n:match(\"^spare\") or n == \"special\" then return \"room\" end\n  if n:sub(1, 2) == \"m-\" then return \"monster\" end\n  if n:sub(1, 2) == \"t-\" then return \"treasure\" end\n  if n:sub(1, 2) == \"o-\" then return \"object\" end   -- a deck of their own since 2026-11-04\n  if n:sub(1, 7) == \"rubble-\" then return \"rubble\" end\n  if n:match(\"^E%d$\") then return \"event\" end\nend\n\n-- Each kind's deck, remembered by GUID. A deck that is down to its last card stops being a deck (TTS\n-- turns it into a single card); that card, or the first card to come back, becomes the deck again.\nDECK = {}\nlocal function mainDeck(kind)\n  local g = DECK[kind]\n  local o = g and getObjectFromGUID(g)\n  if alive(o) then return o end\nend\nlocal function isMain(o, kind)\n  if kind then return DECK[kind] == o.getGUID() end\n  for k, _ in pairs(L.decks) do if DECK[k] == o.getGUID() then return true end end\n  return false\nend\nlocal function deckHome(kind)\n  local p = L.deck_pos[kind]\n  return {x = p[1], y = 1.4, z = p[2]}\nend\n\n-- A card on the table, or the card with these notes taken out of whichever deck holds it; then\n-- after(card) runs with the card at pos.\nlocal function takeCard(id, pos, after)\n  for _, o in ipairs(getObjects()) do\n    if o.type == \"Card\" and notes(o) == id then\n      o.setPositionSmooth(pos, false, true)\n      o.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)\n      if after then after(o) end\n      return\n    end\n  end\n  local main = mainDeck(kindOf(id))\n  local decks = {main}\n  for _, o in ipairs(getObjects()) do if o.type == \"Deck\" and not isMain(o, kindOf(id)) then table.insert(decks, o) end end\n  for _, d in ipairs(decks) do\n    for _, c in ipairs(d.getObjects()) do\n      if c.gm_notes == id then\n        d.takeObject({guid = c.guid, position = pos, rotation = {x = 0, y = 180, z = 0}, smooth = true,\n                      callback_function = after})\n        return\n      end\n    end\n  end\nend\n\n-- A card (or a small deck players made) goes back into its kind's deck.\nlocal function sendHome(kind, o)\n  o.setLock(false)\n  local main = mainDeck(kind)\n  if main and not isMain(o, kind) then\n    local d = main.putObject(o)\n    if alive(d) then DECK[kind] = d.getGUID() end   -- two single cards become a new deck\n  else\n    o.setPosition(deckHome(kind))\n    o.setRotation({x = 0, y = 180, z = 180})\n    o.setScale({x = L.deck_s[kind], y = 1, z = L.deck_s[kind]})\n    DECK[kind] = o.getGUID()\n  end\nend\n\n-- Every card on the table goes home. A small deck of one kind goes home whole; a mixed one (a monster\n-- and a treasure token stacked on a mat) is taken apart first. Joining two cards destroys both and\n-- makes a new deck, so a piece met later in the loop may be gone: touching it stopped the whole RESET\n-- (\"Value cannot be null\", seen live 2026-10-25). Each piece is checked, and one that fails is skipped.\nlocal function gatherOne(o)\n  if not alive(o) then return end\n  if o.type == \"Card\" then\n    local kind = kindOf(notes(o))\n    if kind and not isMain(o, kind) then sendHome(kind, o) end\n  elseif o.type == \"Deck\" and not isMain(o) then\n    local kinds, first = {}, nil\n    for _, c in ipairs(o.getObjects()) do\n      local k = kindOf(c.gm_notes)\n      if k then kinds[k] = true first = first or k end\n    end\n    local n = 0\n    for _ in pairs(kinds) do n = n + 1 end\n    if n == 1 then\n      sendHome(first, o)\n    elseif n > 1 then\n      -- All but the last card: taking a deck's last card throws an error Lua can't catch (the deck is\n      -- turning into that card, seen live 2026-10-25). The card left over goes home in the second pass.\n      local cards = o.getObjects()\n      for i = 1, #cards - 1 do\n        local k = kindOf(cards[i].gm_notes)\n        if k then\n          o.takeObject({guid = cards[i].guid, position = deckHome(k), smooth = false,\n                        callback_function = function(card) sendHome(k, card) end})\n        end\n      end\n    end\n  end\nend\nlocal function gatherCards()\n  for _, o in ipairs(getObjects()) do pcall(gatherOne, o) end\nend\n\n-- ------------------------------------------------------------------ overlays\n-- Only the name of the part is shown (the team explains the rest live while presenting), with the\n-- symbols the step costs as icons after it: d.icons = \"MM\" (2 Movement), \"AAA\", \"GG\" ...\nlocal function textWidth(t)\n  local w = 0\n  -- Bold 29 px capitals are about 21 px wide (42 px ones measured 31 px on screen, 2026-10-19); a\n  -- little more, so the text never runs into the icons (it overflows its box instead of wrapping).\n  for ch in t:gmatch(\".\") do w = w + ((ch == \" \" or ch == \"·\" or ch == \":\") and 10 or 24) end\n  return math.max(60, w)\nend\nfunction caption(head, icons)\n  icons = icons or \"\"\n  local tw = textWidth(head or \"\")\n  UI.setAttribute(\"kbCaptionHead\", \"preferredWidth\", tw)\n  UI.setAttribute(\"kbCaption\", \"width\", tw + 32 + #icons * 46)\n  UI.setValue(\"kbCaptionHead\", head or \"\")\n  for i = 1, 4 do\n    local k = icons:sub(i, i)\n    if k ~= \"\" then\n      UI.setAttribute(\"kbIcon\" .. i, \"image\", \"icon\" .. k)\n      UI.setAttribute(\"kbIcon\" .. i, \"active\", \"true\")\n    else\n      UI.setAttribute(\"kbIcon\" .. i, \"active\", \"false\")\n    end\n  end\n  UI.setAttribute(\"kbCaption\", \"active\", \"true\")\nend\nfunction OPS.caption(d) caption(d.head, d.icons) end\nfunction OPS.nocaption(d) UI.setAttribute(\"kbCaption\", \"active\", \"false\") end\n\nfunction OPS.banner(d)\n  if not d.text then UI.setAttribute(\"kbBanner\", \"active\", \"false\") return end\n  UI.setValue(\"kbBannerText\", d.text)\n  UI.setAttribute(\"kbBanner\", \"active\", \"true\")\nend\n\nfunction OPS.score(d)\n  if not d.lines then UI.setAttribute(\"kbScore\", \"active\", \"false\") return end\n  UI.setAttribute(\"kbScore\", \"active\", \"true\")\n  for i = 1, #L.colors do\n    local ln = d.lines[i]\n    UI.setValue(\"kbScore\" .. i, ln and ln.text or \"\")\n    if ln and ln.hex then UI.setAttribute(\"kbScore\" .. i, \"color\", ln.hex) end\n  end\nend\n\n-- The 10-minute timer (§10); round 2 starts at L.round2_at seconds left. It never pauses in the game. In a real game (START GAME) it follows the\n-- clock, so it can't drift; the director only speeds it up for the \"a few minutes later\" part of the\n-- video (rate = game seconds per real second).\nTIMER = {left = L.game_secs, rate = 1, token = 0, play = false, ends = nil}\nlocal function wall()\n  local ok, t = pcall(function() return os.time() end)\n  if ok and type(t) == \"number\" then return t end\nend\nlocal function showTime()\n  local s = math.max(0, math.floor(TIMER.left + 0.5))\n  UI.setValue(\"kbTimerText\", string.format(\"%d:%02d\", math.floor(s / 60), s % 60))\n  UI.setAttribute(\"kbTimerText\", \"color\", s <= 60 and \"#FF6A5A\" or \"#F5ECD7\")\nend\nROUND = 1\nlocal round2\n-- 0:00 (rules §9, §11): a player in the Safe Zone with the special task completed keeps their points;\n-- everyone else loses them. The script checks both; the points themselves (monsters and the treasure\n-- combinations each player chooses) are counted by the players, from their mats.\nlocal function seated()\n  local out = {}\n  for _, pl in ipairs(Player.getPlayers()) do if L.mats[pl.color] then table.insert(out, pl.color) end end\n  if #out == 0 then return L.colors end\n  return out\nend\n-- Event state (GDD 11-04). SAFE: the Safe Zone's cell (Lost Path moves it). PEN: points lost to gas and black\n-- holes. LASTCELL: where each character was last dropped, so moving it around inside a room costs nothing.\nSAFE, PEN, LASTCELL = {0, 0}, {}, {}\nlocal function timeUp()\n  OPS.banner({text = \"TIME'S UP!\"})\n  -- The banner lies over the results' list, so it goes after a moment (seen live 2026-11-03).\n  Wait.time(function() if TIMER.left <= 0 then OPS.banner({}) end end, 4)\n  local lines = {}\n  -- Lost Path: the Safe Zone is where a Safe Zone token lies, if one was put down.\n  local safe = SAFE\n  for _, c in pairs(tokenCells(\"newsafe\")) do safe = c end\n  for _, color in ipairs(seated()) do\n    local p = pawnOf(color)\n    local c = alive(p) and cellAt(p.getPosition())\n    local home = c and c[1] == safe[1] and c[2] == safe[2]\n    local text, hex\n    if home and TASK[color] then\n      local pen = PEN[color] or 0\n      text, hex = color:upper() .. \": escaped, keeps the points\" .. (pen > 0 and (\", minus \" .. pen .. \" (gas, black holes)\") or \"\"), \"#ECF0F2\"\n    elseif home then\n      text, hex = color:upper() .. \": no object placed, 0 points\", \"#E28C24\"\n    else\n      text, hex = color:upper() .. \": trapped in the station, 0 points\", \"#E28C24\"\n    end\n    table.insert(lines, {text = text, hex = hex})\n  end\n  OPS.score({lines = lines})\n  broadcastToAll(\"Time's up! Whoever escaped counts their points: beaten monsters plus treasure (alone or in\"\n    .. \" combinations, see the mat). Most points wins; a tie is a draw.\", GOLDEN)\nend\nlocal function tick(token)\n  if token ~= TIMER.token then return end\n  if TIMER.ends then TIMER.left = TIMER.ends - wall() else TIMER.left = TIMER.left - 1 end\n  if TIMER.play and ROUND == 1 and TIMER.left <= L.round2_at then round2() end\n  if TIMER.left <= 0 then\n    TIMER.left = 0\n    showTime()\n    if TIMER.play then timeUp() end\n    return\n  end\n  showTime()\n  Wait.time(function() tick(token) end, TIMER.ends and 0.25 or 1 / TIMER.rate)\nend\nfunction OPS.timer(d)\n  UI.setAttribute(\"kbTimer\", \"active\", d.hide and \"false\" or \"true\")\n  TIMER.token = TIMER.token + 1\n  if d.left then TIMER.left = d.left end\n  TIMER.rate = d.rate or 1\n  TIMER.play = d.play or false\n  TIMER.ends = nil\n  if TIMER.play and wall() then TIMER.ends = wall() + TIMER.left end\n  showTime()\n  if d.run then\n    local token = TIMER.token\n    Wait.time(function() tick(token) end, TIMER.ends and 0.25 or 1 / TIMER.rate)\n  end\nend\n\n-- ------------------------------------------------------------------ camera\n-- Always from the south (yaw 0), so every mat and card reads upright.\nfunction viewFor(d)\n  local v = d.view\n  if v == \"table\" then return {position = {x = 0, y = 0, z = 0}, pitch = 68, yaw = 0, distance = 54} end\n  if v == \"play\" then return {position = {x = 0, y = 0, z = -4.0}, pitch = 62, yaw = 0, distance = 40} end\n  if v == \"dungeon\" then return {position = {x = 0, y = 0, z = 1.5}, pitch = 70, yaw = 0, distance = 30} end\n  if v == \"mats\" then return {position = {x = 0, y = 0, z = 0}, pitch = 75, yaw = 0, distance = 60} end\n  if v == \"supply\" then return {position = {x = 0, y = 0, z = 13}, pitch = 60, yaw = 0, distance = 42} end\n  if v == \"title\" then return {position = {x = L.title_pos[1], y = 0, z = L.title_pos[2]}, pitch = 70, yaw = 0, distance = 16} end\n  if v == \"event\" then return {position = {x = L.event_show[1] - 1.5, y = 0, z = L.event_show[2] - 1}, pitch = 66, yaw = 0, distance = 13} end\n  if v == \"mat\" then\n    local m = L.mats[d.color]\n    return {position = {x = m[1], y = 0, z = m[2]}, pitch = 62, yaw = (m[3] + 180) % 360, distance = d.distance or 15}\n  end\n  if v == \"cell\" then\n    local p = cellPos(d.cell)\n    -- With a colour: the room and that player's mat (where the dice are) in one shot. The view frames\n    -- both (half-way put the far-left mat's dice off screen, seen 2026-10-19) and aims a little low,\n    -- because the part's name covers the bottom of the screen.\n    if d.color then\n      local mx, mz = L.mats[d.color][1], L.mats[d.color][2]\n      local hw = math.max(L.mat_size[1], L.mat_size[2]) / 2 + 0.5\n      local hd = hw\n      local x0, x1 = math.min(mx - hw, p.x - 2.2), math.max(mx + hw, p.x + 2.2)\n      local z0, z1 = math.min(mz - hd, p.z - 2.2), math.max(mz + hd, p.z + 2.2)\n      local dist = math.max(d.distance or 0, (x1 - x0) / 1.2, (z1 - z0) * 1.1)\n      return {position = {x = (x0 + x1) / 2, y = 0, z = (z0 + z1) / 2 - 1.8}, pitch = 62, yaw = 0, distance = dist}\n    end\n    return {position = {x = p.x, y = 0, z = p.z - 0.8}, pitch = 64, yaw = 0, distance = d.distance or 16}\n  end\nend\nfunction OPS.camera(d)\n  local v = viewFor(d)\n  if not v then return end\n  for _, pl in ipairs(Player.getPlayers()) do\n    if pl.host then pcall(function() pl.lookAt(v) end) end\n  end\nend\n\n-- ------------------------------------------------------------------ setup (§3)\nfunction OPS.deal(d)\n  -- Each player takes their 4 dice (§3 step 1): from the middle of the table onto their mat.\n  local k = 0\n  for _, color in ipairs(d.colors or L.colors) do\n    for i = 1, 4 do\n      local die = dieOf(color, i)\n      if die then\n        k = k + 1\n        local px = L.die_px[i]\n        local p = matPos(color, px[1], px[2])\n        -- Face first, then the move: setRotationValue after setPositionSmooth cancels the move\n        -- (seen live, 2026-10-19: the dice stayed in the supply).\n        Wait.time(function()\n          die.setRotationValue(i)\n          die.setPositionSmooth({x = p.x, y = DIE_Y, z = p.z}, false, true)\n          glow(die, color, 2)\n        end, k * 0.06)\n      end\n    end\n  end\nend\n\nfunction OPS.pawns(d)\n  -- Characters go into the Safe Zone (rules §8: everyone starts there).\n  for _, color in ipairs(d.colors or L.colors) do\n    local pawn = pawnOf(color)\n    if pawn then\n      local c, off = cellPos({0, 0}), PAWN_OFF[color]\n      pawn.setPositionSmooth({x = c.x + off[1], y = 1.6, z = c.z + off[2]}, false, false)\n      glow(pawn, color, 3)\n    end\n  end\nend\n\nfunction OPS.shuffle(d)\n  -- §3 step 3: the room deck is shuffled (the tutorial still finds its rooms by their notes).\n  local deck = mainDeck(\"room\")\n  if deck and deck.type == \"Deck\" then deck.shuffle() glow(deck, d.color, 2) end\nend\n\nfunction OPS.button(d)\n  for _, id in ipairs({\"kbStart\", \"kbReset\", \"kbRoll\"}) do UI.setAttribute(id, \"active\", d.show and \"true\" or \"false\") end\nend\n\nfunction OPS.spot(d)\n  -- One player's character and mat glow: \"watch this player\".\n  glow(pawnOf(d.color), d.color, d.secs or 3)\n  glow(byNote(\"mat\", d.color), d.color, d.secs or 3)\nend\n\nfunction OPS.glowtag(d)\n  for _, o in ipairs(getObjectsWithTag(d.tag)) do glow(o, d.color, d.secs or 3) end\nend\n\n-- ------------------------------------------------------------------ dice (§4, §5)\n-- d.color, d.dice = which dice (1-4), d.values = the faces they land on (1-2 Movement, 3-4 Attack,\n-- 5-6 Magic). The dice jump, tumble and land on the face; kept dice stay where they are.\nlocal function rollOne(color, i, value, delay)\n  local die = dieOf(color, i)\n  if not die then return end\n  local px = L.die_px[i]\n  local p = matPos(color, px[1], px[2])\n  Wait.time(function()\n    die.setPositionSmooth({x = p.x, y = DIE_Y + 2.2, z = p.z}, false, true)\n    die.setRotationSmooth({x = math.random(0, 359), y = math.random(0, 359), z = math.random(0, 359)}, false, true)\n  end, delay)\n  Wait.time(function()\n    die.setRotationSmooth({x = math.random(0, 359), y = math.random(0, 359), z = math.random(0, 359)}, false, true)\n  end, delay + 0.25)\n  Wait.time(function()\n    die.setRotationValue(value)\n    die.setPositionSmooth({x = p.x, y = DIE_Y, z = p.z}, false, true)\n  end, delay + 0.55)\nend\nfunction OPS.roll(d)\n  for k, i in ipairs(d.dice) do rollOne(d.color, i, d.values[k], (k - 1) * 0.04) end\nend\nfunction OPS.keep(d)\n  -- The dice that already show what the player needs glow in their colour.\n  for _, i in ipairs(d.dice) do glow(dieOf(d.color, i), d.color, d.secs or 3) end\nend\n\n-- ROLL DICE: all four of the clicking player's dice at once (Yavuz, 2026-10-26: \"4 zarın birden\n-- rollanması lazım\"). The tutorial's jump with a random face: each die lands back on its own spot of\n-- the mat, so the dice never wander off it in a 10-minute game, and it is locked until it has landed\n-- so it can't tumble onto another face. To keep some dice, the others are still rolled by hand (R).\nROLLING = {}\nfunction rollDice(player)\n  local color = player.color\n  if not L.mats[color] then\n    broadcastToColor(\"Sit at Red, Yellow, Green, Blue or Purple to roll your dice.\", color, GOLDEN)\n    return\n  end\n  if ROLLING[color] then return end   -- a second click while the dice are in the air\n  ROLLING[color] = true\n  for i = 1, 4 do\n    local die = dieOf(color, i)\n    if die then\n      die.setLock(true)\n      rollOne(color, i, math.random(1, 6), (i - 1) * 0.04)\n    end\n  end\n  Wait.time(function()\n    for i = 1, 4 do\n      local die = dieOf(color, i)\n      if alive(die) then die.setLock(STAGED) end\n    end\n    ROLLING[color] = nil\n  end, 1.2)\nend\n\n-- ------------------------------------------------------------------ the dungeon (§6, §12)\n-- A card the director put somewhere stays there while it films.\nlocal function settle(card, pos, scale, color, rot)\n  card.setScale({x = scale, y = 1, z = scale})\n  if STAGED then card.setLock(true) end\n  card.setPositionSmooth(pos, false, true)\n  if rot then card.setRotationSmooth(rot, false, true) end\n  glow(card, color, 3)\nend\n\nfunction OPS.reveal(d)\n  -- The room card of this cell comes off the room deck, turns over and lands next to the room it was\n  -- revealed from, passages lined up (build.py drew them that way).\n  local p = cellPos(d.cell)\n  -- d.id: a room card known by another name (the Integration Chamber is \"special\").\n  takeCard(d.id or (d.cell[1] .. \",\" .. d.cell[2]), {x = p.x, y = 2.6, z = p.z}, function(card)\n    Wait.time(function() settle(card, {x = p.x, y = CARD_Y, z = p.z}, L.deck_s.room, d.color) end, 0.4)\n  end)\n  if d.token then\n    Wait.time(function() OPS.token({id = d.token, cell = d.cell, color = d.color}) end, 1.4)\n  end\nend\n\nfunction OPS.token(d)\n  local p = cellPos(d.cell)\n  takeCard(d.id, {x = p.x, y = 2.4, z = p.z}, function(card)\n    Wait.time(function() settle(card, {x = p.x, y = CARD_ON_CARD, z = p.z}, L.deck_s.monster, d.color) end, 0.4)\n  end)\nend\n\nfunction OPS.move(d)\n  local pawn = pawnOf(d.color)\n  if not pawn then return end\n  local path = d.path or {d.cell}\n  for k, c in ipairs(path) do\n    Wait.time(function()\n      local p, off = cellPos(c), PAWN_OFF[d.color]\n      pawn.setPositionSmooth({x = p.x + off[1], y = 1.6, z = p.z + off[2]}, false, true)\n      glow(pawn, d.color, 2)\n    end, (k - 1) * (d.t or 0.45))\n  end\nend\n\n-- What lies on each mat: TREASURE (treasure and objects taken) and MONSTERS (beaten ones). The keys are\n-- v2.0's (carry, points), only the boxes' names changed.\nCARRY, POINTS = {}, {}\nlocal function clearMats()\n  CARRY, POINTS = {}, {}\n  for _, c in ipairs(L.colors) do CARRY[c], POINTS[c] = {}, {} end\nend\nlocal function toMat(id, color, spots, n, delay)\n  local px = spots[math.min(n, #spots)]\n  local p = matPos(color, px[1], px[2])\n  Wait.time(function()\n    takeCard(id, {x = p.x, y = 2.2, z = p.z}, function(card)\n      Wait.time(function() settle(card, {x = p.x, y = CARD_ON_MAT, z = p.z}, L.mat_tok_s, color, matRot(color)) end, 0.4)\n    end)\n  end, delay)\nend\n\nfunction OPS.take(d)\n  -- A taken treasure or object goes onto TREASURE, a beaten monster onto MONSTERS.\n  if d.id:sub(1, 2) == \"t-\" or d.id:sub(1, 2) == \"o-\" then\n    table.insert(CARRY[d.color], d.id)\n    toMat(d.id, d.color, L.carry_px, #CARRY[d.color], 0)\n  else\n    table.insert(POINTS[d.color], d.id)\n    toMat(d.id, d.color, L.points_px, #POINTS[d.color], 0)\n  end\nend\n\n-- Monsters (rules §5): each Attack deals 1 damage and damage stays from one cycle to the next (video\n-- script, scene 6). A monster token's right-click menu has Hit and Undo hit; its name shows the HP left.\n-- At 0 HP it goes to the MONSTERS box of whoever hit it last. The damage is kept by GUID: a token that\n-- goes back into its deck comes out with a new GUID and full HP.\nDMG = {}\nlocal function monKind(o) return notes(o):match(\"^m%-(%a+)%-%d+$\") end\nlocal function showHP(o)\n  local k = monKind(o)\n  local m = L.monsters[k]\n  local left = m.hp - (DMG[o.getGUID()] or 0)\n  o.setName(m.name .. \" · \" .. left .. \"/\" .. m.hp .. \" HP\")\n  o.setDescription(L.mon_desc[k])\nend\nfunction monsterHit(color, o, n)   -- global so the tests can call it\n  local k = monKind(o)\n  if not k or not alive(o) then return end\n  local m = L.monsters[k]\n  local g = o.getGUID()\n  DMG[g] = math.max(0, math.min(m.hp, (DMG[g] or 0) + n))\n  showHP(o)\n  if DMG[g] >= m.hp then\n    o.setName(m.name .. \" · beaten\")\n    if L.mats[color] then\n      if not STAGED then broadcastToAll(color .. \" beat the \" .. m.name .. \": \" .. m.points .. \" point\" .. (m.points > 1 and \"s\" or \"\") .. \".\", GOLDEN) end\n      OPS.take({id = notes(o), color = color})\n    end\n  end\nend\nlocal function addHitMenu(o)\n  if o.type ~= \"Card\" or not monKind(o) then return end\n  pcall(function()\n    o.clearContextMenu()\n    o.addContextMenuItem(\"Hit (1 damage)\", function(color, _, obj) monsterHit(color, obj, 1) end)\n    o.addContextMenuItem(\"Undo hit\", function(color, _, obj) monsterHit(color, obj, -1) end)\n  end)\n  if not o.is_face_down then showHP(o) end\nend\nfunction onObjectLeaveContainer(container, o)\n  -- A monster token taken from its deck: full HP and the Hit menu (the card only exists once it is out). A\n  -- token that was beaten and went back keeps its name and maybe its GUID, so both are cleared here.\n  Wait.frames(function()\n    if not alive(o) then return end\n    local k = monKind(o)\n    if k then\n      DMG[o.getGUID()] = nil\n      o.setName(L.monsters[k].name)\n    end\n    addHitMenu(o)\n  end, 1)\nend\n\n-- ------------------------------------------------------------------ the two rounds (GDD 11-02 §4, §5, §10)\n-- The dungeon as it lies on the table: the Safe Room and every face-up room card on a dungeon cell, minus the\n-- rooms with a destruction token on them.\nlocal function key(c) return c[1] .. \",\" .. c[2] end\nfunction cellAt(p)   -- global: timeUp, above, uses it too\n  local c = {math.floor((p.x - L.dungeon[1]) / L.grid + 0.5), math.floor((p.z - L.dungeon[2]) / L.grid + 0.5)}\n  local q = cellPos(c)\n  if math.abs(p.x - q.x) > L.grid / 2 or math.abs(p.z - q.z) > L.grid / 2 then return nil end\n  return c\nend\nlocal function openRooms()\n  local open, closed = {[\"0,0\"] = {0, 0}}, {}\n  for _, o in ipairs(getObjects()) do\n    if o.type == \"Card\" and not o.is_face_down and not isMain(o) then\n      local k, c = kindOf(notes(o)), cellAt(o.getPosition())\n      if c and k == \"room\" then open[key(c)] = c end\n      if c and k == \"rubble\" then closed[key(c)] = true end\n    end\n  end\n  for k, _ in pairs(closed) do open[k] = nil end\n  return open\nend\nlocal function characterCells(open)\n  local out = {}\n  for _, color in ipairs(L.colors) do\n    local p = pawnOf(color)\n    local c = alive(p) and cellAt(p.getPosition())\n    if c and open[key(c)] then out[key(c)] = c end\n  end\n  return out\nend\n-- Rooms where rocks may go (rules §10 \"empty rooms\"; Yavuz, 2026-11-03: \"empty roomdan kasıt unregistered\n-- sector\"): open Unregistered Sectors with no character in them (and nothing a player left there). Shuffled.\nlocal function emptyRooms()\n  local open = openRooms()\n  local taken, sectors, out = characterCells(open), {}, {}\n  for _, o in ipairs(getObjects()) do\n    if o.type == \"Card\" and not isMain(o) and not o.is_face_down then\n      local k, c = kindOf(notes(o)), cellAt(o.getPosition())\n      if c and k == \"room\" and o.getName() == L.empty_name then sectors[key(c)] = true end\n      if c and (k == \"monster\" or k == \"treasure\" or k == \"object\") then taken[key(c)] = true end\n    elseif o.type == \"Deck\" and not isMain(o) then\n      local c = cellAt(o.getPosition())   -- tokens players stacked in a room\n      if c then taken[key(c)] = true end\n    end\n  end\n  for k, c in pairs(open) do if sectors[k] and not taken[k] then table.insert(out, c) end end\n  for i = #out, 2, -1 do local j = math.random(1, i) out[i], out[j] = out[j], out[i] end\n  return out\nend\n\nlocal function closeRooms(cells)\n  local rooms = cells or emptyRooms()   -- the director chooses the rooms (empty ones) so the video can plan routes\n  for i = 1, math.min(L.close_rooms, #rooms) do\n    local p = cellPos(rooms[i])\n    Wait.time(function()\n      takeCard(\"rubble-\" .. i, {x = p.x, y = 2.6, z = p.z}, function(card)\n        -- Locked at once and laid on top, never dropped: a round card falling on a round token joins it\n        -- into a deck (both destroyed; seen live 2026-11-02).\n        card.setLock(true)\n        Wait.time(function()\n          card.setScale({x = L.deck_s.rubble, y = 1, z = L.deck_s.rubble})\n          card.setPositionSmooth({x = p.x, y = CARD_Y + 0.05, z = p.z}, false, true)\n          glow(card, nil, 3)\n        end, 0.4)\n      end)\n    end, (i - 1) * 0.6)\n  end\nend\n\n-- No new rooms in round 2 (rules §4, §9): the room deck can't be touched until RESET TABLE.\nlocal function roomDeckOpen(yes)\n  local deck = mainDeck(\"room\")\n  if deck then pcall(function() deck.interactable = yes end) end\nend\n\n-- ------------------------------------------------------------------ the event cards (rules §10, GDD 11-04)\n-- Rooms beside a cell (GDD E6: \"connected to it by their sides\"): the four grid neighbours. The script doesn't\n-- read passages (open): side by side counts as connected, the same as players see rooms touching.\nlocal SIDES = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}\nlocal function beside(c, open)\n  local out = {}\n  for _, d in ipairs(SIDES) do\n    local n = {c[1] + d[1], c[2] + d[2]}\n    if open[key(n)] then table.insert(out, n) end\n  end\n  return out\nend\nlocal function shuffled(t)\n  for i = #t, 2, -1 do local j = math.random(1, i) t[i], t[j] = t[j], t[i] end\n  return t\nend\n-- Face-up token cards of a kind lying in an open room: {card, cell}.\nlocal function tokensInRooms(kind)\n  local open, out = openRooms(), {}\n  for _, o in ipairs(getObjects()) do\n    if o.type == \"Card\" and not o.is_face_down and not isMain(o) and kindOf(notes(o)) == kind then\n      local c = cellAt(o.getPosition())\n      if c and open[key(c)] then table.insert(out, {o, c}) end\n    end\n  end\n  return out\nend\n-- An event token goes to a corner of a room, clear of the token in the middle and the characters around it.\n-- Each kind has its own corner, so gas and a black hole can share a room (Extra Risk draws both).\nlocal CORNER = {gas = {-1.25, 1.25}, hole = {1.25, 1.25}, newsafe = {-1.25, -1.25}}\nlocal function layToken(id, c, delay)\n  local p = cellPos(c)\n  local k = CORNER[id:match(\"^(%a+)%-\")]\n  p = {x = p.x + k[1], z = p.z + k[2]}\n  Wait.time(function()\n    takeCard(id, {x = p.x, y = 2.6, z = p.z}, function(card)\n      card.setLock(true)   -- laid on top, never dropped (see closeRooms)\n      Wait.time(function()\n        card.setPositionSmooth({x = p.x, y = CARD_ON_CARD + 0.03, z = p.z}, false, true)\n        glow(card, nil, 3)\n      end, 0.4)\n    end)\n  end, delay or 0)\nend\n\nFX = {}\nGAS, HOLES = {}, {}\n-- E1 Rockfall: rocks in every empty Unregistered Sector.\nFX.E1 = function() closeRooms(ROCK_CELLS) end\n\n-- E2 Lost Path: the Safe Zone moves to a room 5 rooms away, counted through connected rooms (GDD), chosen at\n-- random. (open) No room that far: the farthest one. The Safe Zone tile stays where it is, a normal room now.\nFX.E2 = function()\n  local open = openRooms()\n  local dist, queue, far = {[key(SAFE)] = 0}, {SAFE}, {}\n  local i = 1\n  while queue[i] do\n    local c = queue[i]\n    for _, n in ipairs(beside(c, open)) do\n      if not dist[key(n)] then dist[key(n)] = dist[key(c)] + 1 table.insert(queue, n) end\n    end\n    i = i + 1\n  end\n  local best = 0\n  for _, d in pairs(dist) do if d <= 5 and d > best then best = d end end\n  if best == 0 then broadcastToAll(\"Lost Path: no other room to move the Safe Zone to. It stays.\", GOLDEN) return end\n  for _, c in ipairs(queue) do if dist[key(c)] == best then table.insert(far, c) end end\n  SAFE = shuffled(far)[1]\n  layToken(\"newsafe-1\", SAFE)\n  Wait.time(function()\n    for _, o in ipairs(getObjects()) do if notes(o) == \"newsafe-1\" then glow(o, nil, 8) end end\n  end, 1.2)\nend\n\n-- E3 Time Freeze: the characters are locked for 15 seconds (GDD: no moving; fighting and taking go on).\nFREEZE = 0\nFX.E3 = function()\n  FREEZE = FREEZE + 1\n  local token = FREEZE\n  for _, color in ipairs(L.colors) do local p = pawnOf(color) if alive(p) then p.setLock(true) end end\n  for s = 0, 15 do\n    Wait.time(function()\n      if FREEZE ~= token or ROUND ~= 2 then return end\n      if s < 15 then\n        UI.setValue(\"kbTimerLabel\", \"FROZEN · \" .. (15 - s) .. \" s\")\n      else\n        UI.setValue(\"kbTimerLabel\", \"ROUND 2 · ESCAPE\")\n        for _, color in ipairs(L.colors) do local p = pawnOf(color) if alive(p) then p.setLock(STAGED) end end\n        broadcastToAll(\"Time Freeze is over: move again.\", GOLDEN)\n      end\n    end, s)\n  end\nend\n\n-- E4 Extra Risk: the players draw one or two more cards by hand.\n\n-- E5 Extra Special Tile: the second Integration Chamber goes on a free cell beside an open room, at random\n-- (GDD: \"connected to an existing room\"; it has passages on every side). (open) The extra task: an object on\n-- either chamber completes it, so one object per player is still enough (there are only four objects).\nFX.E5 = function()\n  local used = {[\"0,0\"] = true}\n  for _, o in ipairs(getObjects()) do\n    if o.type == \"Card\" and not isMain(o) and not o.is_face_down and kindOf(notes(o)) == \"room\" then\n      local c = cellAt(o.getPosition())\n      if c then used[key(c)] = true end\n    end\n  end\n  -- (open) Clear of the mats: up to 5 cells left and right, and 2 up and down (a room at 3 touches the south and\n  -- north mats, seen live 2026-11-04); 3 only when nothing nearer is free.\n  local free, far, seen = {}, {}, {}\n  for _, c in pairs(openRooms()) do\n    for _, d in ipairs(SIDES) do\n      local n = {c[1] + d[1], c[2] + d[2]}\n      if not used[key(n)] and not seen[key(n)] and math.abs(n[1]) <= 5 and math.abs(n[2]) <= 3 then\n        seen[key(n)] = true\n        table.insert(math.abs(n[2]) <= 2 and free or far, n)\n      end\n    end\n  end\n  if #free == 0 then free = far end\n  if #free == 0 then broadcastToAll(\"Extra Special Tile: no free place beside the rooms.\", GOLDEN) return end\n  local p = cellPos(shuffled(free)[1])\n  takeCard(\"special2\", {x = p.x, y = 2.6, z = p.z}, function(card)\n    card.setLock(true)\n    Wait.time(function()\n      card.setScale({x = L.deck_s.extra, y = 1, z = L.deck_s.extra})\n      card.setPositionSmooth({x = p.x, y = CARD_Y + 0.05, z = p.z}, false, true)\n      card.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)\n      glow(card, nil, 6)\n    end, 0.4)\n  end)\nend\n\n-- E6 Poison Gas: one gas token in an empty room (an Unregistered Sector with nobody in it, as for the rocks)\n-- and one in each room beside it. (open) The room with the most rooms beside it, so the gas reaches the most;\n-- the Safe Zone never gets gas (nobody could escape without paying).\nFX.E6 = function()\n  local open = openRooms()\n  local best, bestN = nil, {}\n  for _, c in ipairs(emptyRooms()) do\n    local n = {}\n    for _, b in ipairs(beside(c, open)) do\n      if not (b[1] == SAFE[1] and b[2] == SAFE[2]) and key(b) ~= \"0,0\" then table.insert(n, b) end\n    end\n    if not best or #n > #bestN then best, bestN = c, n end\n  end\n  if not best then broadcastToAll(\"Poison Gas: no empty room for the gas.\", GOLDEN) return end\n  GAS[key(best)] = true\n  layToken(\"gas-1\", best)\n  for i, c in ipairs(bestN) do\n    if i > 4 then break end\n    GAS[key(c)] = true\n    layToken(\"gas-\" .. (i + 1), c, i * 0.5)\n  end\nend\n\n-- E7 Aliens: every monster in a room becomes an alien of its kind (1 HP more, same points), keeping the damage\n-- it has taken. (open) \"Can't go through without fighting\" is the players' rule; the script doesn't stop pawns.\nFX.E7 = function()\n  local n = {}\n  for i, t in ipairs(tokensInRooms(\"monster\")) do\n    local o = t[1]\n    local k = notes(o):match(\"^m%-(%a+)%-%d+$\")\n    local dmg = DMG[o.getGUID()] or 0\n    if k and dmg < L.monsters[k].hp then\n      n[k] = (n[k] or 0) + 1\n      local id = \"m-alien\" .. k .. \"-\" .. n[k]\n      local p = o.getPosition()\n      Wait.time(function()\n        sendHome(\"monster\", o)\n        takeCard(id, {x = p.x, y = 2.6, z = p.z}, function(card)\n          card.setLock(true)\n          Wait.time(function()\n            card.setScale({x = L.alien_s, y = 1, z = L.alien_s})\n            card.setPositionSmooth({x = p.x, y = CARD_ON_CARD + 0.02, z = p.z}, false, true)\n            Wait.time(function()\n              if not alive(card) then return end\n              card.setLock(false)\n              DMG[card.getGUID()] = dmg\n              addHitMenu(card)\n              glow(card, nil, 3)\n            end, 0.9)\n          end, 0.4)\n        end)\n      end, (i - 1) * 0.6)\n    end\n  end\nend\n\n-- E8 Black Holes: a black hole in every room with a treasure (or object) token still in it.\nFX.E8 = function()\n  local n = 0\n  for _, t in ipairs(tokensInRooms(\"treasure\")) do\n    if not HOLES[key(t[2])] then\n      HOLES[key(t[2])] = true\n      n = n + 1\n      layToken(\"hole-\" .. n, t[2], (n - 1) * 0.5)\n    end\n  end\nend\n\n-- A character dropped in a new room with gas or a black hole loses 1 point there (GDD E6, E8). Points are\n-- the players' to count; the script keeps only these losses and shows them at 0:00.\n-- Event tokens on the table, wherever players put them: the cells that have one of this kind (\"gas\", \"hole\",\n-- \"newsafe\").\nfunction tokenCells(kind)\n  local out = {}\n  for _, o in ipairs(getObjects()) do\n    if o.type == \"Card\" and not o.is_face_down and not isMain(o) and notes(o):match(\"^\" .. kind .. \"%-\") then\n      local c = cellAt(o.getPosition())\n      if c then out[key(c)] = c end\n    end\n  end\n  return out\nend\nlocal function pawnDropped(color, o)\n  local c = cellAt(o.getPosition())\n  if not c then LASTCELL[color] = nil return end\n  if LASTCELL[color] == key(c) then return end\n  LASTCELL[color] = key(c)\n  if ROUND ~= 2 or not L.mats[color] then return end\n  local gas, holes = tokenCells(\"gas\"), tokenCells(\"hole\")\n  local lost = (gas[key(c)] and 1 or 0) + (holes[key(c)] and 1 or 0)\n  if lost > 0 then\n    PEN[color] = (PEN[color] or 0) + lost\n    glow(o, \"Red\", 2)\n    broadcastToAll(color .. \" lost \" .. lost .. \" point\" .. (lost > 1 and \"s\" or \"\") .. \" (\"\n      .. (gas[key(c)] and \"gas\" or \"black hole\") .. \"). Lost so far: \" .. PEN[color] .. \".\", {0.89, 0.55, 0.14})\n  end\nend\n\n-- Round 2: the top event card turns up next to the event deck and its event happens. Extra Risk's cards go\n-- below the first one. ROUND2_EVENT: the director's choice of card (the tutorial shows Rockfall).\nROCK_CELLS, ROUND2_EVENT, SHOWN = nil, nil, 0\nlocal function happen(card)\n  local id = notes(card)\n  OPS.banner({text = \"ROUND 2: ESCAPE!\\n\" .. card.getName():upper()})\n  if not STAGED then broadcastToAll(card.getName() .. \": \" .. card.getDescription(), GOLDEN) end\n  if FX[id] then FX[id]() end\n  Wait.time(function() if ROUND == 2 and TIMER.left > 0 then OPS.banner({}) end end, 6)\nend\nfunction drawEvent(id)\n  local p = {x = L.event_show[1], y = 1.6, z = L.event_show[2] - 3.4 * SHOWN}\n  SHOWN = SHOWN + 1\n  if id then takeCard(id, p, happen) return end\n  local deck = mainDeck(\"event\")\n  if deck and deck.type == \"Deck\" then\n    deck.takeObject({position = p, rotation = {x = 0, y = 180, z = 0}, smooth = true, callback_function = happen})\n  elseif deck then\n    deck.setPositionSmooth(p, false, true)\n    deck.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)\n    happen(deck)\n  end\nend\nround2 = function()\n  ROUND = 2\n  UI.setValue(\"kbTimerLabel\", \"ROUND 2 · ESCAPE\")\n  roomDeckOpen(false)\n  if not STAGED then\n    broadcastToAll(\"Round 2! Turn up an event card and set it up. No new rooms now. Place a special object on the\"\n      .. \" Integration Chamber and be back in the Safe Zone at 0:00, or you lose all your points.\", GOLDEN)\n  end\n  -- Players turn up the event card and set out its tokens by hand (Yavuz, 2026-11-04: \"eventleri biz\n  -- yerleştirelim kendi koymasın\"). Only the director still has the script do it, for the tutorial's Rockfall.\n  if ROUND2_EVENT then\n    drawEvent(ROUND2_EVENT)\n  else\n    OPS.banner({text = \"ROUND 2: ESCAPE!\"})\n    Wait.time(function() if ROUND == 2 and TIMER.left > 0 then OPS.banner({}) end end, 5)\n  end\nend\n\n-- Special objects (rules §7, §9): in round 2, an object dropped on the Integration Chamber is placed. It\n-- stays there (locked) and completes the special task of the player who dropped it. In round 1 it can't be\n-- placed yet (rules §7: \"objects are placed during the second round\").\nPLACED, TASK = {}, {}\nfunction onObjectDrop(color, o)\n  if o.hasTag(\"pawn\") then pawnDropped(notes(o), o) return end\n  if not notes(o):match(\"^o%-%d$\") or PLACED[o.getGUID()] then return end\n  for _, r in ipairs(getObjects()) do\n    -- \"special\", or Extra Special Tile's \"special2\": either chamber completes the task.\n    if r.type == \"Card\" and notes(r):match(\"^special\") and not r.is_face_down then\n      local a, b = o.getPosition(), r.getPosition()\n      if math.abs(a.x - b.x) < L.grid / 2 and math.abs(a.z - b.z) < L.grid / 2 then\n        if ROUND ~= 2 then\n          -- To one player if they are seated; broadcastToColor stops the script for an empty colour (seen live 2026-11-03).\n          if not pcall(broadcastToColor, \"Objects are placed in round 2. Keep it until then.\", color, GOLDEN) then\n            broadcastToAll(\"Objects are placed in round 2.\", GOLDEN)\n          end\n          return\n        end\n        o.setLock(true)\n        o.setDescription(\"Placed by \" .. color .. \": \" .. color .. \"'s special task is completed.\")\n        PLACED[o.getGUID()] = true\n        if L.mats[color] then TASK[color] = true end\n        glow(o, color, 3)\n        broadcastToAll(color .. \" placed \" .. o.getName() .. \": special task completed. Now back to the Safe Zone!\", GOLDEN)\n        return\n      end\n    end\n  end\nend\n\n-- ------------------------------------------------------------------ the director's game ops (tutorial.py)\nlocal function tableCard(id)\n  for _, o in ipairs(getObjects()) do if o.type == \"Card\" and notes(o) == id then return o end end\nend\nfunction OPS.hit(d)\n  -- d.n Attacks on the monster token d.id, from d.color (a beaten one goes to that player's mat).\n  local o = tableCard(d.id)\n  if not o then return end\n  for _ = 1, d.n or 1 do monsterHit(d.color, o, 1) end\n  glow(o, d.color, 2)\nend\nfunction OPS.place(d)\n  -- The object d.id goes from the mat onto slot d.slot (1-4) of the Integration Chamber and completes d.color's task.\n  local o = tableCard(d.id)\n  local r = tableCard(\"special\")\n  if not o or not r then return end\n  local px = L.obj_slot_px[d.slot or 1]\n  local c = r.getPosition()\n  local p = {x = c.x + (px[1] / 512 - 0.5) * L.room_w, y = CARD_ON_CARD + 0.03, z = c.z - (px[2] / 512 - 0.5) * L.room_w}\n  o.setLock(true)\n  o.setScale({x = L.deck_s.monster, y = 1, z = L.deck_s.monster})\n  o.setPositionSmooth(p, false, true)\n  o.setRotationSmooth({x = 0, y = 180, z = 0}, false, true)\n  PLACED[o.getGUID()] = true\n  TASK[d.color] = true\n  glow(o, d.color, 3)\nend\nfunction OPS.round2(d)\n  -- Round 2 now, with the event d.event (the tutorial: Rockfall, \"E1\") and the rocks in d.cells (the director's\n  -- choice of empty rooms).\n  ROCK_CELLS = d.cells\n  ROUND2_EVENT = d.event or (d.cells and \"E1\") or nil\n  round2()\nend\nfunction OPS.label(d) UI.setValue(\"kbTimerLabel\", d.text) end\n\n-- ------------------------------------------------------------------ reset\n-- Every object's starting place is remembered at load; RESET TABLE (or the director) puts it back.\nHOME = {}\nfunction onLoad()\n  local assets = {}\n  for k, u in pairs(L.icons) do table.insert(assets, {name = \"icon\" .. k, url = u}) end\n  UI.setCustomAssets(assets)\n  for _, o in ipairs(getObjects()) do\n    HOME[o.getGUID()] = {pos = o.getPosition(), rot = o.getRotation(), scale = o.getScale(), lock = o.getLock()}\n  end\n  for kind, tag in pairs(L.decks) do\n    -- A deck of one card is a card (the event: one for now).\n    for _, o in ipairs(getObjectsWithTag(tag)) do if o.type == \"Deck\" or o.type == \"Card\" then DECK[kind] = o.getGUID() end end\n  end\n  clearMats()\n  for _, o in ipairs(getObjects()) do addHitMenu(o) end\n  for _, id in ipairs({\"kbCaption\", \"kbScore\", \"kbBanner\"}) do UI.setAttribute(id, \"active\", \"false\") end\n  -- ROLL DICE's faces come from math.random: seeded from the clock, so two games never roll alike.\n  local t = wall()\n  if t then math.randomseed(t) end\nend\n\nlocal function isMovable(o)\n  for _, t in ipairs(MOVABLE) do if o.hasTag(t) then return true end end\n  return false\nend\n\nfunction OPS.reset(d)\n  -- d.stage: the director films, so dice and characters stay locked and only its scripts move them.\n  STAGED = d.stage == true\n  for g, _ in pairs(PLACED) do\n    local o = getObjectFromGUID(g)\n    if alive(o) then o.setLock(false) o.setDescription(L.object_desc) end\n  end\n  PLACED, TASK, DMG = {}, {}, {}\n  ROUND, ROCK_CELLS, ROUND2_EVENT, SHOWN = 1, nil, nil, 0\n  SAFE, PEN, LASTCELL, GAS, HOLES = {0, 0}, {}, {}, {}, {}\n  FREEZE = FREEZE + 1   -- a Time Freeze still counting doesn't unlock anything after the reset\n  roomDeckOpen(true)\n  UI.setValue(\"kbTimerLabel\", \"TIME LEFT\")\n  gatherCards()\n  Wait.time(gatherCards, 1.2)    -- the last card of a small deck that was taken apart\n  for _, o in ipairs(getObjects()) do\n    local h = HOME[o.getGUID()]\n    if h and o.type ~= \"Card\" then\n      -- A die or a pawn is locked on the way home, so it doesn't tumble, then gets its own state back.\n      -- Nothing else is locked: a locked deck takes no cards back (seen live, 2026-10-25).\n      if isMovable(o) then\n        local lock = h.lock == true or STAGED\n        o.setLock(true)\n        Wait.time(function() if alive(o) then o.setLock(lock) end end, 1.2)\n      end\n      o.setPositionSmooth(h.pos, false, true)\n      o.setRotationSmooth(h.rot, false, true)\n      o.setScale(h.scale)\n    end\n  end\n  -- Decks back home, face down, even ones that were made again from returning cards.\n  Wait.time(function()\n    for kind, _ in pairs(L.decks) do\n      local deck = mainDeck(kind)\n      if deck then\n        deck.setPositionSmooth(deckHome(kind), false, true)\n        deck.setRotationSmooth({x = 0, y = 180, z = 180}, false, true)\n        deck.setScale({x = L.deck_s[kind], y = 1, z = L.deck_s[kind]})\n      end\n    end\n  end, 1.6)\n  clearMats()\n  TIMER.token = TIMER.token + 1\n  TIMER.left, TIMER.play, TIMER.ends = L.game_secs, false, nil\n  showTime()\n  for _, id in ipairs({\"kbCaption\", \"kbScore\", \"kbBanner\", \"kbTimer\"}) do UI.setAttribute(id, \"active\", \"false\") end\nend\nfunction resetGame(player) OPS.reset({}) end\n\n-- ------------------------------------------------------------------ START GAME\n-- The colours at a mat that someone sits at; nobody at a mat colour (one person trying it out) =\n-- every colour.\nlocal function seatedColors()\n  local out = {}\n  for _, pl in ipairs(Player.getPlayers()) do\n    if L.mats[pl.color] then table.insert(out, pl.color) end\n  end\n  if #out == 0 then return L.colors end\n  return out\nend\n\nlocal starting = false\nfunction startGame(player)\n  if starting then return end\n  starting = true\n  OPS.reset({})\n  Wait.time(function()\n    -- §3: the rooms, the token decks and the event deck are shuffled.\n    for _, kind in ipairs({\"room\", \"monster\", \"treasure\", \"event\"}) do\n      local deck = mainDeck(kind)\n      if deck and deck.type == \"Deck\" then deck.shuffle() end\n    end\n    local who = seatedColors()\n    OPS.deal({colors = who})\n    OPS.pawns({colors = who})\n    OPS.timer({left = L.game_secs, run = true, play = true})\n    UI.setValue(\"kbTimerLabel\", \"ROUND 1 · COLLECT POINTS\")\n    OPS.banner({text = \"ROUND 1: COLLECT POINTS\"})\n    Wait.time(function()\n      if TIMER.play and TIMER.left > 0 then OPS.banner({}) end\n      starting = false\n    end, 2.5)\n  end, 2.4)\nend\n\n-- ------------------------------------------------------------------ the director's commands\nlocal function reply(kind, text) sendExternalMessage({kind = kind, text = text}) end\nfunction OPS.hello(d) reply(\"hello\", KB_VERSION) end\n\nfunction onExternalMessage(d)\n  if type(d) ~= \"table\" then return end\n  -- One JSON string per command: TTS hands nested lists of a custom message to Lua as C# objects\n  -- (seen live on v0.1), so the director sends {json = \"...\"}.\n  if d.json then d = JSON.decode(d.json) end\n  local f = OPS[d.op]\n  if not f then reply(\"error\", \"unknown command \" .. tostring(d.op)) return end\n  local function run()\n    local ok, err = pcall(f, d)\n    if not ok then reply(\"error\", tostring(d.op) .. \": \" .. tostring(err)) end\n  end\n  -- d.delay: wait before doing it, so one beat can be \"the dice land, then the room is revealed\".\n  if type(d.delay) == \"number\" and d.delay > 0 then Wait.time(run, d.delay) else run() end\nend\n",
  "LuaScriptState": "",
- "XmlUI": "<Panel id=\"kbTimer\" active=\"false\" rectAlignment=\"UpperRight\" offsetXY=\"-24 -150\" width=\"300\" height=\"104\" color=\"#000000C8\">\n  <Text id=\"kbTimerLabel\" rectAlignment=\"UpperCenter\" offsetXY=\"0 -4\" height=\"26\" fontSize=\"19\" color=\"#5CB0DE\" alignment=\"MiddleCenter\">TIME LEFT</Text>\n  <Text id=\"kbTimerText\" rectAlignment=\"LowerCenter\" offsetXY=\"0 2\" height=\"76\" fontSize=\"62\" color=\"#ECF0F2\" alignment=\"MiddleCenter\">10:00</Text>\n</Panel>\n<Panel id=\"kbCaption\" active=\"false\" rectAlignment=\"LowerCenter\" offsetXY=\"0 22\" width=\"400\" height=\"56\" color=\"#000000DC\">\n  <HorizontalLayout childAlignment=\"MiddleCenter\" childForceExpandWidth=\"false\" childForceExpandHeight=\"false\" spacing=\"8\" padding=\"16 16 6 6\">\n    <Text id=\"kbCaptionHead\" preferredWidth=\"300\" preferredHeight=\"44\" fontSize=\"29\" fontStyle=\"Bold\" color=\"#5CB0DE\" alignment=\"MiddleCenter\" horizontalOverflow=\"Overflow\" verticalOverflow=\"Overflow\"></Text>\n    <Image id=\"kbIcon1\" active=\"false\" preferredWidth=\"38\" preferredHeight=\"38\"></Image>\n    <Image id=\"kbIcon2\" active=\"false\" preferredWidth=\"38\" preferredHeight=\"38\"></Image>\n    <Image id=\"kbIcon3\" active=\"false\" preferredWidth=\"38\" preferredHeight=\"38\"></Image>\n    <Image id=\"kbIcon4\" active=\"false\" preferredWidth=\"38\" preferredHeight=\"38\"></Image>\n  </HorizontalLayout>\n</Panel>\n<Panel id=\"kbScore\" active=\"false\" rectAlignment=\"UpperCenter\" offsetXY=\"0 -160\" width=\"820\" height=\"338\" color=\"#000000E6\">\n  <VerticalLayout padding=\"24 24 14 14\" spacing=\"6\">\n    <Text id=\"kbScore1\" fontSize=\"30\" fontStyle=\"Bold\" color=\"#ECF0F2\" alignment=\"MiddleLeft\"></Text>\n    <Text id=\"kbScore2\" fontSize=\"30\" fontStyle=\"Bold\" color=\"#ECF0F2\" alignment=\"MiddleLeft\"></Text>\n    <Text id=\"kbScore3\" fontSize=\"30\" fontStyle=\"Bold\" color=\"#ECF0F2\" alignment=\"MiddleLeft\"></Text>\n    <Text id=\"kbScore4\" fontSize=\"30\" fontStyle=\"Bold\" color=\"#ECF0F2\" alignment=\"MiddleLeft\"></Text>\n    <Text id=\"kbScore5\" fontSize=\"30\" fontStyle=\"Bold\" color=\"#ECF0F2\" alignment=\"MiddleLeft\"></Text>\n  </VerticalLayout>\n</Panel>\n<Panel id=\"kbBanner\" active=\"false\" rectAlignment=\"MiddleCenter\" offsetXY=\"0 120\" width=\"1200\" height=\"170\" color=\"#000000D2\">\n  <Text id=\"kbBannerText\" fontSize=\"56\" color=\"#5CB0DE\" alignment=\"MiddleCenter\"></Text>\n</Panel>\n<Button id=\"kbStart\" rectAlignment=\"UpperLeft\" offsetXY=\"8 -410\" width=\"150\" height=\"34\" fontSize=\"15\" color=\"#1C4668\" textColor=\"#ECF0F2\" onClick=\"startGame\">START GAME</Button>\n<Button id=\"kbReset\" rectAlignment=\"UpperLeft\" offsetXY=\"8 -450\" width=\"150\" height=\"34\" fontSize=\"15\" color=\"#2D3238\" textColor=\"#ECF0F2\" onClick=\"resetGame\">RESET TABLE</Button>\n<Button id=\"kbRisk\" active=\"false\" rectAlignment=\"UpperLeft\" offsetXY=\"8 -580\" width=\"150\" height=\"40\" fontSize=\"17\" fontStyle=\"Bold\" color=\"#E28C24\" textColor=\"#181C22\" onClick=\"riskDraw\">+1 EVENT</Button>\n<Button id=\"kbRoll\" rectAlignment=\"UpperLeft\" offsetXY=\"8 -520\" width=\"150\" height=\"48\" fontSize=\"19\" fontStyle=\"Bold\" color=\"#5CB0DE\" textColor=\"#181C22\" onClick=\"rollDice\">ROLL DICE</Button>\n",
+ "XmlUI": "<Panel id=\"kbTimer\" active=\"false\" rectAlignment=\"UpperRight\" offsetXY=\"-24 -150\" width=\"300\" height=\"104\" color=\"#000000C8\">\n  <Text id=\"kbTimerLabel\" rectAlignment=\"UpperCenter\" offsetXY=\"0 -4\" height=\"26\" fontSize=\"19\" color=\"#5CB0DE\" alignment=\"MiddleCenter\">TIME LEFT</Text>\n  <Text id=\"kbTimerText\" rectAlignment=\"LowerCenter\" offsetXY=\"0 2\" height=\"76\" fontSize=\"62\" color=\"#ECF0F2\" alignment=\"MiddleCenter\">10:00</Text>\n</Panel>\n<Panel id=\"kbCaption\" active=\"false\" rectAlignment=\"LowerCenter\" offsetXY=\"0 22\" width=\"400\" height=\"56\" color=\"#000000DC\">\n  <HorizontalLayout childAlignment=\"MiddleCenter\" childForceExpandWidth=\"false\" childForceExpandHeight=\"false\" spacing=\"8\" padding=\"16 16 6 6\">\n    <Text id=\"kbCaptionHead\" preferredWidth=\"300\" preferredHeight=\"44\" fontSize=\"29\" fontStyle=\"Bold\" color=\"#5CB0DE\" alignment=\"MiddleCenter\" horizontalOverflow=\"Overflow\" verticalOverflow=\"Overflow\"></Text>\n    <Image id=\"kbIcon1\" active=\"false\" preferredWidth=\"38\" preferredHeight=\"38\"></Image>\n    <Image id=\"kbIcon2\" active=\"false\" preferredWidth=\"38\" preferredHeight=\"38\"></Image>\n    <Image id=\"kbIcon3\" active=\"false\" preferredWidth=\"38\" preferredHeight=\"38\"></Image>\n    <Image id=\"kbIcon4\" active=\"false\" preferredWidth=\"38\" preferredHeight=\"38\"></Image>\n  </HorizontalLayout>\n</Panel>\n<Panel id=\"kbScore\" active=\"false\" rectAlignment=\"UpperCenter\" offsetXY=\"0 -160\" width=\"820\" height=\"338\" color=\"#000000E6\">\n  <VerticalLayout padding=\"24 24 14 14\" spacing=\"6\">\n    <Text id=\"kbScore1\" fontSize=\"30\" fontStyle=\"Bold\" color=\"#ECF0F2\" alignment=\"MiddleLeft\"></Text>\n    <Text id=\"kbScore2\" fontSize=\"30\" fontStyle=\"Bold\" color=\"#ECF0F2\" alignment=\"MiddleLeft\"></Text>\n    <Text id=\"kbScore3\" fontSize=\"30\" fontStyle=\"Bold\" color=\"#ECF0F2\" alignment=\"MiddleLeft\"></Text>\n    <Text id=\"kbScore4\" fontSize=\"30\" fontStyle=\"Bold\" color=\"#ECF0F2\" alignment=\"MiddleLeft\"></Text>\n    <Text id=\"kbScore5\" fontSize=\"30\" fontStyle=\"Bold\" color=\"#ECF0F2\" alignment=\"MiddleLeft\"></Text>\n  </VerticalLayout>\n</Panel>\n<Panel id=\"kbBanner\" active=\"false\" rectAlignment=\"MiddleCenter\" offsetXY=\"0 120\" width=\"1200\" height=\"170\" color=\"#000000D2\">\n  <Text id=\"kbBannerText\" fontSize=\"56\" color=\"#5CB0DE\" alignment=\"MiddleCenter\"></Text>\n</Panel>\n<Button id=\"kbStart\" rectAlignment=\"UpperLeft\" offsetXY=\"8 -410\" width=\"150\" height=\"34\" fontSize=\"15\" color=\"#1C4668\" textColor=\"#ECF0F2\" onClick=\"startGame\">START GAME</Button>\n<Button id=\"kbReset\" rectAlignment=\"UpperLeft\" offsetXY=\"8 -450\" width=\"150\" height=\"34\" fontSize=\"15\" color=\"#2D3238\" textColor=\"#ECF0F2\" onClick=\"resetGame\">RESET TABLE</Button>\n<Button id=\"kbRoll\" rectAlignment=\"UpperLeft\" offsetXY=\"8 -520\" width=\"150\" height=\"48\" fontSize=\"19\" fontStyle=\"Bold\" color=\"#5CB0DE\" textColor=\"#181C22\" onClick=\"rollDice\">ROLL DICE</Button>\n",
  "SnapPoints": [],
  "ObjectStates": [
   {
@@ -1509,7 +1509,7 @@
    ]
   },
   {
-   "GUID": "d00032",
+   "GUID": "d0002e",
    "Name": "Deck",
    "Transform": {
     "posX": 14.6,
@@ -1535,25 +1535,21 @@
    "XmlUI": "",
    "DeckIDs": [
     400,
-    401,
-    400,
     402,
-    403,
-    401,
+    400,
     400,
     401,
-    405,
-    404,
-    406,
+    401,
+    401,
     402,
     402
    ],
    "CustomDeck": {
     "4": {
-     "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
+     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.5fa79aa032.png",
      "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
      "NumWidth": 3,
-     "NumHeight": 3,
+     "NumHeight": 1,
      "BackIsHidden": true,
      "UniqueBack": false,
      "Type": 4
@@ -1588,90 +1584,10 @@
      "CardID": 400,
      "CustomDeck": {
       "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.5fa79aa032.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
-       "NumHeight": 3,
-       "BackIsHidden": true,
-       "UniqueBack": false,
-       "Type": 4
-      }
-     },
-     "SidewaysCard": false,
-     "HideWhenFaceDown": true
-    },
-    {
-     "GUID": "d0002a",
-     "Name": "Card",
-     "Transform": {
-      "posX": 0,
-      "posY": 1.5,
-      "posZ": 0,
-      "rotX": 0.0,
-      "rotY": 180.0,
-      "rotZ": 180.0,
-      "scaleX": 0.4575,
-      "scaleY": 1.0,
-      "scaleZ": 0.4575
-     },
-     "Nickname": "Archive",
-     "Description": "Needs 2 Magic. Alone: 1 point. Combinations: see your mat.",
-     "GMNotes": "t-archive-3",
-     "Locked": false,
-     "Grid": false,
-     "Snap": false,
-     "Tooltip": true,
-     "Hands": false,
-     "LuaScript": "",
-     "LuaScriptState": "",
-     "XmlUI": "",
-     "CardID": 401,
-     "CustomDeck": {
-      "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
-       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
-       "NumWidth": 3,
-       "NumHeight": 3,
-       "BackIsHidden": true,
-       "UniqueBack": false,
-       "Type": 4
-      }
-     },
-     "SidewaysCard": false,
-     "HideWhenFaceDown": true
-    },
-    {
-     "GUID": "d00025",
-     "Name": "Card",
-     "Transform": {
-      "posX": 0,
-      "posY": 1.5,
-      "posZ": 0,
-      "rotX": 0.0,
-      "rotY": 180.0,
-      "rotZ": 180.0,
-      "scaleX": 0.4575,
-      "scaleY": 1.0,
-      "scaleZ": 0.4575
-     },
-     "Nickname": "Module",
-     "Description": "Needs 2 Magic. Alone: 3 points. Combinations: see your mat.",
-     "GMNotes": "t-module-1",
-     "Locked": false,
-     "Grid": false,
-     "Snap": false,
-     "Tooltip": true,
-     "Hands": false,
-     "LuaScript": "",
-     "LuaScriptState": "",
-     "XmlUI": "",
-     "CardID": 400,
-     "CustomDeck": {
-      "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
-       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
-       "NumWidth": 3,
-       "NumHeight": 3,
+       "NumHeight": 1,
        "BackIsHidden": true,
        "UniqueBack": false,
        "Type": 4
@@ -1708,10 +1624,10 @@
      "CardID": 402,
      "CustomDeck": {
       "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.5fa79aa032.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
-       "NumHeight": 3,
+       "NumHeight": 1,
        "BackIsHidden": true,
        "UniqueBack": false,
        "Type": 4
@@ -1721,7 +1637,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d0002e",
+     "GUID": "d00025",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -1734,9 +1650,9 @@
       "scaleY": 1.0,
       "scaleZ": 0.4575
      },
-     "Nickname": "Object I",
-     "Description": "Needs 2 Magic. In round 2, drop it on the Integration Chamber: that completes your special task.",
-     "GMNotes": "o-1",
+     "Nickname": "Module",
+     "Description": "Needs 2 Magic. Alone: 3 points. Combinations: see your mat.",
+     "GMNotes": "t-module-1",
      "Locked": false,
      "Grid": false,
      "Snap": false,
@@ -1745,53 +1661,13 @@
      "LuaScript": "",
      "LuaScriptState": "",
      "XmlUI": "",
-     "CardID": 403,
+     "CardID": 400,
      "CustomDeck": {
       "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.5fa79aa032.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
-       "NumHeight": 3,
-       "BackIsHidden": true,
-       "UniqueBack": false,
-       "Type": 4
-      }
-     },
-     "SidewaysCard": false,
-     "HideWhenFaceDown": true
-    },
-    {
-     "GUID": "d00029",
-     "Name": "Card",
-     "Transform": {
-      "posX": 0,
-      "posY": 1.5,
-      "posZ": 0,
-      "rotX": 0.0,
-      "rotY": 180.0,
-      "rotZ": 180.0,
-      "scaleX": 0.4575,
-      "scaleY": 1.0,
-      "scaleZ": 0.4575
-     },
-     "Nickname": "Archive",
-     "Description": "Needs 2 Magic. Alone: 1 point. Combinations: see your mat.",
-     "GMNotes": "t-archive-2",
-     "Locked": false,
-     "Grid": false,
-     "Snap": false,
-     "Tooltip": true,
-     "Hands": false,
-     "LuaScript": "",
-     "LuaScriptState": "",
-     "XmlUI": "",
-     "CardID": 401,
-     "CustomDeck": {
-      "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
-       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
-       "NumWidth": 3,
-       "NumHeight": 3,
+       "NumHeight": 1,
        "BackIsHidden": true,
        "UniqueBack": false,
        "Type": 4
@@ -1828,10 +1704,90 @@
      "CardID": 400,
      "CustomDeck": {
       "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.5fa79aa032.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
-       "NumHeight": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0002a",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Archive",
+     "Description": "Needs 2 Magic. Alone: 1 point. Combinations: see your mat.",
+     "GMNotes": "t-archive-3",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 401,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.5fa79aa032.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
+       "NumWidth": 3,
+       "NumHeight": 1,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00029",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Archive",
+     "Description": "Needs 2 Magic. Alone: 1 point. Combinations: see your mat.",
+     "GMNotes": "t-archive-2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 401,
+     "CustomDeck": {
+      "4": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.5fa79aa032.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
+       "NumWidth": 3,
+       "NumHeight": 1,
        "BackIsHidden": true,
        "UniqueBack": false,
        "Type": 4
@@ -1868,130 +1824,10 @@
      "CardID": 401,
      "CustomDeck": {
       "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.5fa79aa032.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
-       "NumHeight": 3,
-       "BackIsHidden": true,
-       "UniqueBack": false,
-       "Type": 4
-      }
-     },
-     "SidewaysCard": false,
-     "HideWhenFaceDown": true
-    },
-    {
-     "GUID": "d00030",
-     "Name": "Card",
-     "Transform": {
-      "posX": 0,
-      "posY": 1.5,
-      "posZ": 0,
-      "rotX": 0.0,
-      "rotY": 180.0,
-      "rotZ": 180.0,
-      "scaleX": 0.4575,
-      "scaleY": 1.0,
-      "scaleZ": 0.4575
-     },
-     "Nickname": "Object III",
-     "Description": "Needs 2 Magic. In round 2, drop it on the Integration Chamber: that completes your special task.",
-     "GMNotes": "o-3",
-     "Locked": false,
-     "Grid": false,
-     "Snap": false,
-     "Tooltip": true,
-     "Hands": false,
-     "LuaScript": "",
-     "LuaScriptState": "",
-     "XmlUI": "",
-     "CardID": 405,
-     "CustomDeck": {
-      "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
-       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
-       "NumWidth": 3,
-       "NumHeight": 3,
-       "BackIsHidden": true,
-       "UniqueBack": false,
-       "Type": 4
-      }
-     },
-     "SidewaysCard": false,
-     "HideWhenFaceDown": true
-    },
-    {
-     "GUID": "d0002f",
-     "Name": "Card",
-     "Transform": {
-      "posX": 0,
-      "posY": 1.5,
-      "posZ": 0,
-      "rotX": 0.0,
-      "rotY": 180.0,
-      "rotZ": 180.0,
-      "scaleX": 0.4575,
-      "scaleY": 1.0,
-      "scaleZ": 0.4575
-     },
-     "Nickname": "Object II",
-     "Description": "Needs 2 Magic. In round 2, drop it on the Integration Chamber: that completes your special task.",
-     "GMNotes": "o-2",
-     "Locked": false,
-     "Grid": false,
-     "Snap": false,
-     "Tooltip": true,
-     "Hands": false,
-     "LuaScript": "",
-     "LuaScriptState": "",
-     "XmlUI": "",
-     "CardID": 404,
-     "CustomDeck": {
-      "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
-       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
-       "NumWidth": 3,
-       "NumHeight": 3,
-       "BackIsHidden": true,
-       "UniqueBack": false,
-       "Type": 4
-      }
-     },
-     "SidewaysCard": false,
-     "HideWhenFaceDown": true
-    },
-    {
-     "GUID": "d00031",
-     "Name": "Card",
-     "Transform": {
-      "posX": 0,
-      "posY": 1.5,
-      "posZ": 0,
-      "rotX": 0.0,
-      "rotY": 180.0,
-      "rotZ": 180.0,
-      "scaleX": 0.4575,
-      "scaleY": 1.0,
-      "scaleZ": 0.4575
-     },
-     "Nickname": "Object IV",
-     "Description": "Needs 2 Magic. In round 2, drop it on the Integration Chamber: that completes your special task.",
-     "GMNotes": "o-4",
-     "Locked": false,
-     "Grid": false,
-     "Snap": false,
-     "Tooltip": true,
-     "Hands": false,
-     "LuaScript": "",
-     "LuaScriptState": "",
-     "XmlUI": "",
-     "CardID": 406,
-     "CustomDeck": {
-      "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
-       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
-       "NumWidth": 3,
-       "NumHeight": 3,
+       "NumHeight": 1,
        "BackIsHidden": true,
        "UniqueBack": false,
        "Type": 4
@@ -2028,10 +1864,10 @@
      "CardID": 402,
      "CustomDeck": {
       "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.5fa79aa032.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
-       "NumHeight": 3,
+       "NumHeight": 1,
        "BackIsHidden": true,
        "UniqueBack": false,
        "Type": 4
@@ -2068,10 +1904,10 @@
      "CardID": 402,
      "CustomDeck": {
       "4": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.5fa79aa032.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
-       "NumHeight": 3,
+       "NumHeight": 1,
        "BackIsHidden": true,
        "UniqueBack": false,
        "Type": 4
@@ -2089,7 +1925,217 @@
    ]
   },
   {
-   "GUID": "d0003a",
+   "GUID": "d00033",
+   "Name": "Deck",
+   "Transform": {
+    "posX": 8.4,
+    "posY": 1.3,
+    "posZ": 15.6,
+    "rotX": 0.0,
+    "rotY": 180.0,
+    "rotZ": 180.0,
+    "scaleX": 0.4575,
+    "scaleY": 1.0,
+    "scaleZ": 0.4575
+   },
+   "Nickname": "Special objects",
+   "Description": "",
+   "GMNotes": "",
+   "Locked": false,
+   "Grid": false,
+   "Snap": false,
+   "Tooltip": false,
+   "Hands": false,
+   "LuaScript": "",
+   "LuaScriptState": "",
+   "XmlUI": "",
+   "DeckIDs": [
+    900,
+    901,
+    902,
+    903
+   ],
+   "CustomDeck": {
+    "9": {
+     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/obj-sheet.b7d4ca2894.png",
+     "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/obj-back.1e767d2687.png",
+     "NumWidth": 2,
+     "NumHeight": 2,
+     "BackIsHidden": true,
+     "UniqueBack": false,
+     "Type": 4
+    }
+   },
+   "ContainedObjects": [
+    {
+     "GUID": "d0002f",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Object I",
+     "Description": "Needs 2 Magic. In round 2, drop it on the Integration Chamber: that completes your special task.",
+     "GMNotes": "o-1",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 900,
+     "CustomDeck": {
+      "9": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/obj-sheet.b7d4ca2894.png",
+       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/obj-back.1e767d2687.png",
+       "NumWidth": 2,
+       "NumHeight": 2,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": false
+    },
+    {
+     "GUID": "d00030",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Object II",
+     "Description": "Needs 2 Magic. In round 2, drop it on the Integration Chamber: that completes your special task.",
+     "GMNotes": "o-2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 901,
+     "CustomDeck": {
+      "9": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/obj-sheet.b7d4ca2894.png",
+       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/obj-back.1e767d2687.png",
+       "NumWidth": 2,
+       "NumHeight": 2,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": false
+    },
+    {
+     "GUID": "d00031",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Object III",
+     "Description": "Needs 2 Magic. In round 2, drop it on the Integration Chamber: that completes your special task.",
+     "GMNotes": "o-3",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 902,
+     "CustomDeck": {
+      "9": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/obj-sheet.b7d4ca2894.png",
+       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/obj-back.1e767d2687.png",
+       "NumWidth": 2,
+       "NumHeight": 2,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": false
+    },
+    {
+     "GUID": "d00032",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.4575,
+      "scaleY": 1.0,
+      "scaleZ": 0.4575
+     },
+     "Nickname": "Object IV",
+     "Description": "Needs 2 Magic. In round 2, drop it on the Integration Chamber: that completes your special task.",
+     "GMNotes": "o-4",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 903,
+     "CustomDeck": {
+      "9": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/obj-sheet.b7d4ca2894.png",
+       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/obj-back.1e767d2687.png",
+       "NumWidth": 2,
+       "NumHeight": 2,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 4
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": false
+    }
+   ],
+   "SidewaysCard": false,
+   "HideWhenFaceDown": true,
+   "Tags": [
+    "objdeck"
+   ]
+  },
+  {
+   "GUID": "d0003b",
    "Name": "Deck",
    "Transform": {
     "posX": -18.0,
@@ -2135,7 +2181,7 @@
    },
    "ContainedObjects": [
     {
-     "GUID": "d00033",
+     "GUID": "d00034",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2175,7 +2221,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00034",
+     "GUID": "d00035",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2215,7 +2261,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00035",
+     "GUID": "d00036",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2255,7 +2301,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00036",
+     "GUID": "d00037",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2295,7 +2341,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00037",
+     "GUID": "d00038",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2335,7 +2381,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00038",
+     "GUID": "d00039",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2375,7 +2421,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00039",
+     "GUID": "d0003a",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2422,7 +2468,7 @@
    ]
   },
   {
-   "GUID": "d00047",
+   "GUID": "d00048",
    "Name": "Deck",
    "Transform": {
     "posX": -21.4,
@@ -2473,7 +2519,7 @@
    },
    "ContainedObjects": [
     {
-     "GUID": "d0003b",
+     "GUID": "d0003c",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2513,7 +2559,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d0003c",
+     "GUID": "d0003d",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2553,7 +2599,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d0003d",
+     "GUID": "d0003e",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2593,7 +2639,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d0003e",
+     "GUID": "d0003f",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2633,7 +2679,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d0003f",
+     "GUID": "d00040",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2673,7 +2719,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00040",
+     "GUID": "d00041",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2713,7 +2759,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00041",
+     "GUID": "d00042",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2753,7 +2799,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00042",
+     "GUID": "d00043",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2793,7 +2839,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00043",
+     "GUID": "d00044",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2833,7 +2879,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00044",
+     "GUID": "d00045",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2873,7 +2919,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00045",
+     "GUID": "d00046",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2913,7 +2959,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00046",
+     "GUID": "d00047",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -2960,7 +3006,7 @@
    ]
   },
   {
-   "GUID": "d0005a",
+   "GUID": "d0005b",
    "Name": "Deck",
    "Transform": {
     "posX": -24.6,
@@ -3017,7 +3063,7 @@
    },
    "ContainedObjects": [
     {
-     "GUID": "d00048",
+     "GUID": "d00049",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3057,7 +3103,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00049",
+     "GUID": "d0004a",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3097,7 +3143,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d0004a",
+     "GUID": "d0004b",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3137,7 +3183,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d0004b",
+     "GUID": "d0004c",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3177,7 +3223,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d0004c",
+     "GUID": "d0004d",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3217,7 +3263,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d0004d",
+     "GUID": "d0004e",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3257,7 +3303,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d0004e",
+     "GUID": "d0004f",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3297,7 +3343,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d0004f",
+     "GUID": "d00050",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3337,7 +3383,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00050",
+     "GUID": "d00051",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3377,7 +3423,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00051",
+     "GUID": "d00052",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3417,7 +3463,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00052",
+     "GUID": "d00053",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3457,7 +3503,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00053",
+     "GUID": "d00054",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3497,7 +3543,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00054",
+     "GUID": "d00055",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3537,7 +3583,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00055",
+     "GUID": "d00056",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3577,7 +3623,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00056",
+     "GUID": "d00057",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3617,7 +3663,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00057",
+     "GUID": "d00058",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3657,7 +3703,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00058",
+     "GUID": "d00059",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3697,7 +3743,7 @@
      "HideWhenFaceDown": false
     },
     {
-     "GUID": "d00059",
+     "GUID": "d0005a",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3744,7 +3790,7 @@
    ]
   },
   {
-   "GUID": "d0005b",
+   "GUID": "d0005c",
    "Name": "Card",
    "Transform": {
     "posX": 18.6,
@@ -3787,7 +3833,7 @@
    ]
   },
   {
-   "GUID": "d00064",
+   "GUID": "d00065",
    "Name": "Deck",
    "Transform": {
     "posX": 18.6,
@@ -3823,7 +3869,7 @@
    ],
    "CustomDeck": {
     "1": {
-     "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
+     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.e6f3665b57.png",
      "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
      "NumWidth": 2,
      "NumHeight": 4,
@@ -3834,7 +3880,7 @@
    },
    "ContainedObjects": [
     {
-     "GUID": "d0005c",
+     "GUID": "d0005d",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3861,47 +3907,7 @@
      "CardID": 100,
      "CustomDeck": {
       "1": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
-       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
-       "NumWidth": 2,
-       "NumHeight": 4,
-       "BackIsHidden": true,
-       "UniqueBack": false,
-       "Type": 0
-      }
-     },
-     "SidewaysCard": false,
-     "HideWhenFaceDown": true
-    },
-    {
-     "GUID": "d0005d",
-     "Name": "Card",
-     "Transform": {
-      "posX": 0,
-      "posY": 1.5,
-      "posZ": 0,
-      "rotX": 0.0,
-      "rotY": 180.0,
-      "rotZ": 180.0,
-      "scaleX": 0.75,
-      "scaleY": 1.0,
-      "scaleZ": 0.75
-     },
-     "Nickname": "Lost Path",
-     "Description": "The Safe Zone moves 5 rooms away. Its new place is marked. The old Safe Zone is a normal room now: reach the new one by 0:00.",
-     "GMNotes": "E2",
-     "Locked": false,
-     "Grid": false,
-     "Snap": false,
-     "Tooltip": true,
-     "Hands": false,
-     "LuaScript": "",
-     "LuaScriptState": "",
-     "XmlUI": "",
-     "CardID": 101,
-     "CustomDeck": {
-      "1": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.e6f3665b57.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -3915,6 +3921,46 @@
     },
     {
      "GUID": "d0005e",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.75,
+      "scaleY": 1.0,
+      "scaleZ": 0.75
+     },
+     "Nickname": "Lost Path",
+     "Description": "The Safe Zone moves 5 rooms away. Put the Safe Zone token there. The old Safe Zone is a normal room now: reach the new one by 0:00.",
+     "GMNotes": "E2",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 101,
+     "CustomDeck": {
+      "1": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.e6f3665b57.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
+       "NumWidth": 2,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 0
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d0005f",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -3941,47 +3987,7 @@
      "CardID": 102,
      "CustomDeck": {
       "1": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
-       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
-       "NumWidth": 2,
-       "NumHeight": 4,
-       "BackIsHidden": true,
-       "UniqueBack": false,
-       "Type": 0
-      }
-     },
-     "SidewaysCard": false,
-     "HideWhenFaceDown": true
-    },
-    {
-     "GUID": "d0005f",
-     "Name": "Card",
-     "Transform": {
-      "posX": 0,
-      "posY": 1.5,
-      "posZ": 0,
-      "rotX": 0.0,
-      "rotY": 180.0,
-      "rotZ": 180.0,
-      "scaleX": 0.75,
-      "scaleY": 1.0,
-      "scaleZ": 0.75
-     },
-     "Nickname": "Extra Risk",
-     "Description": "You may draw one or two more event cards. Press +1 EVENT (up to twice). Every card drawn happens.",
-     "GMNotes": "E4",
-     "Locked": false,
-     "Grid": false,
-     "Snap": false,
-     "Tooltip": true,
-     "Hands": false,
-     "LuaScript": "",
-     "LuaScriptState": "",
-     "XmlUI": "",
-     "CardID": 103,
-     "CustomDeck": {
-      "1": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.e6f3665b57.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -3995,6 +4001,46 @@
     },
     {
      "GUID": "d00060",
+     "Name": "Card",
+     "Transform": {
+      "posX": 0,
+      "posY": 1.5,
+      "posZ": 0,
+      "rotX": 0.0,
+      "rotY": 180.0,
+      "rotZ": 180.0,
+      "scaleX": 0.75,
+      "scaleY": 1.0,
+      "scaleZ": 0.75
+     },
+     "Nickname": "Extra Risk",
+     "Description": "You may draw one or two more event cards. Draw them now. Every card drawn happens.",
+     "GMNotes": "E4",
+     "Locked": false,
+     "Grid": false,
+     "Snap": false,
+     "Tooltip": true,
+     "Hands": false,
+     "LuaScript": "",
+     "LuaScriptState": "",
+     "XmlUI": "",
+     "CardID": 103,
+     "CustomDeck": {
+      "1": {
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.e6f3665b57.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
+       "NumWidth": 2,
+       "NumHeight": 4,
+       "BackIsHidden": true,
+       "UniqueBack": false,
+       "Type": 0
+      }
+     },
+     "SidewaysCard": false,
+     "HideWhenFaceDown": true
+    },
+    {
+     "GUID": "d00061",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -4021,7 +4067,7 @@
      "CardID": 104,
      "CustomDeck": {
       "1": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.e6f3665b57.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -4034,7 +4080,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00061",
+     "GUID": "d00062",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -4061,7 +4107,7 @@
      "CardID": 105,
      "CustomDeck": {
       "1": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.e6f3665b57.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -4074,7 +4120,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00062",
+     "GUID": "d00063",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -4101,7 +4147,7 @@
      "CardID": 106,
      "CustomDeck": {
       "1": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.e6f3665b57.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -4114,7 +4160,7 @@
      "HideWhenFaceDown": true
     },
     {
-     "GUID": "d00063",
+     "GUID": "d00064",
      "Name": "Card",
      "Transform": {
       "posX": 0,
@@ -4141,7 +4187,7 @@
      "CardID": 107,
      "CustomDeck": {
       "1": {
-       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
+       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.e6f3665b57.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -4161,7 +4207,7 @@
    ]
   },
   {
-   "GUID": "d00065",
+   "GUID": "d00066",
    "Name": "Custom_Tile",
    "Transform": {
     "posX": 7.5,
@@ -4202,7 +4248,7 @@
    ]
   },
   {
-   "GUID": "d00066",
+   "GUID": "d00067",
    "Name": "HandTrigger",
    "Transform": {
     "posX": 7.5,
@@ -4229,7 +4275,7 @@
    "FogColor": "Red"
   },
   {
-   "GUID": "d00067",
+   "GUID": "d00068",
    "Name": "PlayerPawn",
    "Transform": {
     "posX": 1.773,
@@ -4263,7 +4309,7 @@
    ]
   },
   {
-   "GUID": "d00068",
+   "GUID": "d00069",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 2.045,
@@ -4306,7 +4352,7 @@
    ]
   },
   {
-   "GUID": "d00069",
+   "GUID": "d0006a",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 3.227,
@@ -4349,7 +4395,7 @@
    ]
   },
   {
-   "GUID": "d0006a",
+   "GUID": "d0006b",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 2.045,
@@ -4392,7 +4438,7 @@
    ]
   },
   {
-   "GUID": "d0006b",
+   "GUID": "d0006c",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 3.227,
@@ -4435,7 +4481,7 @@
    ]
   },
   {
-   "GUID": "d0006c",
+   "GUID": "d0006d",
    "Name": "Custom_Tile",
    "Transform": {
     "posX": -25.109,
@@ -4476,7 +4522,7 @@
    ]
   },
   {
-   "GUID": "d0006d",
+   "GUID": "d0006e",
    "Name": "HandTrigger",
    "Transform": {
     "posX": -31.0,
@@ -4503,7 +4549,7 @@
    "FogColor": "Yellow"
   },
   {
-   "GUID": "d0006e",
+   "GUID": "d0006f",
    "Name": "PlayerPawn",
    "Transform": {
     "posX": -21.018,
@@ -4537,7 +4583,7 @@
    ]
   },
   {
-   "GUID": "d0006f",
+   "GUID": "d00070",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": -25.427,
@@ -4580,7 +4626,7 @@
    ]
   },
   {
-   "GUID": "d00070",
+   "GUID": "d00071",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": -25.427,
@@ -4623,7 +4669,7 @@
    ]
   },
   {
-   "GUID": "d00071",
+   "GUID": "d00072",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": -27.064,
@@ -4666,7 +4712,7 @@
    ]
   },
   {
-   "GUID": "d00072",
+   "GUID": "d00073",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": -27.064,
@@ -4709,7 +4755,7 @@
    ]
   },
   {
-   "GUID": "d00073",
+   "GUID": "d00074",
    "Name": "Custom_Tile",
    "Transform": {
     "posX": 0.0,
@@ -4750,7 +4796,7 @@
    ]
   },
   {
-   "GUID": "d00074",
+   "GUID": "d00075",
    "Name": "HandTrigger",
    "Transform": {
     "posX": 0.0,
@@ -4777,7 +4823,7 @@
    "FogColor": "Green"
   },
   {
-   "GUID": "d00075",
+   "GUID": "d00076",
    "Name": "PlayerPawn",
    "Transform": {
     "posX": 5.727,
@@ -4811,7 +4857,7 @@
    ]
   },
   {
-   "GUID": "d00076",
+   "GUID": "d00077",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 5.455,
@@ -4854,7 +4900,7 @@
    ]
   },
   {
-   "GUID": "d00077",
+   "GUID": "d00078",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 4.273,
@@ -4897,7 +4943,7 @@
    ]
   },
   {
-   "GUID": "d00078",
+   "GUID": "d00079",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 5.455,
@@ -4940,7 +4986,7 @@
    ]
   },
   {
-   "GUID": "d00079",
+   "GUID": "d0007a",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 4.273,
@@ -4983,7 +5029,7 @@
    ]
   },
   {
-   "GUID": "d0007a",
+   "GUID": "d0007b",
    "Name": "Custom_Tile",
    "Transform": {
     "posX": 25.109,
@@ -5024,7 +5070,7 @@
    ]
   },
   {
-   "GUID": "d0007b",
+   "GUID": "d0007c",
    "Name": "HandTrigger",
    "Transform": {
     "posX": 31.0,
@@ -5051,7 +5097,7 @@
    "FogColor": "Blue"
   },
   {
-   "GUID": "d0007c",
+   "GUID": "d0007d",
    "Name": "PlayerPawn",
    "Transform": {
     "posX": 21.018,
@@ -5085,7 +5131,7 @@
    ]
   },
   {
-   "GUID": "d0007d",
+   "GUID": "d0007e",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 25.427,
@@ -5128,7 +5174,7 @@
    ]
   },
   {
-   "GUID": "d0007e",
+   "GUID": "d0007f",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 25.427,
@@ -5171,7 +5217,7 @@
    ]
   },
   {
-   "GUID": "d0007f",
+   "GUID": "d00080",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 27.064,
@@ -5214,7 +5260,7 @@
    ]
   },
   {
-   "GUID": "d00080",
+   "GUID": "d00081",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": 27.064,
@@ -5257,7 +5303,7 @@
    ]
   },
   {
-   "GUID": "d00081",
+   "GUID": "d00082",
    "Name": "Custom_Tile",
    "Transform": {
     "posX": -7.5,
@@ -5298,7 +5344,7 @@
    ]
   },
   {
-   "GUID": "d00082",
+   "GUID": "d00083",
    "Name": "HandTrigger",
    "Transform": {
     "posX": -7.5,
@@ -5325,7 +5371,7 @@
    "FogColor": "Purple"
   },
   {
-   "GUID": "d00083",
+   "GUID": "d00084",
    "Name": "PlayerPawn",
    "Transform": {
     "posX": -13.227,
@@ -5359,7 +5405,7 @@
    ]
   },
   {
-   "GUID": "d00084",
+   "GUID": "d00085",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": -12.955,
@@ -5402,7 +5448,7 @@
    ]
   },
   {
-   "GUID": "d00085",
+   "GUID": "d00086",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": -11.773,
@@ -5445,7 +5491,7 @@
    ]
   },
   {
-   "GUID": "d00086",
+   "GUID": "d00087",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": -12.955,
@@ -5488,7 +5534,7 @@
    ]
   },
   {
-   "GUID": "d00087",
+   "GUID": "d00088",
    "Name": "Custom_Dice",
    "Transform": {
     "posX": -11.773,

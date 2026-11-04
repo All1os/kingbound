@@ -63,24 +63,24 @@ There are three types: Modules, Archives and Specimens. Put the ones you take in
 
 ### Special objects
 
-Four special objects are mixed into the treasure tokens. Take one like a treasure. The Integration Chamber is a room with four slots. In round 2, drop your object on it: that completes your special task.
+Four special objects lie in their own deck, apart from the treasure tokens. Taking one needs 2 Magic. The Integration Chamber is a room with four slots. In round 2, drop your object on it: that completes your special task.
 
 ### Round 2: escape
 
-At 5:00 round 2 starts and no new rooms can be opened. One event card from a shuffled deck of eight is turned up, and the table does what it says:
+At 5:00 round 2 starts and no new rooms can be opened. Turn up one event card from the deck of eight and set it up by hand: the rock, gas, black hole, alien and Safe Zone tokens and the second Integration Chamber lie beside the table.
 
 | Card | What happens |
 | --- | --- |
 | Rockfall | Rocks fill every Unregistered Sector (the empty rooms) with nobody in it. Nobody can go through them. |
 | Lost Path | The Safe Zone moves to a room 5 rooms away (or the farthest one), marked with a Safe Zone token. Escape there instead. |
 | Time Freeze | Nobody can move for 15 seconds. Fighting and taking treasure go on. |
-| Extra Risk | The +1 EVENT button appears: press it once or twice to draw more event cards. Every card drawn happens. |
+| Extra Risk | Draw one or two more event cards. Every card drawn happens. |
 | Extra Special Tile | A second Integration Chamber joins the station. An object placed on either chamber completes your special task. |
 | Poison Gas | Gas fills an empty room and the rooms beside it. Each time you enter a room with gas, you lose 1 point. |
 | Aliens | Every monster in a room becomes an alien: 1 HP more, same points. You can't go through its room without beating it. |
 | Black Holes | A black hole opens in every room with treasure. Each time you go through one, you lose 1 point. |
 
-The table counts the points lost to gas and black holes and shows them at 0:00.
+The table counts the points lost to gas and black holes (a character dropped in a room with one of those tokens) and shows them at 0:00. If a Safe Zone token lies on the table, that room is where you escape to.
 
 When the timer reaches 0:00, everyone stops. A player who is in the Safe Zone and has completed the special task keeps their points: beaten monsters plus treasure, minus what gas and black holes cost. Everyone else loses all their points. The most points wins; a tie is a draw.
 
