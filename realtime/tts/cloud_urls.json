@@ -75,12 +75,32 @@
   "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-magic.png",
   "sha1": "18e12e9d3b4b670397448177cc588c74137a6467"
  },
- "event-sheet.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/b6e762616e090b0396d4c81855a916b402d3b194/realtime/tts/output/event-sheet.png",
-  "sha1": "95518910972a0455ad6aeabad114901daf3f0ea0"
- },
  "room-sheet.png": {
   "url": "https://raw.githubusercontent.com/All1os/kingbound/b6e762616e090b0396d4c81855a916b402d3b194/realtime/tts/output/room-sheet.png",
   "sha1": "91d9900b974b73618c7d08b192377429f4c0d161"
+ },
+ "alien-back.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
+  "sha1": "51db8ed1670f1e4b5b185c94f95e2e1accc3563a"
+ },
+ "alien-sheet.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+  "sha1": "ba58937935759815c428c7c65a37281ddacc00fa"
+ },
+ "event-sheet.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
+  "sha1": "04c5bbf55b746f8ca1d7149e0738e2ca5e1f3e10"
+ },
+ "extra-sheet.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/extra-sheet.png",
+  "sha1": "57d60791f24a0e0ae479978a517416d93055b7e7"
+ },
+ "haz-back.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
+  "sha1": "846d4767fac20423aee7f8f745898343f773d9dc"
+ },
+ "hazard-sheet.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+  "sha1": "561cfbe49090362434b158a25eb4a9bff09619a4"
  }
 }

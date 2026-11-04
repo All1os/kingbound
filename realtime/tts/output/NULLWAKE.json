@@ -1,7 +1,7 @@
 {
  "SaveName": "NULLWAKE",
- "EpochTime": 1793811007,
- "Date": "11/04/2026 07:50:07 PM",
+ "EpochTime": 1793811080,
+ "Date": "11/04/2026 07:51:20 PM",
  "VersionNumber": "v14.2.2",
  "GameMode": "NULLWAKE",
  "Tags": [],
@@ -2462,8 +2462,8 @@
    ],
    "CustomDeck": {
     "6": {
-     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-     "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+     "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+     "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
      "NumWidth": 3,
      "NumHeight": 1,
      "BackIsHidden": true,
@@ -2500,8 +2500,8 @@
      "CardID": 600,
      "CustomDeck": {
       "6": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -2540,8 +2540,8 @@
      "CardID": 600,
      "CustomDeck": {
       "6": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -2580,8 +2580,8 @@
      "CardID": 600,
      "CustomDeck": {
       "6": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -2620,8 +2620,8 @@
      "CardID": 600,
      "CustomDeck": {
       "6": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -2660,8 +2660,8 @@
      "CardID": 600,
      "CustomDeck": {
       "6": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -2700,8 +2700,8 @@
      "CardID": 601,
      "CustomDeck": {
       "6": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -2740,8 +2740,8 @@
      "CardID": 601,
      "CustomDeck": {
       "6": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -2780,8 +2780,8 @@
      "CardID": 601,
      "CustomDeck": {
       "6": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -2820,8 +2820,8 @@
      "CardID": 601,
      "CustomDeck": {
       "6": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -2860,8 +2860,8 @@
      "CardID": 602,
      "CustomDeck": {
       "6": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -2900,8 +2900,8 @@
      "CardID": 602,
      "CustomDeck": {
       "6": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -2940,8 +2940,8 @@
      "CardID": 602,
      "CustomDeck": {
       "6": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-sheet.ba58937935.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/alien-back.51db8ed167.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3006,8 +3006,8 @@
    ],
    "CustomDeck": {
     "7": {
-     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-     "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+     "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+     "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
      "NumWidth": 3,
      "NumHeight": 1,
      "BackIsHidden": true,
@@ -3044,8 +3044,8 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3084,8 +3084,8 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3124,8 +3124,8 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3164,8 +3164,8 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3204,8 +3204,8 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3244,8 +3244,8 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3284,8 +3284,8 @@
      "CardID": 701,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3324,8 +3324,8 @@
      "CardID": 701,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3364,8 +3364,8 @@
      "CardID": 701,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3404,8 +3404,8 @@
      "CardID": 701,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3444,8 +3444,8 @@
      "CardID": 701,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3484,8 +3484,8 @@
      "CardID": 701,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3524,8 +3524,8 @@
      "CardID": 701,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3564,8 +3564,8 @@
      "CardID": 701,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3604,8 +3604,8 @@
      "CardID": 701,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3644,8 +3644,8 @@
      "CardID": 701,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3684,8 +3684,8 @@
      "CardID": 702,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3724,8 +3724,8 @@
      "CardID": 702,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.561cfbe490.png",
-       "BackURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/haz-back.846d4767fa.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/hazard-sheet.png",
+       "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
        "BackIsHidden": true,
@@ -3771,7 +3771,7 @@
    "CardID": 800,
    "CustomDeck": {
     "8": {
-     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/extra-sheet.57d60791f2.png",
+     "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/extra-sheet.png",
      "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/room-back.png",
      "NumWidth": 2,
      "NumHeight": 1,
@@ -3823,7 +3823,7 @@
    ],
    "CustomDeck": {
     "1": {
-     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.04c5bbf55b.png",
+     "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
      "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
      "NumWidth": 2,
      "NumHeight": 4,
@@ -3861,7 +3861,7 @@
      "CardID": 100,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.04c5bbf55b.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -3901,7 +3901,7 @@
      "CardID": 101,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.04c5bbf55b.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -3941,7 +3941,7 @@
      "CardID": 102,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.04c5bbf55b.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -3981,7 +3981,7 @@
      "CardID": 103,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.04c5bbf55b.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -4021,7 +4021,7 @@
      "CardID": 104,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.04c5bbf55b.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -4061,7 +4061,7 @@
      "CardID": 105,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.04c5bbf55b.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -4101,7 +4101,7 @@
      "CardID": 106,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.04c5bbf55b.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
@@ -4141,7 +4141,7 @@
      "CardID": 107,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.04c5bbf55b.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 4,
