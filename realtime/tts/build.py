@@ -17,9 +17,9 @@ Images are drawn with Pillow and copied into TTS's Mods/ folder (macOS doesn't l
 ~/Desktop); their names carry a content hash so TTS never shows a stale cached image.
 Run: python3 build.py
 """
-import hashlib, json, math, random, shutil, time
+import hashlib, json, math, os, random, shutil, time
 from pathlib import Path
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 VERSION = "2.3"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table,
                   # v1.2: a seat (hand zone) at every mat for online games, and ROLL DICE,
@@ -228,6 +228,51 @@ def save(im, fn):
     return fn
 
 
+# ------------------------------------------------------------------ artwork
+# The team's drawings (Yavuz, 2026-11-06: "table top da kullanabilecegim görsellere ihtiyacım"), made with
+# ChatGPT from the art brief (vault: kingbound/realtime/NULLWAKE-concept-art-for-ChatGPT.md) and saved in art/
+# under the brief's number: 01.png ... 34.png. A drawing only replaces the picture: walls, passages, names,
+# HP, points and rules are still drawn here, so they stay right whatever the drawing shows. A piece without
+# a drawing keeps its drawn look. NULLWAKE_ART points to another folder (to try drawings out).
+ART_DIR = Path(os.environ.get("NULLWAKE_ART", ROOT / "art"))
+ART_NO = {"room-safe": 1, "room-empty": 2, "room-monster": 3, "room-treasure": 4, "room-special": 5, "room-back": 6,
+          "mon-weak": 7, "mon-medium": 8, "mon-strong": 9, "mon-back": 10,
+          "alienweak": 11, "alienmedium": 12, "alienstrong": 13, "alien-back": 14,
+          "tre-module": 15, "tre-archive": 16, "tre-specimen": 17, "tre-back": 18,
+          "obj-i": 19, "obj-ii": 20, "obj-iii": 21, "obj-iv": 22, "obj-back": 23,
+          "E2": 24, "E3": 25, "E4": 26, "E5": 27, "E7": 28, "E8": 29, "event-back": 30,
+          "hole": 31, "haz-back": 32, "dice": 33, "mat": 34}
+ART_USED = []
+
+
+def art(key, size):
+    """The drawing for key, cropped to fill size (w, h) from its middle, or None."""
+    n = ART_NO.get(key)
+    if n is None:
+        return None
+    for name in (f"{n:02d}", f"{n}"):
+        for ext in (".png", ".jpg", ".jpeg", ".webp"):
+            path = ART_DIR / (name + ext)
+            if path.exists():
+                ART_USED.append(key)
+                return ImageOps.fit(Image.open(path).convert("RGB"), size, Image.LANCZOS)
+    return None
+
+
+def band(im, box, alpha=190):
+    """A dark see-through band, so text reads on any drawing."""
+    over = Image.new("RGBA", im.size, (0, 0, 0, 0))
+    ImageDraw.Draw(over).rounded_rectangle(box, 14, fill=(14, 17, 22, alpha))
+    im.paste(Image.alpha_composite(im.convert("RGBA"), over).convert("RGB"))
+
+
+def round_art(im, pic, inset=14):
+    """A drawing inside a token's circle."""
+    mask = Image.new("L", im.size, 0)
+    ImageDraw.Draw(mask).ellipse((inset, inset, im.size[0] - inset, im.size[1] - inset), fill=255)
+    im.paste(pic.resize(im.size, Image.LANCZOS), (0, 0), mask)
+
+
 # ------------------------------------------------------------------ dice (TTS D6 template)
 # The template (TTS's Modding/Dice Templates/D6.png, 2048 px) has the six faces in the lower two rows:
 # 2 4 5 over 1 3 6. We paint each face's square with its symbol and keep the rest of the template.
@@ -243,8 +288,20 @@ def dice_img():
         d.rectangle((x0, y0, x1, y1), fill=SYM_COL[kind])
         d.rectangle((x0 + 30, y0 + 30, x1 - 30, y1 - 30), outline=CREAM, width=14)
         cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
-        icon(d, kind, cx, cy, 210)
+        pic = DICE_ART.get(kind)
+        if pic:
+            im.paste(pic.resize((x1 - x0 - 88, y1 - y0 - 88), Image.LANCZOS), (x0 + 44, y0 + 44))
+        else:
+            icon(d, kind, cx, cy, 210)
     return save(im, "dice.png")
+
+
+# Drawing 33 has the three symbols side by side (Movement, Attack, Magic): each third, its middle square.
+DICE_ART = {}
+_dice = art("dice", (1536, 1024))
+if _dice:
+    for i, kind in enumerate(("move", "attack", "magic")):
+        DICE_ART[kind] = ImageOps.fit(_dice.crop((i * 512, 0, i * 512 + 512, 1024)), (512, 512), Image.LANCZOS)
 
 
 # ------------------------------------------------------------------ room tiles (§2.1, §12, §13)
@@ -255,7 +312,36 @@ DOOR = {"N": (196, 0, 316, 64), "S": (196, 448, 316, 512), "W": (0, 196, 64, 316
 OBJ_SLOT_PX = [(150, 182), (362, 182), (150, 384), (362, 384)]   # the four slots, a token's size (1.4 of a 3.6 room)
 
 
+def room_art(kind, doors, pic):
+    """A room with a drawing: the drawing is the floor, then the walls and passages over it (they decide the
+    route, so they are always drawn here), and the name on a band at the bottom."""
+    im = pic.copy()
+    d = ImageDraw.Draw(im)
+    for box in ((0, 0, TILE_PX, 40), (0, TILE_PX - 40, TILE_PX, TILE_PX), (0, 0, 40, TILE_PX), (TILE_PX - 40, 0, TILE_PX, TILE_PX)):
+        d.rectangle(box, fill=WALL)
+    d.rectangle((40, 40, TILE_PX - 41, TILE_PX - 41), outline=INK, width=3)
+    for s_ in doors:
+        x0, y0, x1, y1 = DOOR[s_]
+        im.paste(pic.crop(DOOR[s_]), (x0, y0))
+        if s_ in "NS":
+            d.line((x0, y0, x0, y1), fill=GOLD, width=5); d.line((x1, y0, x1, y1), fill=GOLD, width=5)
+        else:
+            d.line((x0, y0, x1, y0), fill=GOLD, width=5); d.line((x0, y1, x1, y1), fill=GOLD, width=5)
+    if kind == "special":
+        # The four slots stay where the script puts the objects, whatever the drawing shows.
+        for cx, cy in OBJ_SLOT_PX:
+            d.ellipse((cx - 86, cy - 86, cx + 86, cy + 86), outline=OBJ_COL, width=5)
+    name = ROOM_NAME[kind].upper()
+    band(im, (70, 404, 442, 452))
+    d = ImageDraw.Draw(im)
+    d.text((256, 428), name, font=fit(d, name, BLACK, 30, 350), fill=CREAM, anchor="mm")
+    return save(im, f"room-{kind}-{''.join(sorted(doors))}.png")
+
+
 def room_img(kind, doors):
+    pic = art(f"room-{kind}", (TILE_PX, TILE_PX))
+    if pic:
+        return room_art(kind, doors, pic)
     # A station sector: graphite walls, steel floor plates with rivets (narrative §5: "matte metal").
     im = Image.new("RGB", (TILE_PX, TILE_PX), WALL)
     d = ImageDraw.Draw(im)
@@ -302,6 +388,14 @@ def room_img(kind, doors):
 
 
 def room_back():
+    pic = art("room-back", (TILE_PX, TILE_PX))
+    if pic:
+        im = pic
+        band(im, (60, 190, 452, 322))
+        d = ImageDraw.Draw(im)
+        d.text((256, 226), "NULLWAKE", font=f(BLACK, 66), fill=GOLD, anchor="mm")
+        d.text((256, 290), "unexplored sector", font=f(REG, 30), fill=CREAM, anchor="mm")
+        return save(im, "room-back.png")
     im = Image.new("RGB", (TILE_PX, TILE_PX), GRAPHITE)
     d = ImageDraw.Draw(im)
     d.rectangle((14, 14, 498, 498), outline=GOLD, width=6)
@@ -318,6 +412,19 @@ TOK = 360
 def token_front(fn, ring, title, need_kind, need_n, lines, title_col=None):
     """A round token: name, the symbols it needs, and one or two lines under them."""
     im = Image.new("RGB", (TOK, TOK), ring)
+    pic = art(fn[:-4], (TOK, TOK))
+    if pic:
+        # The drawing fills the circle; the name on a band at the top, the cost and the value at the bottom.
+        round_art(im, pic)
+        band(im, (60, 46, TOK - 60, 104))
+        band(im, (54, 236, TOK - 54, 318))
+        d = ImageDraw.Draw(im)
+        d.ellipse((14, 14, TOK - 14, TOK - 14), outline=INK, width=5)
+        d.text((TOK / 2, 75), title, font=fit(d, title, BLACK, 40, 220), fill=CREAM, anchor="mm")
+        sym_row(d, need_kind, need_n, TOK / 2, 260, 20 if need_n <= 3 else 17)
+        line = " · ".join(lines)
+        d.text((TOK / 2, 298), line, font=fit(d, line, BOLD, 28, 230), fill=CREAM, anchor="mm")
+        return save(im, fn)
     d = ImageDraw.Draw(im)
     d.ellipse((14, 14, TOK - 14, TOK - 14), fill=PAPER, outline=INK, width=5)
     d.text((TOK / 2, 76), title, font=fit(d, title, BLACK, 44, 220), fill=title_col or ring, anchor="mm")   # the circle is narrow at the top
@@ -329,6 +436,14 @@ def token_front(fn, ring, title, need_kind, need_n, lines, title_col=None):
 
 def token_back(fn, ring, text):
     im = Image.new("RGB", (TOK, TOK), ring)
+    pic = art(fn[:-4], (TOK, TOK))
+    if pic:
+        round_art(im, pic)
+        band(im, (40, TOK / 2 - 34, TOK - 40, TOK / 2 + 34))
+        d = ImageDraw.Draw(im)
+        d.ellipse((14, 14, TOK - 14, TOK - 14), outline=CREAM, width=6)
+        d.text((TOK / 2, TOK / 2), text, font=fit(d, text, BLACK, 50, 260), fill=CREAM, anchor="mm")
+        return save(im, fn)
     d = ImageDraw.Draw(im)
     d.ellipse((14, 14, TOK - 14, TOK - 14), outline=CREAM, width=6)
     d.text((TOK / 2, TOK / 2), text, font=fit(d, text, BLACK, 50, 280), fill=CREAM, anchor="mm")
@@ -384,6 +499,9 @@ def event_icon(d, eid, cx, cy, r):
 
 def event_face(eid, name, what, rule, size=27):
     # The text shrinks until the rule fits on the card (Rockfall's last line was cut off since v2.1, seen 2026-11-04).
+    pic = art(eid, (CW, CH))
+    if pic:
+        return event_art(pic, name, what, rule, size)
     im = Image.new("RGB", (CW, CH), PAPER)
     d = ImageDraw.Draw(im)
     d.rectangle((0, 0, CW - 1, CH - 1), outline=EVENT_COL, width=12)
@@ -400,6 +518,28 @@ def event_face(eid, name, what, rule, size=27):
     return im
 
 
+def event_art(pic, name, what, rule, size=26):
+    """An event card with a drawing: the drawing fills the card, the rules on a dark panel at the bottom."""
+    im = pic.copy()
+    d = ImageDraw.Draw(im)
+    d.rectangle((0, 0, CW, 70), fill=GRAPHITE)
+    hazard(d, (0, 62, CW, 74), 18)
+    d.text((CW / 2, 32), "EVENT | ROUND 2", font=f(BLACK, 30), fill=EMERG, anchor="mm")
+    band(im, (20, 88, CW - 20, 150))
+    d = ImageDraw.Draw(im)
+    d.text((CW / 2, 119), name.upper(), font=fit(d, name.upper(), BLACK, 42, CW - 60), fill=CREAM, anchor="mm")
+    top = 300
+    band(im, (16, top, CW - 16, CH - 16), 215)
+    d = ImageDraw.Draw(im)
+    y = para(d, what, top + 14, 34, CW - 34, size=size, fill=CREAM, gap=5)
+    d.line((50, y + 10, CW - 50, y + 10), fill=EMERG, width=3)
+    end = para(d, rule, y + 24, 34, CW - 34, name=BOLD, size=size - 2, fill=EMERG, gap=5)
+    d.rectangle((0, 0, CW - 1, CH - 1), outline=EVENT_COL, width=12)
+    if end > CH - 26 and size > 16:
+        return event_art(pic, name, what, rule, size - 1)
+    return im
+
+
 def event_sheet():
     ims = [event_face(*e) for e in EVENTS]
     rows = math.ceil(len(ims) / EVENT_COLS)
@@ -407,7 +547,7 @@ def event_sheet():
     for i, im in enumerate(ims):
         sheet.paste(im, ((i % EVENT_COLS) * CW, (i // EVENT_COLS) * CH))
     save(sheet, "event-sheet.png")
-    back = Image.new("RGB", (CW, CH), GRAPHITE)
+    back = art("event-back", (CW, CH)) or Image.new("RGB", (CW, CH), GRAPHITE)
     d = ImageDraw.Draw(back)
     hazard(d, (0, 0, CW, 40)); hazard(d, (0, CH - 40, CW, CH))
     d.rectangle((16, 56, CW - 16, CH - 56), outline=EMERG, width=6)
@@ -435,7 +575,9 @@ POINTS_PX = [(x, y) for y in (365, 478, 591) for x in (735, 847, 960)]
 
 
 def mat_img(color):
-    im = Image.new("RGB", (MAT_W, MAT_H), GRAPHITE)
+    pic = art("mat", (MAT_W, MAT_H))
+    # The drawing darkened behind the boxes, so the dice and tokens on them stay easy to see.
+    im = Image.blend(pic, Image.new("RGB", (MAT_W, MAT_H), GRAPHITE), 0.45) if pic else Image.new("RGB", (MAT_W, MAT_H), GRAPHITE)
     d = ImageDraw.Draw(im)
     d.rectangle((0, 0, MAT_W - 1, MAT_H - 1), outline=PIX[color], width=16)
     d.rectangle((0, 0, MAT_W, 78), fill=PIX[color])
@@ -549,6 +691,14 @@ ALIEN_BACK = token_back("alien-back.png", ALIEN_COL, "ALIEN")
 def small_token(fn, ring, draw, text):
     """The black hole (event E8): a corner of a room, so small and simple."""
     im = Image.new("RGB", (TOK, TOK), ring)
+    pic = art(fn[:-4], (TOK, TOK))
+    if pic:
+        round_art(im, pic)
+        band(im, (60, 246, TOK - 60, 310))
+        d = ImageDraw.Draw(im)
+        d.ellipse((14, 14, TOK - 14, TOK - 14), outline=INK, width=5)
+        d.text((TOK / 2, 278), text, font=fit(d, text, BLACK, 46, 220), fill=CREAM, anchor="mm")
+        return save(im, fn)
     d = ImageDraw.Draw(im)
     d.ellipse((14, 14, TOK - 14, TOK - 14), fill=PAPER, outline=INK, width=5)
     draw(d, TOK / 2, 150, 92)
@@ -961,5 +1111,6 @@ save_json = {
 shutil.copy(OUT / f"{SAVE_NAME}.json", SAVES / f"{SAVE_NAME}.json")
 print(f"{len(objs)} objects: decks of {len(room_cards)} rooms, {len(TOKEN_IDS)} tokens, "
       f"{len(event_cards)} event cards, {len(alien_cards)} alien and {len(haz_cards)} event tokens")
+print(f"drawings from {ART_DIR}: {len(set(ART_USED))} of {len(ART_NO)}")
 print(f"images: {len(HASHED)}, {len(LOCAL)} of them local only (not on Steam Cloud){': ' + ', '.join(sorted(LOCAL)) if 0 < len(LOCAL) < 8 else ''}")
 print(f"save → {SAVES / (SAVE_NAME + '.json')}")
