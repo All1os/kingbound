@@ -1,11 +1,11 @@
 --[[ NULLWAKE (was Kingbound) real-time prototype: Global script (build.py fills in the __PLACEHOLDERS__).
 
-Rules: the team's rules of 2026-11-03 and Nastya's narrative document (see build.py's header).
+Rules: the team's rules of 2026-11-03, the GDDs of 11-04 and 11-05 and Nastya's narrative document (see build.py's header).
 For players: START GAME shuffles the decks (rooms, monster and treasure tokens), hands out the dice, puts the
 characters in the Safe Zone and starts the 10-minute timer: round 1, then at 5:00 round 2, which turns up
-round 2: the players turn up one of eight event cards (GDD 11-04) and set out its tokens by hand, and the room
+round 2: the players turn up one of six event cards (GDD 11-05) and set it up by hand, and the room
 deck closes (no new rooms in round 2). At 0:00 it
-says who escaped: in the Safe Zone (Lost Path moves it) with an object placed, minus gas and black holes. RESET TABLE puts everything back; ROLL DICE rolls
+says who escaped: in the Safe Zone (wherever its tile lies: Lost Path swaps it) with an object placed, minus black holes. RESET TABLE puts everything back; ROLL DICE rolls
 all four of the clicking player's dice. A monster's right-click menu has Hit (1 damage, it remembers); an
 object dropped on the Integration Chamber in round 2 completes the special task of the player who dropped
 it. Everything else is done by hand, as on a real table.
@@ -13,10 +13,10 @@ For the tutorial video: the director (../tutorial.py) decides everything in Pyth
 this" commands through TTS's External Editor API; this script only moves pieces, rolls dice to the
 faces it is told, and draws the caption, the timer and the scores. (tutorial.py still follows v1.1.)
 
-Rooms, tokens, rocks and the event are cards. A card's GM Notes say what it is: a room its dungeon cell
+Rooms, tokens and the event are cards. A card's GM Notes say what it is: a room its dungeon cell
 ("x,z"), "spareN" or "special" (the Integration Chamber), a token its ID (m-weak-1, t-module-2, o-1 ...),
-a rock "rubble-n", an event E1-E8, an alien m-alienweak-1 ..., gas-n, hole-n, newsafe-1, the extra chamber
-"special2". Dice hold "Color:n"; pawns and mats their colour; the Safe Zone tile "0,0".
+an event E2-E8 (E1 Rockfall and E6 Poison Gas left in v2.3), an alien m-alienweak-1 ..., hole-n, the extra
+chamber "special2". Dice hold "Color:n"; pawns and mats their colour; the Safe Zone tile "0,0".
 ]]
 KB_VERSION = "__VERSION__"
 L = JSON.decode([==[__LAYOUT__]==])
@@ -66,13 +66,12 @@ local function kindOf(n)
   if n == nil or n == "" then return nil end
   -- The event tokens of GDD 11-04, before the older kinds: an alien's notes start like a monster's.
   if n:sub(1, 7) == "m-alien" then return "alien" end
-  if n:match("^gas%-") or n:match("^hole%-") or n:match("^newsafe%-") then return "hazard" end
+  if n:match("^hole%-") then return "hazard" end
   if n == "special2" then return "extra" end
   if n:match("^%-?%d+,%-?%d+$") or n:match("^spare") or n == "special" then return "room" end
   if n:sub(1, 2) == "m-" then return "monster" end
   if n:sub(1, 2) == "t-" then return "treasure" end
   if n:sub(1, 2) == "o-" then return "object" end   -- a deck of their own since 2026-11-04
-  if n:sub(1, 7) == "rubble-" then return "rubble" end
   if n:match("^E%d$") then return "event" end
 end
 
@@ -241,17 +240,21 @@ local function seated()
   if #out == 0 then return L.colors end
   return out
 end
--- Event state (GDD 11-04). SAFE: the Safe Zone's cell (Lost Path moves it). PEN: points lost to gas and black
+-- Event state (GDD 11-04). PEN: points lost to black
 -- holes. LASTCELL: where each character was last dropped, so moving it around inside a room costs nothing.
-SAFE, PEN, LASTCELL = {0, 0}, {}, {}
+PEN, LASTCELL = {}, {}
+-- The Safe Zone's cell: where its tile lies. Lost Path (v2.3) has the players swap it with the Integration
+-- Chamber by hand, so it is read from the table, not kept.
+function safeCell()
+  local t = getObjectsWithTag("saferoom")[1]
+  return (alive(t) and cellAt(t.getPosition())) or {0, 0}
+end
 local function timeUp()
   OPS.banner({text = "TIME'S UP!"})
   -- The banner lies over the results' list, so it goes after a moment (seen live 2026-11-03).
   Wait.time(function() if TIMER.left <= 0 then OPS.banner({}) end end, 4)
   local lines = {}
-  -- Lost Path: the Safe Zone is where a Safe Zone token lies, if one was put down.
-  local safe = SAFE
-  for _, c in pairs(tokenCells("newsafe")) do safe = c end
+  local safe = safeCell()
   for _, color in ipairs(seated()) do
     local p = pawnOf(color)
     local c = alive(p) and cellAt(p.getPosition())
@@ -259,7 +262,7 @@ local function timeUp()
     local text, hex
     if home and TASK[color] then
       local pen = PEN[color] or 0
-      text, hex = color:upper() .. ": escaped, keeps the points" .. (pen > 0 and (", minus " .. pen .. " (gas, black holes)") or ""), "#ECF0F2"
+      text, hex = color:upper() .. ": escaped, keeps the points" .. (pen > 0 and (", minus " .. pen .. " (black holes)") or ""), "#ECF0F2"
     elseif home then
       text, hex = color:upper() .. ": no object placed, 0 points", "#E28C24"
     else
@@ -268,8 +271,8 @@ local function timeUp()
     table.insert(lines, {text = text, hex = hex})
   end
   OPS.score({lines = lines})
-  broadcastToAll("Time's up! Whoever escaped counts their points: beaten monsters plus treasure (alone or in"
-    .. " combinations, see the mat). Most points wins; a tie is a draw.", GOLDEN)
+  broadcastToAll("Time's up! Whoever escaped counts their points: beaten monsters plus treasure (see the mat)."
+    .. " Most points wins; a tie is a draw.", GOLDEN)
 end
 local function tick(token)
   if token ~= TIMER.token then return end
@@ -583,8 +586,7 @@ function onObjectLeaveContainer(container, o)
 end
 
 -- ------------------------------------------------------------------ the two rounds (GDD 11-02 §4, §5, §10)
--- The dungeon as it lies on the table: the Safe Room and every face-up room card on a dungeon cell, minus the
--- rooms with a destruction token on them.
+-- The dungeon as it lies on the table: the Safe Zone and every face-up room card on a dungeon cell.
 local function key(c) return c[1] .. "," .. c[2] end
 function cellAt(p)   -- global: timeUp, above, uses it too
   local c = {math.floor((p.x - L.dungeon[1]) / L.grid + 0.5), math.floor((p.z - L.dungeon[2]) / L.grid + 0.5)}
@@ -593,65 +595,16 @@ function cellAt(p)   -- global: timeUp, above, uses it too
   return c
 end
 local function openRooms()
-  local open, closed = {["0,0"] = {0, 0}}, {}
+  local s = safeCell()
+  local open = {[key(s)] = s}
   for _, o in ipairs(getObjects()) do
     if o.type == "Card" and not o.is_face_down and not isMain(o) then
       local k, c = kindOf(notes(o)), cellAt(o.getPosition())
       if c and k == "room" then open[key(c)] = c end
-      if c and k == "rubble" then closed[key(c)] = true end
     end
   end
-  for k, _ in pairs(closed) do open[k] = nil end
   return open
 end
-local function characterCells(open)
-  local out = {}
-  for _, color in ipairs(L.colors) do
-    local p = pawnOf(color)
-    local c = alive(p) and cellAt(p.getPosition())
-    if c and open[key(c)] then out[key(c)] = c end
-  end
-  return out
-end
--- Rooms where rocks may go (rules §10 "empty rooms"; Yavuz, 2026-11-03: "empty roomdan kasıt unregistered
--- sector"): open Unregistered Sectors with no character in them (and nothing a player left there). Shuffled.
-local function emptyRooms()
-  local open = openRooms()
-  local taken, sectors, out = characterCells(open), {}, {}
-  for _, o in ipairs(getObjects()) do
-    if o.type == "Card" and not isMain(o) and not o.is_face_down then
-      local k, c = kindOf(notes(o)), cellAt(o.getPosition())
-      if c and k == "room" and o.getName() == L.empty_name then sectors[key(c)] = true end
-      if c and (k == "monster" or k == "treasure" or k == "object") then taken[key(c)] = true end
-    elseif o.type == "Deck" and not isMain(o) then
-      local c = cellAt(o.getPosition())   -- tokens players stacked in a room
-      if c then taken[key(c)] = true end
-    end
-  end
-  for k, c in pairs(open) do if sectors[k] and not taken[k] then table.insert(out, c) end end
-  for i = #out, 2, -1 do local j = math.random(1, i) out[i], out[j] = out[j], out[i] end
-  return out
-end
-
-local function closeRooms(cells)
-  local rooms = cells or emptyRooms()   -- the director chooses the rooms (empty ones) so the video can plan routes
-  for i = 1, math.min(L.close_rooms, #rooms) do
-    local p = cellPos(rooms[i])
-    Wait.time(function()
-      takeCard("rubble-" .. i, {x = p.x, y = 2.6, z = p.z}, function(card)
-        -- Locked at once and laid on top, never dropped: a round card falling on a round token joins it
-        -- into a deck (both destroyed; seen live 2026-11-02).
-        card.setLock(true)
-        Wait.time(function()
-          card.setScale({x = L.deck_s.rubble, y = 1, z = L.deck_s.rubble})
-          card.setPositionSmooth({x = p.x, y = CARD_Y + 0.05, z = p.z}, false, true)
-          glow(card, nil, 3)
-        end, 0.4)
-      end)
-    end, (i - 1) * 0.6)
-  end
-end
-
 -- No new rooms in round 2 (rules §4, §9): the room deck can't be touched until RESET TABLE.
 local function roomDeckOpen(yes)
   local deck = mainDeck("room")
@@ -659,17 +612,8 @@ local function roomDeckOpen(yes)
 end
 
 -- ------------------------------------------------------------------ the event cards (rules §10, GDD 11-04)
--- Rooms beside a cell (GDD E6: "connected to it by their sides"): the four grid neighbours. The script doesn't
--- read passages (open): side by side counts as connected, the same as players see rooms touching.
+-- The four grid neighbours of a cell (Extra Special Tile looks for a free one beside a room).
 local SIDES = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}}
-local function beside(c, open)
-  local out = {}
-  for _, d in ipairs(SIDES) do
-    local n = {c[1] + d[1], c[2] + d[2]}
-    if open[key(n)] then table.insert(out, n) end
-  end
-  return out
-end
 local function shuffled(t)
   for i = #t, 2, -1 do local j = math.random(1, i) t[i], t[j] = t[j], t[i] end
   return t
@@ -686,15 +630,16 @@ local function tokensInRooms(kind)
   return out
 end
 -- An event token goes to a corner of a room, clear of the token in the middle and the characters around it.
--- Each kind has its own corner, so gas and a black hole can share a room (Extra Risk draws both).
-local CORNER = {gas = {-1.25, 1.25}, hole = {1.25, 1.25}, newsafe = {-1.25, -1.25}}
+local CORNER = {hole = {1.25, 1.25}}
 local function layToken(id, c, delay)
   local p = cellPos(c)
   local k = CORNER[id:match("^(%a+)%-")]
   p = {x = p.x + k[1], z = p.z + k[2]}
   Wait.time(function()
     takeCard(id, {x = p.x, y = 2.6, z = p.z}, function(card)
-      card.setLock(true)   -- laid on top, never dropped (see closeRooms)
+      -- Locked at once and laid on top, never dropped: a round card falling on a round token joins it
+      -- into a deck (both destroyed; seen live 2026-11-02).
+      card.setLock(true)
       Wait.time(function()
         card.setPositionSmooth({x = p.x, y = CARD_ON_CARD + 0.03, z = p.z}, false, true)
         glow(card, nil, 3)
@@ -704,61 +649,17 @@ local function layToken(id, c, delay)
 end
 
 FX = {}
-GAS, HOLES = {}, {}
--- E1 Rockfall: rocks in every empty Unregistered Sector.
-FX.E1 = function() closeRooms(ROCK_CELLS) end
-
--- E2 Lost Path: the Safe Zone moves to a room 5 rooms away, counted through connected rooms (GDD), chosen at
--- random. (open) No room that far: the farthest one. The Safe Zone tile stays where it is, a normal room now.
-FX.E2 = function()
-  local open = openRooms()
-  local dist, queue, far = {[key(SAFE)] = 0}, {SAFE}, {}
-  local i = 1
-  while queue[i] do
-    local c = queue[i]
-    for _, n in ipairs(beside(c, open)) do
-      if not dist[key(n)] then dist[key(n)] = dist[key(c)] + 1 table.insert(queue, n) end
-    end
-    i = i + 1
-  end
-  local best = 0
-  for _, d in pairs(dist) do if d <= 5 and d > best then best = d end end
-  if best == 0 then broadcastToAll("Lost Path: no other room to move the Safe Zone to. It stays.", GOLDEN) return end
-  for _, c in ipairs(queue) do if dist[key(c)] == best then table.insert(far, c) end end
-  SAFE = shuffled(far)[1]
-  layToken("newsafe-1", SAFE)
-  Wait.time(function()
-    for _, o in ipairs(getObjects()) do if notes(o) == "newsafe-1" then glow(o, nil, 8) end end
-  end, 1.2)
-end
-
--- E3 Time Freeze: the characters are locked for 15 seconds (GDD: no moving; fighting and taking go on).
-FREEZE = 0
-FX.E3 = function()
-  FREEZE = FREEZE + 1
-  local token = FREEZE
-  for _, color in ipairs(L.colors) do local p = pawnOf(color) if alive(p) then p.setLock(true) end end
-  for s = 0, 15 do
-    Wait.time(function()
-      if FREEZE ~= token or ROUND ~= 2 then return end
-      if s < 15 then
-        UI.setValue("kbTimerLabel", "FROZEN · " .. (15 - s) .. " s")
-      else
-        UI.setValue("kbTimerLabel", "ROUND 2 · ESCAPE")
-        for _, color in ipairs(L.colors) do local p = pawnOf(color) if alive(p) then p.setLock(STAGED) end end
-        broadcastToAll("Time Freeze is over: move again.", GOLDEN)
-      end
-    end, s)
-  end
-end
-
+-- The event effects run only for the director (tutorial.py) and the tests: in a game the players set the card
+-- up by hand. v2.3: E2 Lost Path and E3 Time Freeze are the players' to do (swap two tiles; roll for the
+-- order), so they have no effect here.
+HOLES = {}
 -- E4 Extra Risk: the players draw one or two more cards by hand.
 
 -- E5 Extra Special Tile: the second Integration Chamber goes on a free cell beside an open room, at random
 -- (GDD: "connected to an existing room"; it has passages on every side). (open) The extra task: an object on
 -- either chamber completes it, so one object per player is still enough (there are only four objects).
 FX.E5 = function()
-  local used = {["0,0"] = true}
+  local used = {[key(safeCell())] = true}
   for _, o in ipairs(getObjects()) do
     if o.type == "Card" and not isMain(o) and not o.is_face_down and kindOf(notes(o)) == "room" then
       local c = cellAt(o.getPosition())
@@ -789,29 +690,6 @@ FX.E5 = function()
       glow(card, nil, 6)
     end, 0.4)
   end)
-end
-
--- E6 Poison Gas: one gas token in an empty room (an Unregistered Sector with nobody in it, as for the rocks)
--- and one in each room beside it. (open) The room with the most rooms beside it, so the gas reaches the most;
--- the Safe Zone never gets gas (nobody could escape without paying).
-FX.E6 = function()
-  local open = openRooms()
-  local best, bestN = nil, {}
-  for _, c in ipairs(emptyRooms()) do
-    local n = {}
-    for _, b in ipairs(beside(c, open)) do
-      if not (b[1] == SAFE[1] and b[2] == SAFE[2]) and key(b) ~= "0,0" then table.insert(n, b) end
-    end
-    if not best or #n > #bestN then best, bestN = c, n end
-  end
-  if not best then broadcastToAll("Poison Gas: no empty room for the gas.", GOLDEN) return end
-  GAS[key(best)] = true
-  layToken("gas-1", best)
-  for i, c in ipairs(bestN) do
-    if i > 4 then break end
-    GAS[key(c)] = true
-    layToken("gas-" .. (i + 1), c, i * 0.5)
-  end
 end
 
 -- E7 Aliens: every monster in a room becomes an alien of its kind (1 HP more, same points), keeping the damage
@@ -859,10 +737,9 @@ FX.E8 = function()
   end
 end
 
--- A character dropped in a new room with gas or a black hole loses 1 point there (GDD E6, E8). Points are
+-- A character dropped in a new room with a black hole loses 1 point there (GDD E8). Points are
 -- the players' to count; the script keeps only these losses and shows them at 0:00.
--- Event tokens on the table, wherever players put them: the cells that have one of this kind ("gas", "hole",
--- "newsafe").
+-- Event tokens on the table, wherever players put them: the cells that have one of this kind ("hole").
 function tokenCells(kind)
   local out = {}
   for _, o in ipairs(getObjects()) do
@@ -879,19 +756,16 @@ local function pawnDropped(color, o)
   if LASTCELL[color] == key(c) then return end
   LASTCELL[color] = key(c)
   if ROUND ~= 2 or not L.mats[color] then return end
-  local gas, holes = tokenCells("gas"), tokenCells("hole")
-  local lost = (gas[key(c)] and 1 or 0) + (holes[key(c)] and 1 or 0)
-  if lost > 0 then
-    PEN[color] = (PEN[color] or 0) + lost
+  if tokenCells("hole")[key(c)] then
+    PEN[color] = (PEN[color] or 0) + 1
     glow(o, "Red", 2)
-    broadcastToAll(color .. " lost " .. lost .. " point" .. (lost > 1 and "s" or "") .. " ("
-      .. (gas[key(c)] and "gas" or "black hole") .. "). Lost so far: " .. PEN[color] .. ".", {0.89, 0.55, 0.14})
+    broadcastToAll(color .. " lost 1 point (black hole). Lost so far: " .. PEN[color] .. ".", {0.89, 0.55, 0.14})
   end
 end
 
 -- Round 2: the top event card turns up next to the event deck and its event happens. Extra Risk's cards go
--- below the first one. ROUND2_EVENT: the director's choice of card (the tutorial shows Rockfall).
-ROCK_CELLS, ROUND2_EVENT, SHOWN = nil, nil, 0
+-- below the first one. ROUND2_EVENT: the director's choice of card.
+ROUND2_EVENT, SHOWN = nil, 0
 local function happen(card)
   local id = notes(card)
   OPS.banner({text = "ROUND 2: ESCAPE!\n" .. card.getName():upper()})
@@ -921,7 +795,7 @@ round2 = function()
       .. " Integration Chamber and be back in the Safe Zone at 0:00, or you lose all your points.", GOLDEN)
   end
   -- Players turn up the event card and set out its tokens by hand (Yavuz, 2026-11-04: "eventleri biz
-  -- yerleştirelim kendi koymasın"). Only the director still has the script do it, for the tutorial's Rockfall.
+  -- yerleştirelim kendi koymasın"). Only the director still has the script do it.
   if ROUND2_EVENT then
     drawEvent(ROUND2_EVENT)
   else
@@ -1006,10 +880,9 @@ function OPS.place(d)
   glow(o, d.color, 3)
 end
 function OPS.round2(d)
-  -- Round 2 now, with the event d.event (the tutorial: Rockfall, "E1") and the rocks in d.cells (the director's
-  -- choice of empty rooms).
-  ROCK_CELLS = d.cells
-  ROUND2_EVENT = d.event or (d.cells and "E1") or nil
+  -- Round 2 now, with the event d.event. (The tutorial still sends Rockfall's rocks in d.cells: v2.3 has no
+  -- Rockfall, so round 2 starts without a card; the tutorial needs re-planning.)
+  ROUND2_EVENT = (d.event ~= "E1" and d.event ~= "E6") and d.event or nil
   round2()
 end
 function OPS.label(d) UI.setValue("kbTimerLabel", d.text) end
@@ -1049,9 +922,8 @@ function OPS.reset(d)
     if alive(o) then o.setLock(false) o.setDescription(L.object_desc) end
   end
   PLACED, TASK, DMG = {}, {}, {}
-  ROUND, ROCK_CELLS, ROUND2_EVENT, SHOWN = 1, nil, nil, 0
-  SAFE, PEN, LASTCELL, GAS, HOLES = {0, 0}, {}, {}, {}, {}
-  FREEZE = FREEZE + 1   -- a Time Freeze still counting doesn't unlock anything after the reset
+  ROUND, ROUND2_EVENT, SHOWN = 1, nil, 0
+  PEN, LASTCELL, HOLES = {}, {}, {}
   roomDeckOpen(true)
   UI.setValue("kbTimerLabel", "TIME LEFT")
   gatherCards()

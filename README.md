@@ -2,7 +2,7 @@
 
 NULLWAKE (until v2.0 called Kingbound) is a real-time race for 3 to 5 players, played in Tabletop Simulator. An expedition explores ORPHEON, an abandoned research station: unknown creatures live in its rooms, and valuable discoveries are left behind. There are no turns. For 10 minutes everyone rolls their dice at the same time, opens new sectors, fights creatures and collects treasure. In round 1 you collect points; in round 2 the station starts to collapse and you have to escape. Only the players who escape keep their points.
 
-![A game of NULLWAKE in Tabletop Simulator: round 2, Rockfall has blocked the Unregistered Sectors](realtime/workshop/dungeon.jpg)
+![A game of NULLWAKE in Tabletop Simulator](realtime/workshop/dungeon.jpg)
 
 ## Getting the game
 
@@ -12,7 +12,7 @@ You can also download `NULLWAKE.json` from the [latest release](https://github.c
 
 ## Starting a game
 
-Sit at Red, Yellow, Green, Blue or Purple: pick the colour when you join, or later by clicking your name at the top right and choosing Change Color. Each player's mat lies on their own side of the table: Red in the south, Yellow in the west, Green in the north, Blue in the east, and Purple next to Red for a fifth player. The top of the mat shows what each action needs, and the right side lists the treasure points. Press START GAME at the top left of the screen. It shuffles the decks, gives everyone 4 dice, puts all the characters in the Safe Zone and starts the 10-minute timer with round 1. RESET TABLE puts everything back where it was.
+Sit at Red, Yellow, Green, Blue or Purple: pick the colour when you join, or later by clicking your name at the top right and choosing Change Color. Each player's mat lies on their own side of the table: Red in the south, Yellow in the west, Green in the north, Blue in the east, and Purple next to Red for a fifth player. The top of the mat shows what each action needs, and the right side lists what each treasure and monster is worth. Press START GAME at the top left of the screen. It shuffles the decks, gives everyone 4 dice, puts all the characters in the Safe Zone and starts the 10-minute timer with round 1. RESET TABLE puts everything back where it was.
 
 ## How to play
 
@@ -46,20 +46,13 @@ Each Attack deals 1 damage, and the damage stays from one cycle to the next. Rig
 
 ### Treasure
 
-There are three types: Modules, Archives and Specimens. Put the ones you take in the TREASURE box. At the end you group them: each treasure counts in one line of the table only, and you choose the lines.
+There are three types: Modules, Archives and Specimens. Put the ones you take in the TREASURE box. Each one counts on its own; there are no combinations.
 
 | Treasure | Points |
 |---|---|
-| A Module alone | 3 |
-| An Archive alone | 1 |
-| A Specimen alone | 0 |
-| 2 Modules + 1 Archive | 5 |
-| 1 Module + 2 Archives | 4 |
-| 3 Archives | 4 |
-| 2 Archives + 1 Specimen | 3 |
-| 1 Archive + 2 Specimens | 2 |
-| 3 Specimens | 2 |
-| Module + Archive + Specimen | 4 |
+| Module | 3 |
+| Archive | 2 |
+| Specimen | 1 |
 
 ### Special objects
 
@@ -73,22 +66,20 @@ The ROUND 2 and END GAME buttons jump the timer to 5:00 or 0:00, for trying the 
 
 ### Round 2: escape
 
-At 5:00 round 2 starts and no new rooms can be opened. Turn up one event card from the deck of eight and set it up by hand: the rock, gas, black hole, alien and Safe Zone tokens and the second Integration Chamber lie beside the table.
+At 5:00 round 2 starts and no new rooms can be opened. Turn up one event card from the deck of six and set it up by hand: the black hole and alien tokens and the second Integration Chamber lie beside the table.
 
 | Card | What happens |
 | --- | --- |
-| Rockfall | Rocks fill every Unregistered Sector (the empty rooms) with nobody in it. Nobody can go through them. |
-| Lost Path | The Safe Zone moves to a room 5 rooms away (or the farthest one), marked with a Safe Zone token. Escape there instead. |
-| Time Freeze | Nobody can move for 15 seconds. Fighting and taking treasure go on. |
+| Lost Path | The Safe Zone and the Integration Chamber swap places: swap the two tiles by hand. Escape to the Safe Zone where it lies now. |
+| Time Freeze | This cycle you play one at a time. Everyone rolls at once: the most identical symbols goes first (4, then 3, 2, 1), and the others wait. Same number: the lowest score goes first. |
 | Extra Risk | Draw one or two more event cards. Every card drawn happens. |
 | Extra Special Tile | A second Integration Chamber joins the station. An object placed on either chamber completes your special task. |
-| Poison Gas | Gas fills an empty room and the rooms beside it. Each time you enter a room with gas, you lose 1 point. |
 | Aliens | Every monster in a room becomes an alien: 1 HP more, same points. You can't go through its room without beating it. |
 | Black Holes | A black hole opens in every room with treasure. Each time you go through one, you lose 1 point. |
 
-The table counts the points lost to gas and black holes (a character dropped in a room with one of those tokens) and shows them at 0:00. If a Safe Zone token lies on the table, that room is where you escape to.
+The table counts the points lost to black holes (a character dropped in a room with a black hole token) and shows them at 0:00. It finds the Safe Zone wherever its tile lies.
 
-When the timer reaches 0:00, everyone stops. A player who is in the Safe Zone and has completed the special task keeps their points: beaten monsters plus treasure, minus what gas and black holes cost. Everyone else loses all their points. The most points wins; a tie is a draw.
+When the timer reaches 0:00, everyone stops. A player who is in the Safe Zone and has completed the special task keeps their points: beaten monsters plus treasure, minus what black holes cost. Everyone else loses all their points. The most points wins; a tie is a draw.
 
 ## Versions
 

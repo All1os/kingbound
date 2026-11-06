@@ -1,5 +1,16 @@
 # Changelog
 
+## v2.3 (2026-11-06)
+
+The team's GDD of 2026-11-05, "Changes after a series of playtests before the Game Jam":
+
+- Rockfall is gone: its rocks could block the way completely. The rock tokens are gone too.
+- Poison Gas is gone, and so are the gas tokens.
+- No more treasure combinations. Each treasure counts on its own: a Module is 3 points, an Archive 2, a Specimen 1. The right side of the mat lists what each treasure and monster is worth.
+- Lost Path: the Safe Zone and the Integration Chamber swap places. Players swap the two tiles by hand, and the table finds the Safe Zone wherever its tile lies. The Safe Zone token is gone.
+- Time Freeze: instead of 15 seconds without moving, a roll for the order. Everyone rolls at once; the most identical symbols goes first, and the others wait. Same number: the lowest score goes first. It lasts one cycle.
+- Six event cards are left: Lost Path, Time Freeze, Extra Risk, Extra Special Tile, Aliens and Black Holes.
+
 ## v2.2 (2026-11-04)
 
 The team's GDD of 2026-11-04: seven more event cards for round 2. The players turn up a card from the deck of eight and set out its tokens by hand; the table reads the tokens (gas, black holes, the Safe Zone token):
