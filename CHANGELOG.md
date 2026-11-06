@@ -1,5 +1,12 @@
 # Changelog
 
+## v2.4 (2026-11-06)
+
+After a balance test with a simulation of the game:
+
+- 2 to 4 players. The fifth seat, Purple, is gone; Red sits in the middle of the south side.
+- The Integration Chamber is always in the top 5 cards of the room deck. Shuffled anywhere in the deck, it often stayed unopened in round 1, and then nobody could complete the special task. On a real table: take the chamber out, shuffle the deck, shuffle the chamber with the top 4 cards and put the 5 cards back on top.
+
 ## v2.3 (2026-11-06)
 
 The team's GDD of 2026-11-05, "Changes after a series of playtests before the Game Jam":

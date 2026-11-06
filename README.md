@@ -1,6 +1,6 @@
 # NULLWAKE
 
-NULLWAKE (until v2.0 called Kingbound) is a real-time race for 3 to 5 players, played in Tabletop Simulator. An expedition explores ORPHEON, an abandoned research station: unknown creatures live in its rooms, and valuable discoveries are left behind. There are no turns. For 10 minutes everyone rolls their dice at the same time, opens new sectors, fights creatures and collects treasure. In round 1 you collect points; in round 2 the station starts to collapse and you have to escape. Only the players who escape keep their points.
+NULLWAKE (until v2.0 called Kingbound) is a real-time race for 2 to 4 players, played in Tabletop Simulator. An expedition explores ORPHEON, an abandoned research station: unknown creatures live in its rooms, and valuable discoveries are left behind. There are no turns. For 10 minutes everyone rolls their dice at the same time, opens new sectors, fights creatures and collects treasure. In round 1 you collect points; in round 2 the station starts to collapse and you have to escape. Only the players who escape keep their points.
 
 ![A game of NULLWAKE in Tabletop Simulator](realtime/workshop/dungeon.jpg)
 
@@ -12,7 +12,7 @@ You can also download `NULLWAKE.json` from the [latest release](https://github.c
 
 ## Starting a game
 
-Sit at Red, Yellow, Green, Blue or Purple: pick the colour when you join, or later by clicking your name at the top right and choosing Change Color. Each player's mat lies on their own side of the table: Red in the south, Yellow in the west, Green in the north, Blue in the east, and Purple next to Red for a fifth player. The top of the mat shows what each action needs, and the right side lists what each treasure and monster is worth. Press START GAME at the top left of the screen. It shuffles the decks, gives everyone 4 dice, puts all the characters in the Safe Zone and starts the 10-minute timer with round 1. RESET TABLE puts everything back where it was.
+Sit at Red, Yellow, Green or Blue: pick the colour when you join, or later by clicking your name at the top right and choosing Change Color. Each player's mat lies on their own side of the table: Red in the south, Yellow in the west, Green in the north and Blue in the east. The top of the mat shows what each action needs, and the right side lists what each treasure and monster is worth. Press START GAME at the top left of the screen. It shuffles the decks (the Integration Chamber always goes into the top 5 cards of the room deck), gives everyone 4 dice, puts all the characters in the Safe Zone and starts the 10-minute timer with round 1. RESET TABLE puts everything back where it was.
 
 ## How to play
 

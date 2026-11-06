@@ -21,12 +21,13 @@ import hashlib, json, math, os, random, shutil, time
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
-VERSION = "2.3"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table,
+VERSION = "2.4"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table,
                   # v1.2: a seat (hand zone) at every mat for online games, and ROLL DICE,
                   # v2.0: the GDD of 2026-11-02 (two rounds, events, treasure sets, special objects; no Loot, no traps)
                   # v2.1: NULLWAKE, the rules of 2026-11-03 and the narrative document (names, sci-fi look)
                   # v2.2: the GDD of 2026-11-04, eight event cards (Rockfall and seven new ones)
                   # v2.3: the GDD of 2026-11-05, six event cards, treasure without combinations
+                  # v2.4: 2 to 4 players, the Integration Chamber in the top 5 rooms (balance test, 2026-11-06)
 ROOT = Path(__file__).parent
 OUT = ROOT / "output"
 ASSETS = Path.home() / "Library/Tabletop Simulator/Mods/kingbound-realtime"
@@ -51,9 +52,10 @@ SYM_COL = {"move": (36, 140, 104), "attack": (190, 52, 44), "magic": (66, 104, 2
 SYM_NAME = {"move": "MOVEMENT", "attack": "ATTACK", "magic": "MAGIC"}
 WALL, FLOOR, PLATE = (30, 34, 40), (108, 117, 126), (90, 98, 108)
 SAFE_COL, OBJ_COL, EVENT_COL = (28, 70, 104), (40, 150, 160), (150, 70, 20)
-# 3-5 players: five seats. The mats show only the seat colour: the team members' names came off when the
+# 2-4 players (Yavuz, 2026-11-06: "oyun 2 ila 4 kişilik"): four seats, one on each side of the table; Purple,
+# v1.1's fifth seat beside Red, is gone. The mats show only the seat colour: the team members' names came off when the
 # save went on the Steam Workshop (Yavuz, 2026-10-25: "kartlardan isimleri kaldır").
-COLORS = ["Red", "Yellow", "Green", "Blue", "Purple"]
+COLORS = ["Red", "Yellow", "Green", "Blue"]
 RGB = {"Red": (0.856, 0.1, 0.094), "Yellow": (0.905, 0.898, 0.172), "Green": (0.192, 0.701, 0.168),
        "Blue": (0.118, 0.53, 1.0), "Purple": (0.627, 0.125, 0.941)}
 PIX = {"Red": (200, 60, 52), "Yellow": (214, 190, 40), "Green": (64, 160, 60), "Blue": (52, 120, 210), "Purple": (140, 64, 196)}
@@ -863,7 +865,7 @@ MAT_DEPTH = round(10.0 * 680 / 1100, 4)                    # v2.0's depth; v2.1 
 MAT_SIZE = (round(MAT_DEPTH * MAT_W / MAT_H, 4), MAT_DEPTH)  # width, depth in table units: 12.7 x 6.2
 MAT_S = MAT_SIZE[1] / 2                                    # Stretch on: depth = 2 x scale
 EDGE_Z, EDGE_X = round(18.2 - MAT_SIZE[1] / 2, 3), round(28.2 - MAT_SIZE[1] / 2, 3)   # mats against the felt's edge
-MATS = {"Red": (7.5, -EDGE_Z, 180), "Purple": (-7.5, -EDGE_Z, 180), "Green": (0.0, EDGE_Z, 0),
+MATS = {"Red": (0.0, -EDGE_Z, 180), "Green": (0.0, EDGE_Z, 0),
         "Yellow": (-EDGE_X, 0.0, 270), "Blue": (EDGE_X, 0.0, 90)}
 
 

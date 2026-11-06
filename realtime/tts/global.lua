@@ -442,7 +442,7 @@ end
 function rollN(player, n)
   local color = player.color
   if not L.mats[color] then
-    broadcastToColor("Sit at Red, Yellow, Green, Blue or Purple to roll your dice.", color, GOLDEN)
+    broadcastToColor("Sit at Red, Yellow, Green or Blue to roll your dice.", color, GOLDEN)
     return
   end
   if ROLLING[color] then return end   -- a second click while the dice are in the air
@@ -974,6 +974,27 @@ local function seatedColors()
   return out
 end
 
+-- Setup (balance test, 2026-11-06; Yavuz: "tamam böyle olsun"): the Integration Chamber goes into the top 5
+-- cards of the room deck. Shuffled anywhere in 23 cards it stayed unopened in about half of the simulated games,
+-- and then nobody could complete the special task in round 2. The deck is rebuilt from its data with the chamber
+-- moved: TTS has no call to put a card at a place in a deck.
+TOP_FIRST = true   -- a deck's ContainedObjects start with its top card (checked live)
+local function chamberOnTop()
+  local deck = mainDeck("room")
+  if not deck or deck.type ~= "Deck" then return end
+  local data = deck.getData()
+  local list, at = data.ContainedObjects, nil
+  for i, c in ipairs(list) do if c.GMNotes == "special" then at = i end end
+  if not at then return end
+  local card, id = table.remove(list, at), table.remove(data.DeckIDs, at)
+  local k = math.random(1, math.min(5, #list + 1))
+  if not TOP_FIRST then k = #list + 2 - k end
+  table.insert(list, k, card)
+  table.insert(data.DeckIDs, k, id)
+  deck.destruct()
+  DECK.room = spawnObjectData({data = data}).getGUID()
+end
+
 local starting = false
 function startGame(player)
   if starting then return end
@@ -985,6 +1006,7 @@ function startGame(player)
       local deck = mainDeck(kind)
       if deck and deck.type == "Deck" then deck.shuffle() end
     end
+    chamberOnTop()
     local who = seatedColors()
     OPS.deal({colors = who})
     OPS.pawns({colors = who})
