@@ -1,7 +1,7 @@
 {
  "SaveName": "NULLWAKE",
- "EpochTime": 1793986702,
- "Date": "11/06/2026 08:38:22 PM",
+ "EpochTime": 1793987202,
+ "Date": "11/06/2026 08:46:42 PM",
  "VersionNumber": "v14.2.2",
  "GameMode": "NULLWAKE",
  "Tags": [],
@@ -1546,7 +1546,7 @@
    ],
    "CustomDeck": {
     "4": {
-     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.30af2d56f6.png",
+     "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/tre-sheet.png",
      "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
      "NumWidth": 3,
      "NumHeight": 1,
@@ -1584,7 +1584,7 @@
      "CardID": 400,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.30af2d56f6.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/tre-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1624,7 +1624,7 @@
      "CardID": 402,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.30af2d56f6.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/tre-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1664,7 +1664,7 @@
      "CardID": 400,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.30af2d56f6.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/tre-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1704,7 +1704,7 @@
      "CardID": 400,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.30af2d56f6.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/tre-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1744,7 +1744,7 @@
      "CardID": 401,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.30af2d56f6.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/tre-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1784,7 +1784,7 @@
      "CardID": 401,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.30af2d56f6.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/tre-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1824,7 +1824,7 @@
      "CardID": 401,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.30af2d56f6.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/tre-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1864,7 +1864,7 @@
      "CardID": 402,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.30af2d56f6.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/tre-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -1904,7 +1904,7 @@
      "CardID": 402,
      "CustomDeck": {
       "4": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/tre-sheet.30af2d56f6.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/tre-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/tre-back.png",
        "NumWidth": 3,
        "NumHeight": 1,
@@ -2711,7 +2711,7 @@
    ],
    "CustomDeck": {
     "7": {
-     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.413fbbcc2d.png",
+     "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/hazard-sheet.png",
      "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
      "NumWidth": 2,
      "NumHeight": 1,
@@ -2749,7 +2749,7 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.413fbbcc2d.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/hazard-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 2,
        "NumHeight": 1,
@@ -2789,7 +2789,7 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.413fbbcc2d.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/hazard-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 2,
        "NumHeight": 1,
@@ -2829,7 +2829,7 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.413fbbcc2d.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/hazard-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 2,
        "NumHeight": 1,
@@ -2869,7 +2869,7 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.413fbbcc2d.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/hazard-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 2,
        "NumHeight": 1,
@@ -2909,7 +2909,7 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.413fbbcc2d.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/hazard-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 2,
        "NumHeight": 1,
@@ -2949,7 +2949,7 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.413fbbcc2d.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/hazard-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 2,
        "NumHeight": 1,
@@ -2989,7 +2989,7 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.413fbbcc2d.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/hazard-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 2,
        "NumHeight": 1,
@@ -3029,7 +3029,7 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.413fbbcc2d.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/hazard-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 2,
        "NumHeight": 1,
@@ -3069,7 +3069,7 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.413fbbcc2d.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/hazard-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 2,
        "NumHeight": 1,
@@ -3109,7 +3109,7 @@
      "CardID": 700,
      "CustomDeck": {
       "7": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/hazard-sheet.413fbbcc2d.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/hazard-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/haz-back.png",
        "NumWidth": 2,
        "NumHeight": 1,
@@ -3206,7 +3206,7 @@
    ],
    "CustomDeck": {
     "1": {
-     "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.9319748b09.png",
+     "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/event-sheet.png",
      "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
      "NumWidth": 2,
      "NumHeight": 3,
@@ -3244,7 +3244,7 @@
      "CardID": 100,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.9319748b09.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 3,
@@ -3284,7 +3284,7 @@
      "CardID": 101,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.9319748b09.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 3,
@@ -3324,7 +3324,7 @@
      "CardID": 102,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.9319748b09.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 3,
@@ -3364,7 +3364,7 @@
      "CardID": 103,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.9319748b09.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 3,
@@ -3404,7 +3404,7 @@
      "CardID": 104,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.9319748b09.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 3,
@@ -3444,7 +3444,7 @@
      "CardID": 105,
      "CustomDeck": {
       "1": {
-       "FaceURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/event-sheet.9319748b09.png",
+       "FaceURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/event-sheet.png",
        "BackURL": "https://raw.githubusercontent.com/All1os/kingbound/b51a54ca1b90fb88a049107f55c1e542d05dd024/realtime/tts/output/event-back.png",
        "NumWidth": 2,
        "NumHeight": 3,
@@ -3489,7 +3489,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-red.4356f8fd6e.png",
+    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/mat-red.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -3763,7 +3763,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-yellow.1f1d430e08.png",
+    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/mat-yellow.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -4037,7 +4037,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-green.392e23da72.png",
+    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/mat-green.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -4311,7 +4311,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-blue.b433fb95ae.png",
+    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/mat-blue.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
@@ -4585,7 +4585,7 @@
    "LuaScriptState": "",
    "XmlUI": "",
    "CustomImage": {
-    "ImageURL": "/Users/yavuzboradagtekin/Library/Tabletop Simulator/Mods/kingbound-realtime/mat-purple.2b58872d8d.png",
+    "ImageURL": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/mat-purple.png",
     "ImageSecondaryURL": "",
     "ImageScalar": 1.0,
     "WidthScale": 0.0,
