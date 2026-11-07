@@ -8,6 +8,7 @@ The table now looks like the printed game:
 - Rooms have their doorways drawn in, so the deck holds the same tiles as the box: each kind of room comes in three layouts.
 - Event cards are 2:3 like the printed cards, with their rule in the box at the bottom.
 - Special objects go into the four glowing sockets of the Integration Chamber.
+- Monster and treasure tokens show their points at the bottom.
 
 ## v2.5 (2026-11-07)
 
