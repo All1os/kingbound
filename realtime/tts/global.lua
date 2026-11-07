@@ -71,6 +71,7 @@ local function kindOf(n)
   if n:match("^%-?%d+,%-?%d+$") or n:match("^spare") or n == "special" then return "room" end
   if n:sub(1, 2) == "m-" then return "monster" end
   if n:sub(1, 2) == "t-" then return "treasure" end
+  if n:match("^o%-[5-8]$") then return "extraobj" end   -- event E5's four objects go home to their own deck (v2.5)
   if n:sub(1, 2) == "o-" then return "object" end   -- a deck of their own since 2026-11-04
   if n:match("^E%d$") then return "event" end
 end
@@ -655,9 +656,10 @@ FX = {}
 HOLES = {}
 -- E4 Extra Risk: the players draw one or two more cards by hand.
 
--- E5 Extra Special Tile: the second Integration Chamber goes on a free cell beside an open room, at random
+-- E5 +1 Special Object Tile: the second Integration Chamber goes on a free cell beside an open room, at random
 -- (GDD: "connected to an existing room"; it has passages on every side). (open) The extra task: an object on
--- either chamber completes it, so one object per player is still enough (there are only four objects).
+-- either chamber completes it, so one object per player is still enough. Its 4 more objects (component list,
+-- 2026-11-07) lie in their own deck beside it; players take them by hand, so this function leaves them alone.
 FX.E5 = function()
   local used = {[key(safeCell())] = true}
   for _, o in ipairs(getObjects()) do
@@ -679,7 +681,7 @@ FX.E5 = function()
     end
   end
   if #free == 0 then free = far end
-  if #free == 0 then broadcastToAll("Extra Special Tile: no free place beside the rooms.", GOLDEN) return end
+  if #free == 0 then broadcastToAll("+1 Special Object Tile: no free place beside the rooms.", GOLDEN) return end
   local p = cellPos(shuffled(free)[1])
   takeCard("special2", {x = p.x, y = 2.6, z = p.z}, function(card)
     card.setLock(true)

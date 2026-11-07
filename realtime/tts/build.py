@@ -6,7 +6,8 @@ the same rules word for word plus seven more event cards for round 2 ("According
 v2.3 the GDD of 2026-11-05 (vault: kaynak-NULLWAKE-GDD-2026-11-05.pdf, its last part "Changes after a series of
 playtests before the Game Jam": no Rockfall, no Poison Gas, no treasure combinations, Lost Path swaps the Safe Zone
 and the Integration Chamber, Time Freeze becomes an initiative roll). Names and look: Nastya's narrative document NULLWAKE (vault:
-kaynak-NULLWAKE-narrative.docx). Yavuz, 2026-11-03: "gdd ve narrative ne diyosa o".
+kaynak-NULLWAKE-narrative.docx). Yavuz, 2026-11-03: "gdd ve narrative ne diyosa o". From v2.5 the numbers of the
+pieces come from the team's "GAME COMPONENTS AND ELEMENTS" of 2026-11-07 (vault: kaynak-NULLWAKE-components-2026-11-07.pdf).
 Where the rules document contradicts itself, Yavuz decided: moving one room and opening a room cost 2
 Movement and treasure 2 Magic, "like the old game" (v2.0); the dice keep three symbols (no "special"
 face). Where it leaves a detail open, the simplest value, marked "(open)". Where the narrative document
@@ -21,13 +22,14 @@ import hashlib, json, math, os, random, shutil, time
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
-VERSION = "2.4"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table,
+VERSION = "2.5"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table,
                   # v1.2: a seat (hand zone) at every mat for online games, and ROLL DICE,
                   # v2.0: the GDD of 2026-11-02 (two rounds, events, treasure sets, special objects; no Loot, no traps)
                   # v2.1: NULLWAKE, the rules of 2026-11-03 and the narrative document (names, sci-fi look)
                   # v2.2: the GDD of 2026-11-04, eight event cards (Rockfall and seven new ones)
                   # v2.3: the GDD of 2026-11-05, six event cards, treasure without combinations
                   # v2.4: 2 to 4 players, the Integration Chamber in the top 5 rooms (balance test, 2026-11-06)
+                  # v2.5: the component list of 2026-11-07: 19 rooms, 7 monsters, 7 aliens, 7 black holes, +4 objects
 ROOT = Path(__file__).parent
 OUT = ROOT / "output"
 ASSETS = Path.home() / "Library/Tabletop Simulator/Mods/kingbound-realtime"
@@ -65,22 +67,26 @@ PIX = {"Red": (200, 60, 52), "Yellow": (214, 190, 40), "Green": (64, 160, 60), "
 DIE_FACES = {1: "move", 2: "move", 3: "attack", 4: "attack", 5: "magic", 6: "magic"}
 # Monsters (rules §5, names narrative §2): HP 1 / 2 / 3, reward 1 / 2 / 3 points. Each Attack deals 1
 # damage and damage stays from one cycle to the next (video script, scene 6: a 3 HP monster takes 2, then
-# 1 in the next cycle). Counts from v2.0.
-MONSTERS = {"weak": ("Scraper", 1, 1, 4), "medium": ("Carrier", 2, 2, 3), "strong": ("Anomaly", 3, 3, 2)}  # name, HP, points, count
+# 1 in the next cycle). Counts (open): the component list gives 7 monster rooms and 7 alien tokens but no split. An alien
+# replaces a monster of its kind, so the two need the same split or a kind can run out: v2.0's 4/3/2 scaled to 7.
+# Name: the list writes "Scarper"; Nastya's narrative "Scraper". Kept as the narrative until the team says otherwise.
+MONSTERS = {"weak": ("Scraper", 1, 1, 3), "medium": ("Carrier", 2, 2, 2), "strong": ("Anomaly", 3, 3, 2)}  # name, HP, points, count
 # Treasures (rules §6, names narrative §3): the rules' gold, silver and bronze, renamed in the narrative's
-# order (open): Modules, Archives, Specimens. Taken with 2 Magic like v2.0. Three of each, as v2.0.
+# order (open): Modules, Archives, Specimens. Taken with 2 Magic like v2.0. Three of each, as v2.0: the component
+# list has 7 treasure rooms but no token count, and nothing needs the two to match, so 2 tokens stay unseen in a game.
 TREASURES = {"module": ("Module", 3), "archive": ("Archive", 3), "specimen": ("Specimen", 3)}   # name, count
 # v2.3: no combinations (GDD 11-05; Yavuz, 2026-11-06: "trasure combınations artık yok"). Each treasure counts
 # alone. The rules give a gold 3 points (§6.1 "1 gold 3") and say leftover treasure has its own value but not
-# which (open): silver 2 and bronze 1, the same 3 / 2 / 1 steps as the monsters.
+# which: silver 2 and bronze 1, the same 3 / 2 / 1 steps as the monsters; the component list of 2026-11-07 confirms it.
 SINGLE = {"module": 3, "archive": 2, "specimen": 1}
 # Special objects (rules §7, narrative §4): one tile, the Integration Chamber, with four slots. Objects are
 # found while exploring (narrative) in the treasure tokens, taken with 2 Magic like v2.0, and placed only in
 # round 2 (rules §7). The special task (rules §9, Amira: "this special tile = special task"): placing an
 # object completes it for the player who places it (open). No points for it: the rules give none.
 OBJECTS = ["I", "II", "III", "IV"]
-# Room cards (narrative §4: safe zone, empty, monster, treasure, special objects): v2.0's counts.
-ROOM_COUNT = {"empty": 6, "monster": 7, "treasure": 9, "special": 1}
+# Room cards (narrative §4: safe zone, empty, monster, treasure, special objects). The component list of 2026-11-07
+# ("NEW PROTOTYPE NUMBER OF EVERY COMPONENT"). The names stay the narrative's; the list uses plain ones.
+ROOM_COUNT = {"empty": 4, "monster": 7, "treasure": 7, "special": 1}
 ROOM_NAME = {"safe": "Safe Zone", "empty": "Unregistered Sector", "monster": "Infested Sector",
              "treasure": "Recovery Storage", "special": "Integration Chamber"}
 # Rounds (rules §8, §9): 5 minutes each. Escaping (rules §9, §11): at 0:00 a player keeps their points if
@@ -104,14 +110,17 @@ EVENTS = [("E2", "Lost Path", "The Safe Zone and the Integration Chamber swap pl
            "Same number: the lowest score goes first."),
           ("E4", "Extra Risk", "You may draw one or two more event cards.",
            "Draw them now. Every card drawn happens."),
-          ("E5", "Extra Special Tile", "A second Integration Chamber joins the station.",
+          # The component list names this card "+1 Special Object Tile" and adds 4 special objects to the tile.
+          ("E5", "+1 Special Object Tile", "A second Integration Chamber joins the station, with four more special objects.",
            "It has four slots too. An object placed on either chamber completes your special task."),
           ("E7", "Aliens", "Aliens take the place of every monster.",
            "1 HP more than the monster they replace, same points. You can't go through their room without beating them."),
           ("E8", "Black Holes", "Black holes open in every room with treasure.",
            "Each time you go through one, you lose 1 point. You can still enter and take the treasure.")]
-# Tokens for the new events, each kind with one spare (taking a deck's last card stops the script).
-HOLE_COUNT = ROOM_COUNT["treasure"] + 1
+# Tokens for the new events: as many as the rooms they go on (component list: 7 alien tokens, 7 black hole tokens).
+# The spare each kind had until v2.4 is gone. It was for the script, which took the tokens itself until v2.2 and now
+# does so only in the tutorial; players take them by hand, and mainDeck() follows a deck down to its last card.
+HOLE_COUNT = ROOM_COUNT["treasure"]
 ALIEN_COL = (96, 168, 72)  # (open) the GDD gives aliens no colour: a sickly green, apart from the monsters' red
 HOLE_COL = (60, 40, 96)
 
@@ -683,7 +692,7 @@ for k, fn in (("move", "icon-move.png"), ("attack", "icon-attack.png"), ("magic"
 MON_BACK = token_back("mon-back.png", SYM_COL["attack"], "MONSTER")
 OBJ_BACK = token_back("obj-back.png", OBJ_COL, "OBJECT")
 # Aliens (event E7): a token for each monster kind, 1 HP more, the same points.
-ALIENS = {f"alien{k}": (f"Alien {name}", hp + 1, pts, n + 1) for k, (name, hp, pts, n) in MONSTERS.items()}
+ALIENS = {f"alien{k}": (f"Alien {name}", hp + 1, pts, n) for k, (name, hp, pts, n) in MONSTERS.items()}
 for k, (name, hp, pts, n) in ALIENS.items():
     TOKEN_IMG[("alien", k)] = token_front(f"{k}.png", ALIEN_COL, name.upper(), "attack", hp,
                                           [f"{hp} HP", f"{pts} POINT{'S' if pts > 1 else ''}"], title_col=(40, 96, 30))
@@ -894,6 +903,7 @@ MON_PILE, TRE_PILE = (11.5, 15.6), (14.6, 15.6)
 EVENT_POS = (18.6, 15.2)    # the event deck, where v1.1's Loot Deck was
 EVENT_SHOW = (22.6, 15.2)   # the event card turned up for round 2; Extra Risk's cards go below it
 EXTRA_POS = (18.6, 11.4)    # event E5's chamber waits face down under the event deck
+EXTRA_OBJ_POS = (15.8, 11.4)  # and its four special objects beside it
 ALIEN_POS, HAZ_POS = (-21.4, 15.6), (-24.6, 15.6)
 OBJ_POS = (8.4, 15.6)       # the special objects, beside the monster and treasure tokens
 TITLE_POS = (-20.5, -15.4)
@@ -983,6 +993,13 @@ for j, o in enumerate(OBJECTS):
     TOKEN_IDS.append(f"o-{j + 1}")
     obj_cards.append(card(f"Object {o}", OBJECT_DESC, OBJ_KEY, OBJ_DECK, j, TOKEN_IDS[-1], TOKEN_CARD_S, hide=False))
 objs.append(deck("Special objects", OBJ_POS, OBJ_KEY, OBJ_DECK, obj_cards, "objdeck", TOKEN_CARD_S))
+# Event E5's four objects ("+4 special objects"): a deck of their own, so they stay out of the game until the card is
+# turned up. The same faces I-IV, matching the slots drawn on the second chamber (no new drawings needed).
+extra_obj_cards = []
+for j, o in enumerate(OBJECTS):
+    TOKEN_IDS.append(f"o-{j + 5}")
+    extra_obj_cards.append(card(f"Object {o}", OBJECT_DESC, OBJ_KEY, OBJ_DECK, j, TOKEN_IDS[-1], TOKEN_CARD_S, hide=False))
+objs.append(deck("Extra special objects", EXTRA_OBJ_POS, OBJ_KEY, OBJ_DECK, extra_obj_cards, "extraobjdeck", TOKEN_CARD_S))
 
 # Event tokens (GDD 11-04): aliens (E7) and black holes (E8).
 ALIEN_DECK = cdeck("alien-sheet.png", ALIEN_BACK, ALIEN_SHEET, "circle")
@@ -999,7 +1016,7 @@ haz_cards = [card("Black hole", "Going through this room costs 1 point.", HAZ_KE
              for i in range(HOLE_COUNT)]
 objs.append(deck("Black hole tokens", HAZ_POS, HAZ_KEY, HAZ_DECK, haz_cards, "hazarddeck", MAT_TOKEN_S))
 EXTRA_DECK = cdeck("extra-sheet.png", ROOM_BACK, EXTRA_SHEET, "square")
-extra = card("Integration Chamber", "Extra Special Tile: four more slots. In round 2, drop a special object here: that "
+extra = card("Integration Chamber", "+1 Special Object Tile: four more slots. In round 2, drop a special object here: that "
              "completes your special task.", EXTRA_KEY, EXTRA_DECK, 0, "special2", ROOM_CARD_S)
 extra["Transform"] = tr(*EXTRA_POS, face_down=True, s=ROOM_CARD_S, y=1.3)
 extra["Tags"] = ["extradeck"]
@@ -1045,11 +1062,14 @@ for o in objs:
 LAYOUT = {"icons": {"M": url("icon-move.png"), "A": url("icon-attack.png"), "G": url("icon-magic.png")},
           "grid": GRID, "dungeon": DUNGEON,
           "decks": {"room": "roomdeck", "monster": "mondeck", "treasure": "tredeck", "event": "eventdeck",
-                    "alien": "aliendeck", "hazard": "hazarddeck", "extra": "extradeck", "object": "objdeck"},
+                    "alien": "aliendeck", "hazard": "hazarddeck", "extra": "extradeck", "object": "objdeck",
+                    "extraobj": "extraobjdeck"},
           "deck_pos": {"room": STACK, "monster": MON_PILE, "treasure": TRE_PILE, "event": EVENT_POS,
-                       "alien": ALIEN_POS, "hazard": HAZ_POS, "extra": EXTRA_POS, "object": OBJ_POS},
+                       "alien": ALIEN_POS, "hazard": HAZ_POS, "extra": EXTRA_POS, "object": OBJ_POS,
+                       "extraobj": EXTRA_OBJ_POS},
           "deck_s": {"room": ROOM_CARD_S, "monster": TOKEN_CARD_S, "treasure": TOKEN_CARD_S, "event": 0.75,
-                     "alien": TOKEN_CARD_S, "hazard": MAT_TOKEN_S, "extra": ROOM_CARD_S, "object": TOKEN_CARD_S},
+                     "alien": TOKEN_CARD_S, "hazard": MAT_TOKEN_S, "extra": ROOM_CARD_S, "object": TOKEN_CARD_S,
+                     "extraobj": TOKEN_CARD_S},
           "mat_tok_s": MAT_TOKEN_S,
           "colors": COLORS, "mats": MATS, "mat_size": MAT_SIZE, "mat_px": (MAT_W, MAT_H),
           "die_px": DIE_PX, "carry_px": CARRY_PX, "points_px": POINTS_PX,

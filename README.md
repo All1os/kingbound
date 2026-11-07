@@ -66,14 +66,14 @@ The ROUND 2 and END GAME buttons jump the timer to 5:00 or 0:00, for trying the 
 
 ### Round 2: escape
 
-At 5:00 round 2 starts and no new rooms can be opened. Turn up one event card from the deck of six and set it up by hand: the black hole and alien tokens and the second Integration Chamber lie beside the table.
+At 5:00 round 2 starts and no new rooms can be opened. Turn up one event card from the deck of six and set it up by hand: the black hole and alien tokens, the second Integration Chamber and its four special objects lie beside the table.
 
 | Card | What happens |
 | --- | --- |
 | Lost Path | The Safe Zone and the Integration Chamber swap places: swap the two tiles by hand. Escape to the Safe Zone where it lies now. |
 | Time Freeze | This cycle you play one at a time. Everyone rolls at once: the most identical symbols goes first (4, then 3, 2, 1), and the others wait. Same number: the lowest score goes first. |
 | Extra Risk | Draw one or two more event cards. Every card drawn happens. |
-| Extra Special Tile | A second Integration Chamber joins the station. An object placed on either chamber completes your special task. |
+| +1 Special Object Tile | A second Integration Chamber joins the station, with four more special objects. An object placed on either chamber completes your special task. |
 | Aliens | Every monster in a room becomes an alien: 1 HP more, same points. You can't go through its room without beating it. |
 | Black Holes | A black hole opens in every room with treasure. Each time you go through one, you lose 1 point. |
 

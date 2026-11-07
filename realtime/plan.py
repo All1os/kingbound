@@ -23,12 +23,14 @@ ROOMS = [
     # scene 9, everyone at once
     ((1, 0), "empty", None),                # Esma: an Unregistered Sector, rocked in round 2
     ((-1, -2), "treasure", "o-4"),          # Bora: object IV
-    ((1, 1), "treasure", "o-2"),            # Amira: object II
+    # v2.5: the deck has 7 treasure rooms now, so (1,1) and (2,1) are monster rooms: the 19 rooms of this plan are
+    # the whole deck. Their object tokens stay for tutorial.py, which is already behind the rules (Rockfall).
+    ((1, 1), "monster", "o-2"),             # Amira: object II
     ((-2, 1), "monster", "m-medium-1"),     # Anastasya: Carrier
     ((2, 0), "treasure", "t-module-2"),     # Esma: Module
     ((-1, -1), "treasure", "t-archive-2"),  # Bora: Archive
     ((0, 2), "monster", "m-weak-2"),        # Amira: Scraper
-    ((2, 1), "treasure", "o-1"),            # Esma: object I
+    ((2, 1), "monster", "o-1"),             # Esma: object I
     ((-1, 1), "treasure", "o-3"),           # Anastasya: object III
     ((2, -1), "monster", "m-weak-1"),       # Esma: Scraper, then her long way home goes through here...
     ((1, -1), "monster", "m-weak-3"),       # ...and past a Scraper nobody fights

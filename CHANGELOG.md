@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.5 (2026-11-07)
+
+The team's component list, "New prototype number of every component":
+
+- 19 rooms in the deck instead of 23, plus the Safe Zone: 4 empty, 7 monster, 7 treasure and the Integration Chamber.
+- 7 monster tokens: 3 Scrapers, 2 Carriers, 2 Anomalies.
+- 7 alien tokens, in the same split as the monsters, and 7 black hole tokens.
+- Extra Special Tile is now called +1 Special Object Tile, and four more special objects come with the second chamber.
+
 ## v2.4 (2026-11-06)
 
 After a balance test with a simulation of the game:
