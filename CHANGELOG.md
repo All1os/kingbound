@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.6 (2026-11-07)
+
+The table now looks like the printed game:
+
+- Every room, token, event card and die shows the team's own drawing, the same face as the printed piece. Pieces the team hasn't drawn yet use a stand-in drawing until they do.
+- Rooms have their doorways drawn in, so the deck holds the same tiles as the box: each kind of room comes in three layouts.
+- Event cards are 2:3 like the printed cards, with their rule in the box at the bottom.
+- Special objects go into the four glowing sockets of the Integration Chamber.
+
 ## v2.5 (2026-11-07)
 
 The team's component list, "New prototype number of every component":

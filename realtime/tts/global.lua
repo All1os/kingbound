@@ -776,7 +776,8 @@ local function happen(card)
   Wait.time(function() if ROUND == 2 and TIMER.left > 0 then OPS.banner({}) end end, 6)
 end
 function drawEvent(id)
-  local p = {x = L.event_show[1], y = 1.6, z = L.event_show[2] - 3.4 * SHOWN}
+  -- 3.6 since v2.6: the team's cards are 2:3, a little longer than the old 400 x 560 cells (spacing was 3.4)
+  local p = {x = L.event_show[1], y = 1.6, z = L.event_show[2] - 3.6 * SHOWN}
   SHOWN = SHOWN + 1
   if id then takeCard(id, p, happen) return end
   local deck = mainDeck("event")

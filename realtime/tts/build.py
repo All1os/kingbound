@@ -22,7 +22,7 @@ import hashlib, json, math, os, random, shutil, time
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter, ImageFont, ImageOps
 
-VERSION = "2.5"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table,
+VERSION = "2.6"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat on its own side of the table,
                   # v1.2: a seat (hand zone) at every mat for online games, and ROLL DICE,
                   # v2.0: the GDD of 2026-11-02 (two rounds, events, treasure sets, special objects; no Loot, no traps)
                   # v2.1: NULLWAKE, the rules of 2026-11-03 and the narrative document (names, sci-fi look)
@@ -30,6 +30,7 @@ VERSION = "2.5"   # v1.0 (Yavuz, 2026-10-26: "oyun tamamlandı"), v1.1: each mat
                   # v2.3: the GDD of 2026-11-05, six event cards, treasure without combinations
                   # v2.4: 2 to 4 players, the Integration Chamber in the top 5 rooms (balance test, 2026-11-06)
                   # v2.5: the component list of 2026-11-07: 19 rooms, 7 monsters, 7 aliens, 7 black holes, +4 objects
+                  # v2.6: the printed pieces' faces (the team's drawings) on every piece
 ROOT = Path(__file__).parent
 OUT = ROOT / "output"
 ASSETS = Path.home() / "Library/Tabletop Simulator/Mods/kingbound-realtime"
@@ -240,11 +241,10 @@ def save(im, fn):
 
 
 # ------------------------------------------------------------------ artwork
-# The team's drawings (Yavuz, 2026-11-06: "table top da kullanabilecegim görsellere ihtiyacım"), made with
-# ChatGPT from the art brief (vault: kingbound/realtime/NULLWAKE-concept-art-for-ChatGPT.md) and saved in art/
-# under the brief's number: 01.png ... 34.png. A drawing only replaces the picture: walls, passages, names,
-# HP, points and rules are still drawn here, so they stay right whatever the drawing shows. A piece without
-# a drawing keeps its drawn look. NULLWAKE_ART points to another folder (to try drawings out).
+# The drawings in art/ under the art brief's number: 01.png ... 34.png (02a/b/c ... for room variants). They are
+# written by ~/Desktop/NULLWAKE-baski/tts_art.py from the print folder: the team's own drawings, ChatGPT ones only
+# where the team drew none (see the comment above art_files). A piece without a drawing keeps its drawn look.
+# NULLWAKE_ART points to another folder (to try drawings out).
 ART_DIR = Path(os.environ.get("NULLWAKE_ART", ROOT / "art"))
 ART_NO = {"room-safe": 1, "room-empty": 2, "room-monster": 3, "room-treasure": 4, "room-special": 5, "room-back": 6,
           "mon-weak": 7, "mon-medium": 8, "mon-strong": 9, "mon-back": 10,
@@ -254,20 +254,29 @@ ART_NO = {"room-safe": 1, "room-empty": 2, "room-monster": 3, "room-treasure": 4
           "E2": 24, "E3": 25, "E4": 26, "E5": 27, "E7": 28, "E8": 29, "event-back": 30,
           "hole": 31, "haz-back": 32, "dice": 33, "mat": 34}
 ART_USED = []
+# v2.6 (Yavuz, 2026-11-07: "tts görsellerini güncellemek istiyorum, önce bizim çizimleri kullanalım"): the drawings
+# are now the finished faces of the printed game (made by ~/Desktop/NULLWAKE-baski/tts_art.py from the team's
+# drawings): rooms with their own walls and doorways, tokens with their HP squares, event cards with their frame and
+# rules. So a piece with a drawing shows it as it is, with nothing drawn over it, and TTS looks like the table.
+# Only the mat (34) and the dice (33) still get the build's boxes and faces on top.
 
 
-def art(key, size):
-    """The drawing for key, cropped to fill size (w, h) from its middle, or None."""
+def art_files(key):
+    """Every file of key's number: NN.png, or NNa.png, NNb.png ... (room variants, used in turn)."""
     n = ART_NO.get(key)
-    if n is None:
+    if n is None or not ART_DIR.exists():
+        return []
+    return sorted(p for p in ART_DIR.iterdir() if p.suffix.lower() in (".png", ".jpg", ".jpeg", ".webp")
+                  and (p.stem == f"{n:02d}" or (len(p.stem) == 3 and p.stem[:2] == f"{n:02d}" and p.stem[2].isalpha())))
+
+
+def art(key, size, i=0):
+    """The drawing for key (the i-th variant, in turn), cropped to fill size (w, h) from its middle, or None."""
+    files = art_files(key)
+    if not files:
         return None
-    for name in (f"{n:02d}", f"{n}"):
-        for ext in (".png", ".jpg", ".jpeg", ".webp"):
-            path = ART_DIR / (name + ext)
-            if path.exists():
-                ART_USED.append(key)
-                return ImageOps.fit(Image.open(path).convert("RGB"), size, Image.LANCZOS)
-    return None
+    ART_USED.append(key)
+    return ImageOps.fit(Image.open(files[i % len(files)]).convert("RGB"), size, Image.LANCZOS)
 
 
 def band(im, box, alpha=190):
@@ -320,39 +329,22 @@ TILE_PX = 512
 DOOR = {"N": (196, 0, 316, 64), "S": (196, 448, 316, 512), "W": (0, 196, 64, 316), "E": (448, 196, 512, 316)}
 
 
-OBJ_SLOT_PX = [(150, 182), (362, 182), (150, 384), (362, 384)]   # the four slots, a token's size (1.4 of a 3.6 room)
+# The four slots, a token's size (1.4 of a 3.6 room). v2.6: the centres of the four glowing sockets of the printed
+# Integration Chamber (measured on the drawing: 313 and 940 of 1254 px), so the script drops objects into them.
+OBJ_SLOT_PX = [(128, 128), (384, 128), (128, 384), (384, 384)]
 
 
-def room_art(kind, doors, pic):
-    """A room with a drawing: the drawing is the floor, then the walls and passages over it (they decide the
-    route, so they are always drawn here), and the name on a band at the bottom."""
-    im = pic.copy()
-    d = ImageDraw.Draw(im)
-    for box in ((0, 0, TILE_PX, 40), (0, TILE_PX - 40, TILE_PX, TILE_PX), (0, 0, 40, TILE_PX), (TILE_PX - 40, 0, TILE_PX, TILE_PX)):
-        d.rectangle(box, fill=WALL)
-    d.rectangle((40, 40, TILE_PX - 41, TILE_PX - 41), outline=INK, width=3)
-    for s_ in doors:
-        x0, y0, x1, y1 = DOOR[s_]
-        im.paste(pic.crop(DOOR[s_]), (x0, y0))
-        if s_ in "NS":
-            d.line((x0, y0, x0, y1), fill=GOLD, width=5); d.line((x1, y0, x1, y1), fill=GOLD, width=5)
-        else:
-            d.line((x0, y0, x1, y0), fill=GOLD, width=5); d.line((x0, y1, x1, y1), fill=GOLD, width=5)
-    if kind == "special":
-        # The four slots stay where the script puts the objects, whatever the drawing shows.
-        for cx, cy in OBJ_SLOT_PX:
-            d.ellipse((cx - 86, cy - 86, cx + 86, cy + 86), outline=OBJ_COL, width=5)
-    name = ROOM_NAME[kind].upper()
-    band(im, (70, 404, 442, 452))
-    d = ImageDraw.Draw(im)
-    d.text((256, 428), name, font=fit(d, name, BLACK, 30, 350), fill=CREAM, anchor="mm")
-    return save(im, f"room-{kind}-{''.join(sorted(doors))}.png")
+ROOM_TURN = {}   # how many rooms of each kind are drawn so far: the variants a, b, c go in turn
 
 
 def room_img(kind, doors):
-    pic = art(f"room-{kind}", (TILE_PX, TILE_PX))
-    if pic:
-        return room_art(kind, doors, pic)
+    files = art_files(f"room-{kind}")
+    if files:
+        # The team's room, doorways and all (v2.6): the doors argument no longer decides anything. The deck gets
+        # the same tiles as the printed game (variants in turn: a b c a ...), so the tutorial's planned doorways
+        # (plan.LINKS) don't match any more; the tutorial was already behind the rules.
+        i = ROOM_TURN.get(kind, 0); ROOM_TURN[kind] = i + 1
+        return save(art(f"room-{kind}", (TILE_PX, TILE_PX), i), f"room-{kind}-{i % len(files)}.png")
     # A station sector: graphite walls, steel floor plates with rivets (narrative §5: "matte metal").
     im = Image.new("RGB", (TILE_PX, TILE_PX), WALL)
     d = ImageDraw.Draw(im)
@@ -401,12 +393,7 @@ def room_img(kind, doors):
 def room_back():
     pic = art("room-back", (TILE_PX, TILE_PX))
     if pic:
-        im = pic
-        band(im, (60, 190, 452, 322))
-        d = ImageDraw.Draw(im)
-        d.text((256, 226), "NULLWAKE", font=f(BLACK, 66), fill=GOLD, anchor="mm")
-        d.text((256, 290), "unexplored sector", font=f(REG, 30), fill=CREAM, anchor="mm")
-        return save(im, "room-back.png")
+        return save(pic, "room-back.png")   # as printed (v2.6)
     im = Image.new("RGB", (TILE_PX, TILE_PX), GRAPHITE)
     d = ImageDraw.Draw(im)
     d.rectangle((14, 14, 498, 498), outline=GOLD, width=6)
@@ -425,17 +412,8 @@ def token_front(fn, ring, title, need_kind, need_n, lines, title_col=None):
     im = Image.new("RGB", (TOK, TOK), ring)
     pic = art(fn[:-4], (TOK, TOK))
     if pic:
-        # The drawing fills the circle; the name on a band at the top, the cost and the value at the bottom.
-        round_art(im, pic)
-        band(im, (60, 46, TOK - 60, 104))
-        band(im, (54, 236, TOK - 54, 318))
-        d = ImageDraw.Draw(im)
-        d.ellipse((14, 14, TOK - 14, TOK - 14), outline=INK, width=5)
-        d.text((TOK / 2, 75), title, font=fit(d, title, BLACK, 40, 220), fill=CREAM, anchor="mm")
-        sym_row(d, need_kind, need_n, TOK / 2, 260, 20 if need_n <= 3 else 17)
-        line = " · ".join(lines)
-        d.text((TOK / 2, 298), line, font=fit(d, line, BOLD, 28, 230), fill=CREAM, anchor="mm")
-        return save(im, fn)
+        # As printed (v2.6): HP squares are in the drawing, points on the mat, cost and value in the tooltip.
+        return save(pic, fn)
     d = ImageDraw.Draw(im)
     d.ellipse((14, 14, TOK - 14, TOK - 14), fill=PAPER, outline=INK, width=5)
     d.text((TOK / 2, 76), title, font=fit(d, title, BLACK, 44, 220), fill=title_col or ring, anchor="mm")   # the circle is narrow at the top
@@ -449,12 +427,7 @@ def token_back(fn, ring, text):
     im = Image.new("RGB", (TOK, TOK), ring)
     pic = art(fn[:-4], (TOK, TOK))
     if pic:
-        round_art(im, pic)
-        band(im, (40, TOK / 2 - 34, TOK - 40, TOK / 2 + 34))
-        d = ImageDraw.Draw(im)
-        d.ellipse((14, 14, TOK - 14, TOK - 14), outline=CREAM, width=6)
-        d.text((TOK / 2, TOK / 2), text, font=fit(d, text, BLACK, 50, 260), fill=CREAM, anchor="mm")
-        return save(im, fn)
+        return save(pic, fn)   # as printed (v2.6)
     d = ImageDraw.Draw(im)
     d.ellipse((14, 14, TOK - 14, TOK - 14), outline=CREAM, width=6)
     d.text((TOK / 2, TOK / 2), text, font=fit(d, text, BLACK, 50, 280), fill=CREAM, anchor="mm")
@@ -462,7 +435,7 @@ def token_back(fn, ring, text):
 
 
 # ------------------------------------------------------------------ event cards (rules §10)
-CW, CH = 400, 560
+CW, CH = 400, 600   # 2:3 since v2.6, the team's cards (was 400 x 560); a TTS card takes its cell's shape
 EVENT_COLS = 2   # a sheet has at least two cells: the second one stays empty
 
 
@@ -512,7 +485,7 @@ def event_face(eid, name, what, rule, size=27):
     # The text shrinks until the rule fits on the card (Rockfall's last line was cut off since v2.1, seen 2026-11-04).
     pic = art(eid, (CW, CH))
     if pic:
-        return event_art(pic, name, what, rule, size)
+        return pic   # as printed (v2.6): the team's card with the rule already in its box
     im = Image.new("RGB", (CW, CH), PAPER)
     d = ImageDraw.Draw(im)
     d.rectangle((0, 0, CW - 1, CH - 1), outline=EVENT_COL, width=12)
@@ -558,7 +531,11 @@ def event_sheet():
     for i, im in enumerate(ims):
         sheet.paste(im, ((i % EVENT_COLS) * CW, (i // EVENT_COLS) * CH))
     save(sheet, "event-sheet.png")
-    back = art("event-back", (CW, CH)) or Image.new("RGB", (CW, CH), GRAPHITE)
+    back = art("event-back", (CW, CH))
+    if back:
+        save(back, "event-back.png")   # as printed (v2.6)
+        return rows
+    back = Image.new("RGB", (CW, CH), GRAPHITE)
     d = ImageDraw.Draw(back)
     hazard(d, (0, 0, CW, 40)); hazard(d, (0, CH - 40, CW, CH))
     d.rectangle((16, 56, CW - 16, CH - 56), outline=EMERG, width=6)
@@ -704,12 +681,7 @@ def small_token(fn, ring, draw, text):
     im = Image.new("RGB", (TOK, TOK), ring)
     pic = art(fn[:-4], (TOK, TOK))
     if pic:
-        round_art(im, pic)
-        band(im, (60, 246, TOK - 60, 310))
-        d = ImageDraw.Draw(im)
-        d.ellipse((14, 14, TOK - 14, TOK - 14), outline=INK, width=5)
-        d.text((TOK / 2, 278), text, font=fit(d, text, BLACK, 46, 220), fill=CREAM, anchor="mm")
-        return save(im, fn)
+        return save(pic, fn)   # as printed (v2.6)
     d = ImageDraw.Draw(im)
     d.ellipse((14, 14, TOK - 14, TOK - 14), fill=PAPER, outline=INK, width=5)
     draw(d, TOK / 2, 150, 92)
