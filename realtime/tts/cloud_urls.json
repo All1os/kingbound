@@ -67,10 +67,6 @@
   "url": "https://raw.githubusercontent.com/All1os/kingbound/8b0d897f669782f376f6d25b3162553cbe37cefc/realtime/tts/output/mon-back.png",
   "sha1": "f226e66c537b534abe6db405dccee0156e17bc0c"
  },
- "mon-sheet.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/8b0d897f669782f376f6d25b3162553cbe37cefc/realtime/tts/output/mon-sheet.png",
-  "sha1": "5bce303af642ea335e17696ab4d11849fc88ce2c"
- },
  "obj-back.png": {
   "url": "https://raw.githubusercontent.com/All1os/kingbound/8b0d897f669782f376f6d25b3162553cbe37cefc/realtime/tts/output/obj-back.png",
   "sha1": "66dc77215faab713f44e2bdb783dfb5128f60c29"
@@ -95,8 +91,12 @@
   "url": "https://raw.githubusercontent.com/All1os/kingbound/8b0d897f669782f376f6d25b3162553cbe37cefc/realtime/tts/output/tre-back.png",
   "sha1": "eeb42903824c0f70a2baebf49b77e44deead19f5"
  },
+ "mon-sheet.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/e0c5501233bc3bcc7ff86b54e4c19397f643e284/realtime/tts/output/mon-sheet.png",
+  "sha1": "83b073d1056d36c1e260b7af7bb0ec6d2935f0fe"
+ },
  "tre-sheet.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/8b0d897f669782f376f6d25b3162553cbe37cefc/realtime/tts/output/tre-sheet.png",
-  "sha1": "779534e9e3a67808f1687c2a56dbaad720eed966"
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/e0c5501233bc3bcc7ff86b54e4c19397f643e284/realtime/tts/output/tre-sheet.png",
+  "sha1": "b1d9126c630a67625d618a660589dcb7c49c98e1"
  }
 }
