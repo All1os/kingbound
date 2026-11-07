@@ -43,10 +43,6 @@
   "url": "https://raw.githubusercontent.com/All1os/kingbound/0d424140f018700ca43cefef301579f88abfbced/realtime/tts/output/icon-magic.png",
   "sha1": "18e12e9d3b4b670397448177cc588c74137a6467"
  },
- "room-sheet.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/b6e762616e090b0396d4c81855a916b402d3b194/realtime/tts/output/room-sheet.png",
-  "sha1": "91d9900b974b73618c7d08b192377429f4c0d161"
- },
  "alien-back.png": {
   "url": "https://raw.githubusercontent.com/All1os/kingbound/5cfb263/realtime/tts/output/alien-back.png",
   "sha1": "51db8ed1670f1e4b5b185c94f95e2e1accc3563a"
@@ -71,10 +67,6 @@
   "url": "https://raw.githubusercontent.com/All1os/kingbound/52125ce/realtime/tts/output/obj-sheet.png",
   "sha1": "b7d4ca2894ce68e5f65d8175824fdefd99e16565"
  },
- "event-sheet.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/event-sheet.png",
-  "sha1": "9319748b09affb931a340950d7eb6e3537698af5"
- },
  "hazard-sheet.png": {
   "url": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/hazard-sheet.png",
   "sha1": "413fbbcc2d4b055511a82b5fcc8b9730aaae1dbc"
@@ -87,10 +79,6 @@
   "url": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/mat-green.png",
   "sha1": "392e23da7247a4c93fbbc5386540507dc72a94f4"
  },
- "mat-purple.png": {
-  "url": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/mat-purple.png",
-  "sha1": "2b58872d8d13d3a026e68f274aa0b61a0dd3110a"
- },
  "mat-red.png": {
   "url": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/mat-red.png",
   "sha1": "4356f8fd6ec6741cefdf761b539c36b58ef7830c"
@@ -102,5 +90,13 @@
  "tre-sheet.png": {
   "url": "https://raw.githubusercontent.com/All1os/kingbound/57212fe380dfe2d30e76aea06b3156c5fc308641/realtime/tts/output/tre-sheet.png",
   "sha1": "30af2d56f6d744cce540aebe329dd1f3441295c3"
+ },
+ "event-sheet.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/a045a25/realtime/tts/output/event-sheet.png",
+  "sha1": "9ac323f6b126ff987c045a38ef9f9dcf0a9d8cd8"
+ },
+ "room-sheet.png": {
+  "url": "https://raw.githubusercontent.com/All1os/kingbound/a045a25/realtime/tts/output/room-sheet.png",
+  "sha1": "9892344b067aec587321c19d53790ef45b32f6f6"
  }
 }
